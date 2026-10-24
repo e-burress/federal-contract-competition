@@ -1,0 +1,4 @@
+# Sealed forecasts must stay byte-for-byte identical so their SHA-256 fingerprints keep matching.
+# Never convert their line endings on any operating system.
+forecasts/*.json -text
+forecasts/SHA256SUMS.txt -text
