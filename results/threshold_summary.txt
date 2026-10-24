@@ -1,0 +1,121 @@
+====================================================================================================
+UNIVERSE: civilian agencies, B+D transactions 1,264,428; base actions 758,163; 66 agencies; action dates 2023-10-01 .. 2026-09-30
+kind    DEF      PO
+fy                 
+2024  15572  243145
+2025  12002  224466
+2026   9304  253674
+
+base actions with a usable value: 1.000 | value > 0: 1.000
+
+periods: FY2024 258,717 | FY2025 (pre) 236,468 | FY2026 (post) 262,978 base actions
+
+RAW COUNTS (value = base-and-all-options at the base action): awards in the 10K band just below vs just above each line
+period     FY2024  FY2025_pre  FY2026_post
+threshold                                 
+200000      1.334       1.524        1.339
+250000      3.681       3.549        2.236
+300000      1.836       1.358        1.330
+350000      1.041       1.150        3.083
+period     FY2024  FY2025_pre  FY2026_post
+threshold                                 
+200000        619         576          533
+250000        784         653          588
+300000        268         186          306
+350000        153         130          370
+
+SAT BUNCHING RATIO (observed / counterfactual in the 4 bins ($20K) just under the line; 95% bootstrap interval)
+     period                      value  threshold  n_in_window  obs_below  cf_below  ratio  ci_lo  ci_hi  obs_above  cf_above
+     FY2024 base_and_all_options_value     250000         7770       1305     726.7  1.796  1.655  1.965        213     300.4
+     FY2024 base_and_all_options_value     350000         2404        291     250.1  1.164  0.959  1.384        147     124.0
+     FY2024 base_and_all_options_value     200000         8874       1192     910.4  1.309  1.160  1.463        464     410.7
+     FY2024 base_and_all_options_value     450000         1963        249     212.9  1.170  0.988  1.373        111     112.9
+ FY2025_pre base_and_all_options_value     250000         6414       1054     587.7  1.793  1.641  1.962        184     231.8
+ FY2025_pre base_and_all_options_value     350000         1909        253     261.6  0.967  0.806  1.181        113     124.2
+ FY2025_pre base_and_all_options_value     200000         7408       1102     756.8  1.456  1.301  1.636        378     352.2
+ FY2025_pre base_and_all_options_value     450000         1488        170     196.8  0.864  0.698  1.070         85     102.3
+FY2026_post base_and_all_options_value     250000         7016        953     766.7  1.243  1.134  1.344        263     329.6
+FY2026_post base_and_all_options_value     350000         2633        567     290.3  1.953  1.674  2.283        120     121.5
+FY2026_post base_and_all_options_value     200000         7264        998     766.2  1.303  1.158  1.465        398     317.0
+FY2026_post base_and_all_options_value     450000         1590        206     202.3  1.018  0.844  1.253         71      97.6
+
+DID IT MOVE?  bunching ratio post minus pre (bootstrap on both periods)
+ threshold  ratio_pre  ratio_post   diff  diff_lo  diff_hi
+    250000      1.793       1.243 -0.550   -0.754   -0.351
+    350000      0.967       1.953  0.986    0.641    1.417
+    200000      1.456       1.303 -0.154   -0.412    0.108
+    450000      0.864       1.018  0.155   -0.124    0.430
+
+ROBUSTNESS (obligation instead of value; PO vs DEF; first vs second half of FY2026)
+         period                      value  threshold  n_in_window  obs_below  cf_below  ratio  ci_lo  ci_hi  obs_above  cf_above
+     FY2025_pre  federal_action_obligation     250000         5432        844     456.9  1.847  1.675  2.058        150     182.1
+     FY2025_pre  federal_action_obligation     350000         1662        222     215.8  1.029  0.843  1.260        103     103.1
+    FY2026_post  federal_action_obligation     250000         6017        806     619.3  1.301  1.186  1.435        225     265.6
+    FY2026_post  federal_action_obligation     350000         2155        469     228.0  2.057  1.739  2.473        101      97.8
+  FY2025_pre_PO base_and_all_options_value     250000         4868        844     430.2  1.962  1.732  2.231        127     159.9
+  FY2025_pre_PO base_and_all_options_value     350000         1069        142     159.8  0.889  0.682  1.167         63      73.9
+ FY2026_post_PO base_and_all_options_value     250000         5582        761     541.7  1.405  1.257  1.561        221     240.3
+ FY2026_post_PO base_and_all_options_value     350000         1871        425     196.5  2.163  1.727  2.647         96      77.0
+ FY2025_pre_DEF base_and_all_options_value     250000         1546        210     153.8  1.365  1.128  1.652         57      71.2
+ FY2025_pre_DEF base_and_all_options_value     350000          840        111     103.0  1.078  0.829  1.416         50      50.5
+FY2026_post_DEF base_and_all_options_value     250000         1434        192     233.1  0.824  0.692  0.983         42      88.6
+FY2026_post_DEF base_and_all_options_value     350000          762        142      92.5  1.535  1.115  2.074         24      44.4
+      FY2026_H1 base_and_all_options_value     250000         1852        264     197.4  1.337  1.126  1.615         58      85.1
+      FY2026_H1 base_and_all_options_value     350000          658        127      78.7  1.614  1.121  2.282         39      31.4
+      FY2026_H2 base_and_all_options_value     250000         5164        689     569.4  1.210  1.105  1.329        205     244.6
+      FY2026_H2 base_and_all_options_value     350000         1975        440     211.8  2.078  1.633  2.509         81      90.0
+
+QUARTERLY PATH of simple ratio (awards in the 10K band below the line / in the 10K band above)
+quarter  n_awards  below_250K  above_250K  ratio_250K  below_350K  above_350K  ratio_350K
+ 2023Q4     42993          76          32       2.375          16          10       1.600
+ 2024Q1     53321         135          37       3.649          29          25       1.160
+ 2024Q2     67186         174          56       3.107          30          38       0.789
+ 2024Q3     95217         399          88       4.534          78          74       1.054
+ 2024Q4     47484         106          33       3.212          19          12       1.583
+ 2025Q1     51904         114          23       4.957          18          19       0.947
+ 2025Q2     56451         141          46       3.065          35          20       1.750
+ 2025Q3     80629         292          82       3.561          58          62       0.935
+ 2025Q4     42104          66          21       3.143          29          16       1.812
+ 2026Q1     54653          91          37       2.459          57          23       2.478
+ 2026Q2     70874         149          64       2.328          92          28       3.286
+ 2026Q3     95347         282         141       2.000         192          53       3.623
+
+MICRO-PURCHASE LINE ($10K -> $15K): reported awards per $250 bin around each line; value = obligation at the base action
+        period                     value  threshold  n_in_window  obs_below  cf_below  ratio  ci_lo  ci_hi  obs_above  cf_above
+ FY2025_pre_PO federal_action_obligation      10000        20135       1867    2157.2  0.865  0.815  0.918       1785    1525.2
+ FY2025_pre_PO federal_action_obligation      15000        23675       3142    2638.0  1.191  1.125  1.248       1091    1242.0
+FY2026_post_PO federal_action_obligation      10000         9533       1349    1209.7  1.115  1.031  1.196        619     584.6
+FY2026_post_PO federal_action_obligation      15000        12833       1431    1217.7  1.175  1.092  1.297        788     727.1
+  FY2025_pre T=10000: awards in ($ 9,000, 10,000] = 1867; in (10,000, 11,000] = 3895; ratio below/above = 0.48
+  FY2025_pre T=15000: awards in ($ 14,000, 15,000] = 3142; in (15,000, 16,000] = 2285; ratio below/above = 1.38
+  FY2026_post T=10000: awards in ($ 9,000, 10,000] = 1349; in (10,000, 11,000] = 1186; ratio below/above = 1.14
+  FY2026_post T=15000: awards in ($ 14,000, 15,000] = 1431; in (15,000, 16,000] = 1657; ratio below/above = 0.86
+
+reported purchase orders per $1,000 bin of obligation (bin = (upper-1K, upper]); columns are counts over the whole fiscal year
+ bin_upper  FY2025_pre  FY2026_post
+         7        1433         1358
+         8        1399         1374
+         9        1285         1218
+        10        1867         1349
+        11        3895         1186
+        12        3868         1055
+        13        3340         1014
+        14        3048          979
+        15        3142         1431
+        16        2285         1657
+        17        2171         1771
+        18        2008         1622
+        19        1766         1523
+        20        2047         1781
+reported POs in ($10K,$15K]: FY2025 17293 -> FY2026 5665 (-67.2%); in ($15K,$20K]: 10277 -> 8354 (-18.7%)
+
+EXPLORATORY: the band that became 'simplified' ($250K-$350K) versus a control band ($350K-$450K), FY2025 vs FY2026
+            band      period  n_awards  pct_competed  pct_competed_under_SAP_F  n_eval  single_offer_share
+treated 250-350K  FY2025_pre      1578        54.689                    34.094     863               0.197
+treated 250-350K FY2026_post      2578        53.142                    41.466    1370               0.199
+control 350-450K  FY2025_pre      1044        58.621                    32.471     612               0.142
+control 350-450K FY2026_post      1104        61.322                    41.033     677               0.152
+  below 150-250K  FY2025_pre      5089        53.232                    38.534    2709               0.203
+  below 150-250K FY2026_post      5005        55.405                    42.737    2773               0.196
+difference-in-differences of single-offer share (treated band minus control band, post minus pre) = -0.84 percentage points, 95% bootstrap interval [-6.12, +4.35]
+difference-in-differences of the share competed under simplified procedures (F) = -1.19 percentage points (no interval computed)

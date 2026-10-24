@@ -1,0 +1,16 @@
+# downloaded data and caches (large; rebuilt by the scripts)
+data/
+logs/
+__pycache__/
+*.pyc
+.venv/
+
+# office-level outputs: not published until the method is reviewed
+results/atlas_offices.csv
+results/atlas_summary.txt
+results/resolution_backtest_notices.csv
+results/resolution_backtest.txt
+results/threshold_resolution_TEST-*.json
+forecasts/*.csv
+forecasts/superseded_drafts/
+forecasts/PIO-F1-*.json

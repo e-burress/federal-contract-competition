@@ -1,0 +1,103 @@
+{
+ "id": "PIO-F2-threshold-fy2027q1-20261024",
+ "made_at_utc": "2026-10-24T04:48:11Z",
+ "project": "Federal Procurement Integrity Observatory - cycle-3 thin slice: threshold shifts (a market-level screening indicator, not an accusation about anyone)",
+ "target": "Whether the pile-up of civilian purchase orders and definitive contracts just under the simplified acquisition threshold keeps following the threshold ($250,000 until 2025-09-30, $350,000 from 2025-10-01) and how far the micro-purchase reporting step has moved ($10,000 -> $15,000), in the first quarter of fiscal year 2027.",
+ "period": {
+  "start": "2026-10-01",
+  "end": "2026-12-31"
+ },
+ "resolution_source": "USAspending.gov contract transactions (Advanced Search transaction download), civilian top-tier agencies (all except the Department of Defense), award types B and D, base actions (modification_number 0)",
+ "resolution_source_url": [
+  "https://api.usaspending.gov/api/v2/download/transactions/",
+  "https://files.usaspending.gov/award_data_archive/"
+ ],
+ "earliest_scoring_date": "2027-02-15",
+ "resolution_date": "2027-02-28",
+ "resolution_rule": "Run scripts/12_resolve_threshold.py on a snapshot taken on or after 2027-02-15. It downloads the period, keeps base actions, and recomputes the three quantities with the estimator frozen in scripts/bunching_lib.py (bins, window, exclusion zone, polynomial degree, Poisson fit). A forecast 'hits' if the actual value lies inside the 80% interval; it 'beats the baseline' if its absolute error is smaller than that of the persistence baseline.",
+ "quantities": [
+  {
+   "name": "bunching_ratio_350K",
+   "kind": "bunching_ratio",
+   "threshold": 350000,
+   "definition": "observed / counterfactual number of civilian PO+definitive-contract base actions with base-and-all-options value in the four $5,000 bins up to $350,000 (bins are right-closed), counterfactual = degree-5 Poisson polynomial fitted outside (T-20K, T+10K] over the window in SPEC of scripts/bunching_lib.py",
+   "forecast": 2.027,
+   "interval80": [
+    1.395,
+    2.659
+   ],
+   "baseline": 2.167,
+   "baseline_label": "persistence: FY2026 Q4 estimate",
+   "baseline_pre_change": 0.967,
+   "baseline_pre_change_label": "FY2025 full-year estimate (before the 2025-10-01 change)",
+   "recent_quarters": {
+    "FY2025Q1": 1.195,
+    "FY2025Q2": 1.074,
+    "FY2025Q3": 0.907,
+    "FY2025Q4": 0.898,
+    "FY2026Q1": 1.508,
+    "FY2026Q2": 1.649,
+    "FY2026Q3": 1.887,
+    "FY2026Q4": 2.167
+   }
+  },
+  {
+   "name": "bunching_ratio_250K",
+   "kind": "bunching_ratio",
+   "threshold": 250000,
+   "definition": "observed / counterfactual number of civilian PO+definitive-contract base actions with base-and-all-options value in the four $5,000 bins up to $250,000 (bins are right-closed), counterfactual = degree-5 Poisson polynomial fitted outside (T-20K, T+10K] over the window in SPEC of scripts/bunching_lib.py",
+   "forecast": 1.229,
+   "interval80": [
+    0.881,
+    1.577
+   ],
+   "baseline": 1.18,
+   "baseline_label": "persistence: FY2026 Q4 estimate",
+   "baseline_pre_change": 1.793,
+   "baseline_pre_change_label": "FY2025 full-year estimate (before the 2025-10-01 change)",
+   "recent_quarters": {
+    "FY2025Q1": 1.894,
+    "FY2025Q2": 1.712,
+    "FY2025Q3": 1.963,
+    "FY2025Q4": 1.716,
+    "FY2026Q1": 1.504,
+    "FY2026Q2": 1.241,
+    "FY2026Q3": 1.277,
+    "FY2026Q4": 1.18
+   }
+  },
+  {
+   "name": "po_share_10_15K",
+   "kind": "po_reporting_share",
+   "threshold": 15000,
+   "definition": "among civilian purchase-order base actions with federal_action_obligation in ($10,000, $20,000], the share that lie in ($10,000, $15,000]",
+   "forecast": 0.3607,
+   "interval80": [
+    0.3204,
+    0.401
+   ],
+   "baseline": 0.3637,
+   "baseline_label": "persistence: FY2026 Q4 value",
+   "baseline_pre_change": 0.6272,
+   "baseline_pre_change_label": "FY2025 full-year value",
+   "recent_quarters": {
+    "FY2025Q1": 0.6332,
+    "FY2025Q2": 0.6397,
+    "FY2025Q3": 0.6274,
+    "FY2025Q4": 0.6154,
+    "FY2026Q1": 0.4869,
+    "FY2026Q2": 0.4499,
+    "FY2026Q3": 0.3576,
+    "FY2026Q4": 0.3637
+   }
+  }
+ ],
+ "method": "Point forecast = mean of the estimates for FY2026 Q3 and Q4, the two latest quarters after the 2025-10-01 threshold change (quarterly estimates in results/threshold_quarterly_bunching.csv). The pile-up at $350K rose every quarter since the change (1.51, 1.65, 1.89, 2.17) and the one at $250K fell (1.50, 1.24, 1.28, 1.18); the micro-purchase share fell (0.49, 0.45, 0.36, 0.36). Interval half-width = 1.28 * sqrt(sampling_se^2 + level_se^2) where sampling_se is the bootstrap error of the two most recent first-quarter samples (small, and depressed by the Oct-Nov 2025 shutdown in FY2026 Q1), and level_se allows for drift (0.30 and 0.15 ratio points; 0.03 for the share).",
+ "known_limitations": [
+  "Only four quarters exist since the change and the trend may not have stopped; the interval allows for drift but not for a new policy shift.",
+  "FY2027 Q1 data may be revised by late reporting; the earliest scoring date leaves six weeks after quarter end.",
+  "Bunching is a market-level indicator; legitimate scoping to fit simpler rules produces the same signature. No office or person is implicated.",
+  "The Department of Defense is excluded (its data are published with a 90-day delay).",
+  "Poisson-polynomial counterfactuals are sensitive to specification; the specification is frozen in scripts/bunching_lib.py."
+ ]
+}

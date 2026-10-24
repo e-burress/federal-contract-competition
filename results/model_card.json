@@ -1,0 +1,58 @@
+{
+ "n_population": 49556,
+ "n_sample_L": 1802,
+ "n_train_oot": 1251,
+ "n_test_oot": 551,
+ "C": 0.03,
+ "oot": [
+  {
+   "model": "agency-wide rate (naive baseline)",
+   "n": 551,
+   "auc": 0.6216,
+   "brier": 0.1196,
+   "logloss": 0.3994
+  },
+  {
+   "model": "office history only",
+   "n": 551,
+   "auc": 0.6481,
+   "brier": 0.1223,
+   "logloss": 0.4054
+  },
+  {
+   "model": "logistic regression (this model)",
+   "n": 551,
+   "auc": 0.7542,
+   "brier": 0.1116,
+   "logloss": 0.3686
+  },
+  {
+   "model": "gradient boosting (benchmark only)",
+   "n": 551,
+   "auc": 0.6784,
+   "brier": 0.1154,
+   "logloss": 0.3867
+  }
+ ],
+ "oot_auc_ci": [
+  0.6951638059407629,
+  0.8109522124188847
+ ],
+ "oot_brier_gain_ci": [
+  0.004382404148361199,
+  0.012455863104834534
+ ],
+ "cv5": {
+  "auc": 0.7021885401901081,
+  "brier": 0.10892273073563466,
+  "brier_baseline": 0.11611651827344129
+ },
+ "office_join_share": 0.9151785714285714,
+ "baseline_agency_rate_fy2026": {
+  "DHS": 0.1875,
+  "DOI": 0.08256880733944955,
+  "HHS": 0.2087912087912088,
+  "USDA": 0.06862745098039216,
+  "VA": 0.16339869281045752
+ }
+}
