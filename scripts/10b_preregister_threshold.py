@@ -77,7 +77,7 @@ quantities.append({
 doc = {
     "id": fid,
     "made_at_utc": made_at,
-    "project": "Federal Procurement Integrity Observatory - cycle-3 thin slice: threshold shifts (a market-level screening indicator, not an accusation about anyone)",
+    "project": "Federal Contract Competition: Findings & Forecasts - cycle-3 thin slice: threshold shifts (a market-level screening indicator, not an accusation about anyone)",
     "target": ("Whether the pile-up of civilian purchase orders and definitive contracts just under the simplified acquisition threshold keeps following the threshold "
                "($250,000 until 2025-09-30, $350,000 from 2025-10-01) and how far the micro-purchase reporting step has moved ($10,000 -> $15,000), "
                "in the first quarter of fiscal year 2027."),

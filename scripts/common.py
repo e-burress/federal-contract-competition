@@ -18,7 +18,7 @@ import urllib.parse
 import urllib.request
 
 # ---- folders -----------------------------------------------------------------------------------
-# PROJECT = the procurement_observatory folder (parent of scripts/)
+# PROJECT = the repository folder (parent of scripts/)
 PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(PROJECT, "data")
 RESULTS = os.path.join(PROJECT, "results")
@@ -32,8 +32,8 @@ for _p in (DATA, RESULTS, FORECASTS):
 #   Git Bash:    export PIO_CONTACT="you@example.com"
 #   PowerShell:  $env:PIO_CONTACT = "you@example.com"
 CONTACT = os.environ.get("PIO_CONTACT", "contact-not-set")
-UA_USASPENDING = f"federal-procurement-observatory/1.0 (research; {CONTACT})"
-UA_SAM = f"federal-procurement-observatory/1.0 (research; {CONTACT})"
+UA_USASPENDING = f"federal-contract-competition/1.0 (research; {CONTACT})"
+UA_SAM = f"federal-contract-competition/1.0 (research; {CONTACT})"
 
 # ---- the agencies in the slice (USAspending top-tier names) ------------------------------------
 # Filled in after looking at where open SAM solicitations are (see docs/methodology.md).

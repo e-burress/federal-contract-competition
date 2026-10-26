@@ -62,7 +62,7 @@ for r in reg.itertuples():
 doc = {
     "id": fid,
     "made_at_utc": made_at,
-    "project": "Federal Procurement Integrity Observatory - cycle-3 thin slice (a research risk indicator about markets and offices, not an accusation about anyone)",
+    "project": "Federal Contract Competition: Findings & Forecasts - cycle-3 thin slice (a research risk indicator about markets and offices, not an accusation about anyone)",
     "target": ("For each listed OPEN SAM.gov solicitation (Solicitation or Combined Synopsis/Solicitation notice, civilian agencies VA, HHS, DHS, Interior, USDA, "
               "response deadline between 2026-11-01 and 2026-12-15): the probability that the award that resolves it will have EXACTLY ONE OFFER "
               "(number_of_offers_received == 1), conditional on that award being competed (extent competed A, D, E, F or CDO) with a usable offers count (1..998)."),

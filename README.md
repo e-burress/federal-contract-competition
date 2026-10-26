@@ -1,4 +1,4 @@
-# Federal Procurement Integrity Observatory
+# Federal Contract Competition: Findings & Forecasts
 
 An open, reproducible look at how competitive US federal contracting is. It tests whether buying behavior bunches around legal dollar thresholds, and publishes **pre-registered forecasts** that are scored in public when the answers come in.
 
@@ -65,6 +65,7 @@ Forecasts were made on **2026-10-24** and fingerprinted with SHA-256 before any 
 | PIO-F1 | Probability of a single offer for each of 150 open civilian solicitations | 2027-03-31 (checks Jan 31 and Feb 28) | `a8d1bb3319bf2fc1439550ee99c971742408a99a4772db426b26dec15f0657d2` |
 | PIO-F2 | FY2027 Q1 bunching ratios under $350K (2.03; 80% interval 1.40–2.66) and $250K (1.23; 0.88–1.58), plus the micro-purchase reporting share | 2027-02-28 | `5a7009ba0f17e953bd1fea32d2b7fe9241a849b85222266506c5312e4790c43b` |
 
+- The IDs start with "PIO" from the project's earlier working name (Procurement Integrity Observatory). The sealed files keep that name unchanged so their fingerprints still match.
 - **PIO-F2** is published in full.
 - **PIO-F1** includes office-level details, so only its fingerprint is published for now. The full file will be posted with the scoring. Anyone can then check it against the fingerprint above.
 
