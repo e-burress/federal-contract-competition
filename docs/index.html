@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Federal Contract Competition Dashboard</title>
+<meta name="description" content="How competitive is US federal contracting? Single-bid rates, a $250K-to-$350K threshold experiment, and sealed forecasts scored in public.">
+<style>
+:root { --bg:#f6f7f9; --card:#fff; --ink:#1b2430; --muted:#5a6573; --line:#e1e5ea; --accent:#1f5fa8; --soft:#e7eef8; --warn:#fbf0dc; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#11161c; --card:#1a2129; --ink:#e7ecf2; --muted:#a3aebb; --line:#2c3540; --accent:#86b5ee; --soft:#1d2b3c; --warn:#33291a; } }
+:root[data-theme="dark"] { --bg:#11161c; --card:#1a2129; --ink:#e7ecf2; --muted:#a3aebb; --line:#2c3540; --accent:#86b5ee; --soft:#1d2b3c; --warn:#33291a; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.wrap { max-width:1040px; margin:0 auto; padding:28px 16px 56px; }
+h1 { font-size:1.8rem; line-height:1.2; margin:0 0 6px; } h2 { font-size:1.25rem; margin:36px 0 10px; }
+.sub { color:var(--muted); margin:0 0 4px; }
+.kpis { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); margin-top:20px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+.kpi b { display:block; font-size:1.9rem; color:var(--accent); line-height:1.1; } .kpi span { color:var(--muted); font-size:.92rem; }
+img { max-width:100%; height:auto; display:block; background:#fff; border-radius:10px; }
+.note { color:var(--muted); font-size:.92rem; margin:8px 0 0; }
+.warn { background:var(--warn); border-color:transparent; }
+.tablewrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:.94rem; }
+th, td { text-align:left; padding:8px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+th { color:var(--muted); font-weight:600; cursor:pointer; user-select:none; } th:hover { color:var(--accent); }
+table.wrapcells td { white-space:normal; } table.wrapcells td:last-child { white-space:nowrap; }
+code { font-size:.8rem; word-break:break-all; white-space:normal; }
+.pill { display:inline-block; padding:2px 8px; border-radius:999px; background:var(--soft); color:var(--accent); font-size:.8rem; font-weight:600; }
+a { color:var(--accent); } .theme { float:right; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:4px 10px; cursor:pointer; font:inherit; font-size:.85rem; }
+footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
+</style>
+</head>
+<body><div class="wrap">
+<button class="theme" id="theme" type="button">Theme</button>
+<h1>Federal Contract Competition: Findings &amp; Forecasts</h1>
+<p class="sub">How often do competed federal contracts get only one bid, and do purchases bunch under dollar limits? Five civilian departments (VA, HHS, DHS, Interior, USDA), fiscal years 2024–2026. Department of Defense not included.</p>
+<p class="sub">By <a href="https://github.com/e-burress">Ellie Burress</a> · data through Sep 30, 2026 · <a href="https://github.com/e-burress/federal-contract-competition">code and data</a> · <a href="methodology">methodology</a></p>
+
+<div class="kpis">
+  <div class="card kpi"><b>22.8%</b><span>of 97,643 competed awards got only one offer</span></div>
+  <div class="card kpi"><b>0.97 → 1.95</b><span>pile-up just under the new $350K line, before vs. after it took effect (1.0 = none)</span></div>
+  <div class="card kpi"><b>0.75</b><span>accuracy (AUC) of the single-bid forecast on unseen data, vs. 0.62 for a simple baseline</span></div>
+  <div class="card kpi"><b>150</b><span>open solicitations with sealed single-bid forecasts, scored by Mar 31, 2027</span></div>
+</div>
+
+<h2>1. When the threshold moved, the pile-up moved</h2>
+<div class="card">
+  <img src="figures/threshold_shift.png" alt="Award counts near $250K and $350K before and after the October 2025 threshold change">
+  <p class="note">On Oct 1, 2025, the simplified-acquisition threshold rose from $250K to $350K. The pile-up just under $250K fell from 1.79 to 1.24, and a new one formed under $350K (0.97 → 1.95). Comparison lines at $200K and $450K, where nothing changed, did not move.</p>
+</div>
+<div class="card" style="margin-top:12px">
+  <img src="figures/bunching_by_quarter.png" alt="Bunching ratio by fiscal quarter for $250K and $350K">
+  <p class="note">Bunching ratio by fiscal quarter, with 95% intervals. Civilian purchase orders and definitive contracts.</p>
+</div>
+
+<h2>2. About one in four competed awards got a single offer</h2>
+<div class="card">
+  <img src="figures/single_offer_by_agency.png" alt="Single-offer share by department and fiscal year">
+</div>
+<div class="card" style="margin-top:12px"><div class="tablewrap"><table class="sortable">
+  <thead><tr><th>Department</th><th>Single-offer share</th><th>Competed awards</th><th>FY2024 → FY2025 → FY2026</th></tr></thead>
+  <tbody><tr><td>Health and Human Services (HHS)</td><td data-v='0.4032527105921601'><b>40.3%</b></td><td data-v='9592'>9,592</td><td>41.8% → 39.6% → 38.2%</td></tr><tr><td>Veterans Affairs (VA)</td><td data-v='0.3529259355220787'><b>35.3%</b></td><td data-v='27017'>27,017</td><td>37.4% → 36.8% → 30.1%</td></tr><tr><td>Homeland Security (DHS)</td><td data-v='0.26549607234800976'><b>26.5%</b></td><td data-v='15149'>15,149</td><td>31.0% → 27.8% → 20.2%</td></tr><tr><td>Interior (DOI)</td><td data-v='0.1791044776119403'><b>17.9%</b></td><td data-v='15879'>15,879</td><td>20.6% → 17.5% → 14.9%</td></tr><tr><td>Agriculture (USDA)</td><td data-v='0.06535359594747717'><b>6.5%</b></td><td data-v='30006'>30,006</td><td>9.8% → 6.7% → 4.0%</td></tr></tbody></table></div>
+  <p class="note">Tap a column heading to sort. Competed awards with a usable offer count (purchase orders, definitive contracts and contract vehicles).</p>
+</div>
+
+<div class="card" style="margin-top:12px"><div class="tablewrap"><table class="sortable">
+  <thead><tr><th>Department</th><th>Award type</th><th>Single-offer share</th><th>Competed awards</th></tr></thead>
+  <tbody><tr><td>DHS</td><td>Definitive contracts</td><td data-v='0.278673835125448'>27.9%</td><td data-v='1116'>1,116</td></tr><tr><td>DHS</td><td>Contract vehicles (IDVs)</td><td data-v='0.0736196319018405'>7.4%</td><td data-v='978'>978</td></tr><tr><td>DHS</td><td>Purchase orders</td><td data-v='0.2787437763309077'>27.9%</td><td data-v='13055'>13,055</td></tr><tr><td>DOI</td><td>Definitive contracts</td><td data-v='0.1225114854517611'>12.3%</td><td data-v='1959'>1,959</td></tr><tr><td>DOI</td><td>Contract vehicles (IDVs)</td><td data-v='0.09238451935081149'>9.2%</td><td data-v='801'>801</td></tr><tr><td>DOI</td><td>Purchase orders</td><td data-v='0.19285006479152375'>19.3%</td><td data-v='13119'>13,119</td></tr><tr><td>HHS</td><td>Definitive contracts</td><td data-v='0.32391048292108365'>32.4%</td><td data-v='849'>849</td></tr><tr><td>HHS</td><td>Contract vehicles (IDVs)</td><td data-v='0.10242290748898679'>10.2%</td><td data-v='908'>908</td></tr><tr><td>HHS</td><td>Purchase orders</td><td data-v='0.4467134652201659'>44.7%</td><td data-v='7835'>7,835</td></tr><tr><td>USDA</td><td>Definitive contracts</td><td data-v='0.031349026708918065'>3.1%</td><td data-v='8836'>8,836</td></tr><tr><td>USDA</td><td>Contract vehicles (IDVs)</td><td data-v='0.008273620447661964'>0.8%</td><td data-v='13537'>13,537</td></tr><tr><td>USDA</td><td>Purchase orders</td><td data-v='0.20594785798506485'>20.6%</td><td data-v='7633'>7,633</td></tr><tr><td>VA</td><td>Definitive contracts</td><td data-v='0.18669920683343502'>18.7%</td><td data-v='3278'>3,278</td></tr><tr><td>VA</td><td>Contract vehicles (IDVs)</td><td data-v='0.30611656087709177'>30.6%</td><td data-v='3466'>3,466</td></tr><tr><td>VA</td><td>Purchase orders</td><td data-v='0.3878064420658018'>38.8%</td><td data-v='20273'>20,273</td></tr></tbody></table></div></div>
+
+<div class="card" style="margin-top:12px"><div class="tablewrap"><table class="sortable">
+  <thead><tr><th>Set-aside type</th><th>Single-offer share</th><th>Competed awards</th></tr></thead>
+  <tbody><tr><td>no set-aside</td><td data-v='0.4110209046420186'>41.1%</td><td data-v='35351'>35,351</td></tr><tr><td>other/blank</td><td data-v='0.3715254237288136'>37.2%</td><td data-v='1475'>1,475</td></tr><tr><td>WOSB/EDWOSB</td><td data-v='0.21810699588477367'>21.8%</td><td data-v='243'>243</td></tr><tr><td>8(a)</td><td data-v='0.20348837209302326'>20.3%</td><td data-v='172'>172</td></tr><tr><td>VOSB</td><td data-v='0.16393442622950818'>16.4%</td><td data-v='122'>122</td></tr><tr><td>other</td><td data-v='0.16131621187800962'>16.1%</td><td data-v='2492'>2,492</td></tr><tr><td>SDVOSB</td><td data-v='0.1481664525056835'>14.8%</td><td data-v='10117'>10,117</td></tr><tr><td>small business</td><td data-v='0.10797736976044756'>10.8%</td><td data-v='47547'>47,547</td></tr><tr><td>HUBZone</td><td data-v='0.07258064516129033'>7.3%</td><td data-v='124'>124</td></tr></tbody></table></div>
+  <p class="note">Awards open to everyone (no set-aside) drew a single offer far more often than small-business set-asides.</p>
+</div>
+
+<h2>3. Forecast scoreboard</h2>
+<div class="card"><div class="tablewrap"><table class="wrapcells">
+  <thead><tr><th>Forecast</th><th>What it predicts</th><th>Resolves</th><th>Result</th></tr></thead>
+  <tbody>
+  <tr><td>PIO-F1</td><td>Chance of a single offer for each of 150 open civilian solicitations</td><td>Jan 31, Feb 28, Mar 31, 2027</td><td><span class="pill">Pending</span></td></tr>
+  <tr><td>PIO-F2</td><td>FY2027 Q1 pile-up under $350K: 2.03 (80% range 1.40–2.66); under $250K: 1.23 (0.88–1.58)</td><td>Feb 28, 2027</td><td><span class="pill">Pending</span></td></tr>
+  </tbody></table></div>
+  <p class="note">Both forecasts were sealed on Oct 24, 2026, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>a8d1bb3319bf2fc1439550ee99c971742408a99a4772db426b26dec15f0657d2</code> · PIO-F2 <code>5a7009ba0f17e953bd1fea32d2b7fe9241a849b85222266506c5312e4790c43b</code>. PIO-F2 is <a href="https://github.com/e-burress/federal-contract-competition/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 will be posted unchanged when it is scored.</p>
+</div>
+
+<h2>How to read this</h2>
+<div class="card warn">
+  These are signals about markets and buying patterns, not about people. A single bid or a pile-up under a threshold can have ordinary explanations, and none of these numbers shows wrongdoing. Award data has no unit prices, so this does not measure whether single-bid contracts cost more. Offer counts are entered by contracting staff and can contain errors. FY2026 included a government shutdown and reporting changes.
+</div>
+
+<footer>Built by Ellie Burress with AI assistance (Claude Code). Data: <a href="https://www.usaspending.gov">USAspending.gov</a> and <a href="https://sam.gov">SAM.gov</a> (public). Code MIT; text and figures CC BY 4.0. Found an error? <a href="https://github.com/e-burress/federal-contract-competition/issues">Open an issue</a>. Page built Nov 04, 2026.</footer>
+</div>
+<script>
+document.querySelectorAll("table.sortable").forEach(function (t) {
+  t.querySelectorAll("th").forEach(function (th, i) {
+    var asc = false;
+    th.addEventListener("click", function () {
+      asc = !asc;
+      var body = t.tBodies[0], rs = Array.from(body.rows);
+      rs.sort(function (a, b) {
+        var x = a.cells[i], y = b.cells[i];
+        var xv = x.dataset.v !== undefined ? parseFloat(x.dataset.v) : x.textContent;
+        var yv = y.dataset.v !== undefined ? parseFloat(y.dataset.v) : y.textContent;
+        return (xv > yv ? 1 : xv < yv ? -1 : 0) * (asc ? 1 : -1);
+      });
+      rs.forEach(function (r) { body.appendChild(r); });
+    });
+  });
+});
+(function () {
+  var root = document.documentElement, key = "fcc-theme";
+  try { var s = localStorage.getItem(key); if (s) root.setAttribute("data-theme", s); } catch (e) {}
+  document.getElementById("theme").addEventListener("click", function () {
+    var dark = root.getAttribute("data-theme") === "dark" || (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    var next = dark ? "light" : "dark"; root.setAttribute("data-theme", next);
+    try { localStorage.setItem(key, next); } catch (e) {}
+  });
+})();
+</script>
+</body></html>

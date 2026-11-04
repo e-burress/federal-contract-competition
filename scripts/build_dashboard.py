@@ -1,0 +1,216 @@
+"""
+build_dashboard.py - build the public dashboard page (docs/index.html) from the files in results/ and forecasts/.
+
+Run from the repository root:
+    python -I scripts/build_dashboard.py
+It reads only local CSV/JSON files (no downloads), copies the charts into docs/figures/, and writes docs/index.html.
+GitHub Pages serves the docs/ folder as the public website.
+Scope: five civilian departments (DoD is not included).
+"""
+import csv
+import html
+import json
+import os
+import shutil
+from datetime import date
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RES = os.path.join(ROOT, "results")
+FC = os.path.join(ROOT, "forecasts")
+DOCS = os.path.join(ROOT, "docs")
+REPO = "https://github.com/e-burress/federal-contract-competition"
+NAMES = {"HHS": "Health and Human Services", "VA": "Veterans Affairs", "DHS": "Homeland Security",
+         "DOI": "Interior", "USDA": "Agriculture"}
+KINDS = {"PO": "Purchase orders", "DEF": "Definitive contracts", "IDV": "Contract vehicles (IDVs)"}
+
+
+def rows(name):
+    with open(os.path.join(RES, name), encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def pct(x, d=1):
+    return f"{100 * float(x):.{d}f}%"
+
+
+def esc(s):
+    return html.escape(str(s))
+
+
+# ---- data -----------------------------------------------------------------------------------
+agency = sorted(rows("atlas_by_agency.csv"), key=lambda r: -float(r["share"]))
+fy = rows("atlas_by_agency_fy.csv")
+kind = rows("atlas_by_kind.csv")
+setaside = sorted(rows("atlas_by_setaside.csv"), key=lambda r: -float(r["share"]))
+moved = {int(float(r["threshold"])): r for r in rows("threshold_sat_moved.csv")}
+model = {r["model"]: r for r in rows("model_out_of_time.csv")}
+total_k = sum(int(r["k_single"]) for r in agency)
+total_n = sum(int(r["n_eval"]) for r in agency)
+f2 = json.load(open(os.path.join(FC, "PIO-F2-threshold-fy2027q1-20261024.json"), encoding="utf-8"))
+hashes = {}
+for line in open(os.path.join(FC, "SHA256SUMS.txt"), encoding="utf-8"):
+    parts = line.split()
+    if len(parts) >= 2:
+        hashes[parts[1]] = parts[0]
+
+ours = next(v for k, v in model.items() if k.startswith("logistic"))
+base = next(v for k, v in model.items() if k.startswith("agency-wide"))
+
+# ---- tables ---------------------------------------------------------------------------------
+dept_rows = []
+for r in agency:
+    yrs = {x["fy"]: x for x in fy if x["agency"] == r["agency"]}
+    trend = " → ".join(pct(yrs[y]["share"]) for y in sorted(yrs))
+    dept_rows.append(
+        f"<tr><td>{esc(NAMES.get(r['agency'], r['agency']))} ({esc(r['agency'])})</td>"
+        f"<td data-v='{r['share']}'><b>{pct(r['share'])}</b></td>"
+        f"<td data-v='{r['n_eval']}'>{int(r['n_eval']):,}</td><td>{trend}</td></tr>")
+
+kind_rows = []
+for r in sorted(kind, key=lambda r: (r["agency"], r["award_kind"])):
+    kind_rows.append(
+        f"<tr><td>{esc(r['agency'])}</td><td>{esc(KINDS.get(r['award_kind'], r['award_kind']))}</td>"
+        f"<td data-v='{r['share']}'>{pct(r['share'])}</td><td data-v='{r['n_eval']}'>{int(r['n_eval']):,}</td></tr>")
+
+sa_rows = []
+for r in setaside:
+    sa_rows.append(
+        f"<tr><td>{esc(r['setaside_grp'])}</td><td data-v='{r['share']}'>{pct(r['share'])}</td>"
+        f"<td data-v='{r['n_eval']}'>{int(r['n_eval']):,}</td></tr>")
+
+q350 = next(q for q in f2["quantities"] if q["name"] == "bunching_ratio_350K")
+q250 = next(q for q in f2["quantities"] if q["name"] == "bunching_ratio_250K")
+f1_hash = next(v for k, v in hashes.items() if k.startswith("PIO-F1"))
+f2_hash = next(v for k, v in hashes.items() if k.startswith("PIO-F2"))
+
+# ---- copy charts ----------------------------------------------------------------------------
+os.makedirs(os.path.join(DOCS, "figures"), exist_ok=True)
+for png in ("threshold_shift.png", "bunching_by_quarter.png", "single_offer_by_agency.png"):
+    shutil.copy2(os.path.join(ROOT, "figures", png), os.path.join(DOCS, "figures", png))
+
+m250, m350 = moved[250000], moved[350000]
+page = f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Federal Contract Competition Dashboard</title>
+<meta name="description" content="How competitive is US federal contracting? Single-bid rates, a $250K-to-$350K threshold experiment, and sealed forecasts scored in public.">
+<style>
+:root {{ --bg:#f6f7f9; --card:#fff; --ink:#1b2430; --muted:#5a6573; --line:#e1e5ea; --accent:#1f5fa8; --soft:#e7eef8; --warn:#fbf0dc; }}
+@media (prefers-color-scheme: dark) {{ :root:not([data-theme="light"]) {{ --bg:#11161c; --card:#1a2129; --ink:#e7ecf2; --muted:#a3aebb; --line:#2c3540; --accent:#86b5ee; --soft:#1d2b3c; --warn:#33291a; }} }}
+:root[data-theme="dark"] {{ --bg:#11161c; --card:#1a2129; --ink:#e7ecf2; --muted:#a3aebb; --line:#2c3540; --accent:#86b5ee; --soft:#1d2b3c; --warn:#33291a; }}
+* {{ box-sizing:border-box; }}
+body {{ margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }}
+.wrap {{ max-width:1040px; margin:0 auto; padding:28px 16px 56px; }}
+h1 {{ font-size:1.8rem; line-height:1.2; margin:0 0 6px; }} h2 {{ font-size:1.25rem; margin:36px 0 10px; }}
+.sub {{ color:var(--muted); margin:0 0 4px; }}
+.kpis {{ display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); margin-top:20px; }}
+.card {{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }}
+.kpi b {{ display:block; font-size:1.9rem; color:var(--accent); line-height:1.1; }} .kpi span {{ color:var(--muted); font-size:.92rem; }}
+img {{ max-width:100%; height:auto; display:block; background:#fff; border-radius:10px; }}
+.note {{ color:var(--muted); font-size:.92rem; margin:8px 0 0; }}
+.warn {{ background:var(--warn); border-color:transparent; }}
+.tablewrap {{ overflow-x:auto; }}
+table {{ width:100%; border-collapse:collapse; font-size:.94rem; }}
+th, td {{ text-align:left; padding:8px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }}
+th {{ color:var(--muted); font-weight:600; cursor:pointer; user-select:none; }} th:hover {{ color:var(--accent); }}
+table.wrapcells td {{ white-space:normal; }} table.wrapcells td:last-child {{ white-space:nowrap; }}
+code {{ font-size:.8rem; word-break:break-all; white-space:normal; }}
+.pill {{ display:inline-block; padding:2px 8px; border-radius:999px; background:var(--soft); color:var(--accent); font-size:.8rem; font-weight:600; }}
+a {{ color:var(--accent); }} .theme {{ float:right; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:4px 10px; cursor:pointer; font:inherit; font-size:.85rem; }}
+footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
+</style>
+</head>
+<body><div class="wrap">
+<button class="theme" id="theme" type="button">Theme</button>
+<h1>Federal Contract Competition: Findings &amp; Forecasts</h1>
+<p class="sub">How often do competed federal contracts get only one bid, and do purchases bunch under dollar limits? Five civilian departments (VA, HHS, DHS, Interior, USDA), fiscal years 2024–2026. Department of Defense not included.</p>
+<p class="sub">By <a href="https://github.com/e-burress">Ellie Burress</a> · data through Sep 30, 2026 · <a href="{REPO}">code and data</a> · <a href="methodology">methodology</a></p>
+
+<div class="kpis">
+  <div class="card kpi"><b>{pct(total_k / total_n)}</b><span>of {total_n:,} competed awards got only one offer</span></div>
+  <div class="card kpi"><b>{float(m350['ratio_pre']):.2f} → {float(m350['ratio_post']):.2f}</b><span>pile-up just under the new $350K line, before vs. after it took effect (1.0 = none)</span></div>
+  <div class="card kpi"><b>{float(ours['auc']):.2f}</b><span>accuracy (AUC) of the single-bid forecast on unseen data, vs. {float(base['auc']):.2f} for a simple baseline</span></div>
+  <div class="card kpi"><b>150</b><span>open solicitations with sealed single-bid forecasts, scored by Mar 31, 2027</span></div>
+</div>
+
+<h2>1. When the threshold moved, the pile-up moved</h2>
+<div class="card">
+  <img src="figures/threshold_shift.png" alt="Award counts near $250K and $350K before and after the October 2025 threshold change">
+  <p class="note">On Oct 1, 2025, the simplified-acquisition threshold rose from $250K to $350K. The pile-up just under $250K fell from {float(m250['ratio_pre']):.2f} to {float(m250['ratio_post']):.2f}, and a new one formed under $350K ({float(m350['ratio_pre']):.2f} → {float(m350['ratio_post']):.2f}). Comparison lines at $200K and $450K, where nothing changed, did not move.</p>
+</div>
+<div class="card" style="margin-top:12px">
+  <img src="figures/bunching_by_quarter.png" alt="Bunching ratio by fiscal quarter for $250K and $350K">
+  <p class="note">Bunching ratio by fiscal quarter, with 95% intervals. Civilian purchase orders and definitive contracts.</p>
+</div>
+
+<h2>2. About one in four competed awards got a single offer</h2>
+<div class="card">
+  <img src="figures/single_offer_by_agency.png" alt="Single-offer share by department and fiscal year">
+</div>
+<div class="card" style="margin-top:12px"><div class="tablewrap"><table class="sortable">
+  <thead><tr><th>Department</th><th>Single-offer share</th><th>Competed awards</th><th>FY2024 → FY2025 → FY2026</th></tr></thead>
+  <tbody>{''.join(dept_rows)}</tbody></table></div>
+  <p class="note">Tap a column heading to sort. Competed awards with a usable offer count (purchase orders, definitive contracts and contract vehicles).</p>
+</div>
+
+<div class="card" style="margin-top:12px"><div class="tablewrap"><table class="sortable">
+  <thead><tr><th>Department</th><th>Award type</th><th>Single-offer share</th><th>Competed awards</th></tr></thead>
+  <tbody>{''.join(kind_rows)}</tbody></table></div></div>
+
+<div class="card" style="margin-top:12px"><div class="tablewrap"><table class="sortable">
+  <thead><tr><th>Set-aside type</th><th>Single-offer share</th><th>Competed awards</th></tr></thead>
+  <tbody>{''.join(sa_rows)}</tbody></table></div>
+  <p class="note">Awards open to everyone (no set-aside) drew a single offer far more often than small-business set-asides.</p>
+</div>
+
+<h2>3. Forecast scoreboard</h2>
+<div class="card"><div class="tablewrap"><table class="wrapcells">
+  <thead><tr><th>Forecast</th><th>What it predicts</th><th>Resolves</th><th>Result</th></tr></thead>
+  <tbody>
+  <tr><td>PIO-F1</td><td>Chance of a single offer for each of 150 open civilian solicitations</td><td>Jan 31, Feb 28, Mar 31, 2027</td><td><span class="pill">Pending</span></td></tr>
+  <tr><td>PIO-F2</td><td>FY2027 Q1 pile-up under $350K: {q350['forecast']:.2f} (80% range {q350['interval80'][0]:.2f}–{q350['interval80'][1]:.2f}); under $250K: {q250['forecast']:.2f} ({q250['interval80'][0]:.2f}–{q250['interval80'][1]:.2f})</td><td>Feb 28, 2027</td><td><span class="pill">Pending</span></td></tr>
+  </tbody></table></div>
+  <p class="note">Both forecasts were sealed on Oct 24, 2026, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>{f1_hash}</code> · PIO-F2 <code>{f2_hash}</code>. PIO-F2 is <a href="{REPO}/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 will be posted unchanged when it is scored.</p>
+</div>
+
+<h2>How to read this</h2>
+<div class="card warn">
+  These are signals about markets and buying patterns, not about people. A single bid or a pile-up under a threshold can have ordinary explanations, and none of these numbers shows wrongdoing. Award data has no unit prices, so this does not measure whether single-bid contracts cost more. Offer counts are entered by contracting staff and can contain errors. FY2026 included a government shutdown and reporting changes.
+</div>
+
+<footer>Built by Ellie Burress with AI assistance (Claude Code). Data: <a href="https://www.usaspending.gov">USAspending.gov</a> and <a href="https://sam.gov">SAM.gov</a> (public). Code MIT; text and figures CC BY 4.0. Found an error? <a href="{REPO}/issues">Open an issue</a>. Page built {date.today():%b %d, %Y}.</footer>
+</div>
+<script>
+document.querySelectorAll("table.sortable").forEach(function (t) {{
+  t.querySelectorAll("th").forEach(function (th, i) {{
+    var asc = false;
+    th.addEventListener("click", function () {{
+      asc = !asc;
+      var body = t.tBodies[0], rs = Array.from(body.rows);
+      rs.sort(function (a, b) {{
+        var x = a.cells[i], y = b.cells[i];
+        var xv = x.dataset.v !== undefined ? parseFloat(x.dataset.v) : x.textContent;
+        var yv = y.dataset.v !== undefined ? parseFloat(y.dataset.v) : y.textContent;
+        return (xv > yv ? 1 : xv < yv ? -1 : 0) * (asc ? 1 : -1);
+      }});
+      rs.forEach(function (r) {{ body.appendChild(r); }});
+    }});
+  }});
+}});
+(function () {{
+  var root = document.documentElement, key = "fcc-theme";
+  try {{ var s = localStorage.getItem(key); if (s) root.setAttribute("data-theme", s); }} catch (e) {{}}
+  document.getElementById("theme").addEventListener("click", function () {{
+    var dark = root.getAttribute("data-theme") === "dark" || (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    var next = dark ? "light" : "dark"; root.setAttribute("data-theme", next);
+    try {{ localStorage.setItem(key, next); }} catch (e) {{}}
+  }});
+}})();
+</script>
+</body></html>
+"""
+with open(os.path.join(DOCS, "index.html"), "w", encoding="utf-8") as f:
+    f.write(page)
+print("wrote docs/index.html")
