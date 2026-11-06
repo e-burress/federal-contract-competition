@@ -1,0 +1,60 @@
+{
+ "forecast_id": "PIO-F2-threshold-fy2027q1-20261024",
+ "as_of": "2026-11-05",
+ "data_from": "2026-10-01",
+ "data_to": "2026-11-04",
+ "period": {
+  "start": "2026-10-01",
+  "end": "2026-12-31"
+ },
+ "provisional": true,
+ "n_base_actions": 21136,
+ "n_values_used": 21136,
+ "quantities": [
+  {
+   "name": "bunching_ratio_350K",
+   "threshold": 350000,
+   "so_far": 1.7888446087279937,
+   "so_far_95ci": [
+    0.7699374739030977,
+    5.361676130116532
+   ],
+   "forecast": 2.027,
+   "interval80": [
+    1.395,
+    2.659
+   ],
+   "inside_interval80_so_far": true
+  },
+  {
+   "name": "bunching_ratio_250K",
+   "threshold": 250000,
+   "so_far": 2.012056255393949,
+   "so_far_95ci": [
+    1.2760830727722765,
+    3.1248527841046148
+   ],
+   "forecast": 1.229,
+   "interval80": [
+    0.881,
+    1.577
+   ],
+   "inside_interval80_so_far": false
+  },
+  {
+   "name": "po_share_10_15K",
+   "threshold": 15000,
+   "so_far": 0.33695652173913043,
+   "so_far_95ci": [
+    0.3033967391304348,
+    0.37776268115942024
+   ],
+   "forecast": 0.3607,
+   "interval80": [
+    0.3204,
+    0.401
+   ],
+   "inside_interval80_so_far": true
+  }
+ ]
+}

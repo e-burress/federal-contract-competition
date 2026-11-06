@@ -80,6 +80,46 @@ for r in setaside:
 
 q350 = next(q for q in f2["quantities"] if q["name"] == "bunching_ratio_350K")
 q250 = next(q for q in f2["quantities"] if q["name"] == "bunching_ratio_250K")
+trk_path = os.path.join(RES, f"tracking_{f2['id']}.json")
+trk = json.load(open(trk_path, encoding="utf-8")) if os.path.exists(trk_path) else None
+off_path = os.path.join(RES, f"threshold_resolution_{f2['id']}.json")
+off = json.load(open(off_path, encoding="utf-8")) if os.path.exists(off_path) else None
+LABELS = {"bunching_ratio_350K": "Pile-up under $350K", "bunching_ratio_250K": "Pile-up under $250K",
+          "po_share_10_15K": "Share of $10K–$20K orders under $15K"}
+
+
+def fmt(name, x):
+    return "—" if x is None else (pct(x) if name.startswith("po_share") else f"{x:.2f}")
+
+
+def nice(d):
+    return date.fromisoformat(d).strftime("%b %d, %Y").replace(" 0", " ")
+
+
+if off:
+    hits = sum(r["inside_interval80"] for r in off["results"])
+    f2_result = f"<span class='pill'>Scored: {hits} of {len(off['results'])} inside the 80% range</span>"
+else:
+    f2_result = "<span class='pill'>Pending</span>" + (" <a href='#tracking'>see progress</a>" if trk else "")
+
+track_html = ""
+if trk:
+    trs = []
+    for q in trk["quantities"]:
+        lo, hi = q["interval80"]
+        ci = q["so_far_95ci"]
+        state = "—" if q["inside_interval80_so_far"] is None else ("inside" if q["inside_interval80_so_far"] else "outside")
+        trs.append(f"<tr><td>{esc(LABELS.get(q['name'], q['name']))}</td><td>{fmt(q['name'], q['forecast'])} "
+                   f"({fmt(q['name'], lo)}–{fmt(q['name'], hi)})</td><td><b>{fmt(q['name'], q['so_far'])}</b></td>"
+                   f"<td>{'—' if not ci else fmt(q['name'], ci[0]) + '–' + fmt(q['name'], ci[1])}</td><td>{state}</td></tr>")
+    track_html = f"""
+<h2 id="tracking">4. Forecast progress (updated weekly)</h2>
+<div class="card"><div class="tablewrap"><table>
+  <thead><tr><th>PIO-F2 quantity</th><th>Forecast (80% range)</th><th>So far</th><th>95% interval so far</th><th>So far vs. range</th></tr></thead>
+  <tbody>{''.join(trs)}</tbody></table></div>
+  <p class="note">Provisional reading from {trk['n_base_actions']:,} civilian awards dated {nice(trk['data_from'])} to {nice(trk['data_to'])} (checked {nice(trk['as_of'])}). This is not the score: the quarter runs through Dec 31, agencies keep reporting for weeks after, and early readings swing widely, as the wide intervals show. The official score uses data pulled on or after {nice(f2['resolution_date'])}.</p>
+</div>"""
+
 f1_hash = next(v for k, v in hashes.items() if k.startswith("PIO-F1"))
 f2_hash = next(v for k, v in hashes.items() if k.startswith("PIO-F2"))
 
@@ -170,10 +210,11 @@ footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
   <thead><tr><th>Forecast</th><th>What it predicts</th><th>Resolves</th><th>Result</th></tr></thead>
   <tbody>
   <tr><td>PIO-F1</td><td>Chance of a single offer for each of 150 open civilian solicitations</td><td>Jan 31, Feb 28, Mar 31, 2027</td><td><span class="pill">Pending</span></td></tr>
-  <tr><td>PIO-F2</td><td>FY2027 Q1 pile-up under $350K: {q350['forecast']:.2f} (80% range {q350['interval80'][0]:.2f}–{q350['interval80'][1]:.2f}); under $250K: {q250['forecast']:.2f} ({q250['interval80'][0]:.2f}–{q250['interval80'][1]:.2f})</td><td>Feb 28, 2027</td><td><span class="pill">Pending</span></td></tr>
+  <tr><td>PIO-F2</td><td>FY2027 Q1 pile-up under $350K: {q350['forecast']:.2f} (80% range {q350['interval80'][0]:.2f}–{q350['interval80'][1]:.2f}); under $250K: {q250['forecast']:.2f} ({q250['interval80'][0]:.2f}–{q250['interval80'][1]:.2f})</td><td>Feb 28, 2027</td><td>{f2_result}</td></tr>
   </tbody></table></div>
   <p class="note">Both forecasts were sealed on Oct 24, 2026, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>{f1_hash}</code> · PIO-F2 <code>{f2_hash}</code>. PIO-F2 is <a href="{REPO}/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 will be posted unchanged when it is scored.</p>
 </div>
+{track_html}
 
 <h2>How to read this</h2>
 <div class="card warn">

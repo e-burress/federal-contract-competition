@@ -1,0 +1,53 @@
+# Every Monday: check how the sealed threshold forecast (PIO-F2) is tracking, rebuild the dashboard, and publish it.
+# After the resolution date (Feb 28, 2027) the same run produces the official score once.
+# The sealed forecast files are never changed. Run it by hand from the Actions tab ("Run workflow").
+name: Weekly dashboard refresh
+
+on:
+  schedule:
+    - cron: "0 13 * * 1"     # Mondays 13:00 UTC (8 or 9 AM Eastern)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PIO_CONTACT: https://github.com/e-burress/federal-contract-competition
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Check the threshold forecast (and score it after the resolution date)
+        run: python -I scripts/13_track_threshold.py
+
+      - name: Rebuild the dashboard
+        run: python -I scripts/build_dashboard.py
+
+      - name: Check the sealed forecast is unchanged
+        run: |
+          cd forecasts
+          grep PIO-F2 SHA256SUMS.txt | awk '{print $1"  "$2}' | sha256sum -c -
+
+      - name: Publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results docs
+          if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
+          git commit -m "Weekly refresh: forecast progress as of $(date -u +%Y-%m-%d)"
+          git push
