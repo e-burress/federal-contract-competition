@@ -1,0 +1,44 @@
+# Settings for the whole project. The scripts read this file, so change values here, not in the code.
+# (Read with Python's built-in tomllib; nothing to install.)
+
+[project]
+name = "Federal Contract Competition: Findings & Forecasts"
+repository = "e-burress/federal-contract-competition"   # GitHub owner/name; in a fork, GITHUB_REPOSITORY overrides it
+author = "Ellie Burress"
+
+[contact]
+# Sent in the User-Agent of every request, so data providers know who is downloading (polite use).
+# The environment variable PIO_CONTACT overrides it. Use a web address, not a personal e-mail.
+default = "https://github.com/e-burress/federal-contract-competition"
+
+[analysis]
+fiscal_years = [2024, 2025, 2026]        # FY2024-FY2026 = Oct 1, 2023 - Sep 30, 2026
+window_end = "2026-09-30"
+# the five departments of the in-depth analysis and the forecasts (USAspending top-tier names)
+five_departments = [
+    "Department of Veterans Affairs",
+    "Department of Health and Human Services",
+    "Department of Homeland Security",
+    "Department of the Interior",
+    "Department of Agriculture",
+]
+
+[data]
+# Public GitHub release with the processed tables behind the published results (python run.py quick downloads it).
+snapshot = "data-2026-11-09"
+snapshot_files = ["base_awards_five.parquet", "base_awards_civilian.parquet", "threshold_base_actions.parquet"]
+
+# Sealed forecasts. They are never re-created: the files and their SHA-256 fingerprints are in forecasts/.
+[forecasts.F1]
+id = "PIO-F1-open-solicitations-single-offer-20261024"
+sealed = "2026-10-24"
+public = false                            # posted unchanged when it is scored
+n_solicitations = 150
+deadlines = ["2026-11-01", "2026-12-15"]
+checks = ["2027-01-31", "2027-02-28", "2027-03-31"]
+
+[forecasts.F2]
+id = "PIO-F2-threshold-fy2027q1-20261024"
+sealed = "2026-10-24"
+public = true
+file = "forecasts/PIO-F2-threshold-fy2027q1-20261024.json"

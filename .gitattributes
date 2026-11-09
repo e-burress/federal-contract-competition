@@ -2,3 +2,8 @@
 # Never convert their line endings on any operating system.
 forecasts/*.json -text
 forecasts/SHA256SUMS.txt -text
+
+# Launchers: shell scripts need Unix line endings and the Windows batch file needs Windows line endings, on every checkout.
+*.sh text eol=lf
+*.command text eol=lf
+*.bat text eol=crlf

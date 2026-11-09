@@ -20,7 +20,7 @@ Method (fixed before looking at the post-period results)
   * Uncertainty: 300 bootstrap resamples of the awards.
   * Placebo thresholds with no policy ($200,000 and $450,000) show how big the ratio gets by chance / round numbers.
 
-Input : data/usaspending_universe/*.zip (from 01b_download_threshold_universe.py)
+Input : bunching_lib.load_base_actions() (built from 01c_download_civilian.py, or the published data snapshot)
 Output: results/threshold_*.csv and results/threshold_summary.txt
 """
 import os
@@ -41,7 +41,7 @@ def say(*a):
     lines.append(s)
 
 
-from bunching_lib import SPEC, boot, bunch, count_bins, load_universe, rng  # noqa: E402
+from bunching_lib import SPEC, boot, bunch, count_bins, load_base_actions, rng  # noqa: E402
 
 
 
@@ -67,9 +67,9 @@ def simple_ratio(vals, T, band):
 
 
 # --------------------------------------------------------------------------------------------------- main
-tx, base = load_universe()
+base = load_base_actions()
 say("=" * 100)
-say(f"UNIVERSE: civilian agencies, B+D transactions {len(tx):,}; base actions {len(base):,}; "
+say(f"UNIVERSE: civilian agencies, purchase orders and definitive contracts; base actions {len(base):,}; "
     f"{base.awarding_agency_name.nunique()} agencies; action dates {base.action_date.min().date()} .. {base.action_date.max().date()}")
 say(base.groupby(["fy", "kind"]).size().unstack().to_string())
 say("\nbase actions with a usable value: " + f"{base.base_and_all_options_value.notna().mean():.3f}" + " | value > 0: " + f"{(base.base_and_all_options_value > 0).mean():.3f}")

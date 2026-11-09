@@ -1,0 +1,59 @@
+{
+ "k_single": 22246,
+ "n_eval": 97672,
+ "share": 0.22776230649520846,
+ "ci": [
+  0.2251428994780476,
+  0.23040312699339838
+ ],
+ "dollar_weighted_share_po_def": 0.1567890040601976,
+ "count_share_po_def": 0.2690041521123048,
+ "n_base": 182905,
+ "n_competed": 98432,
+ "offers_999_among_competed": 760,
+ "awards_20m_plus_n": 339,
+ "awards_20m_plus_share": 0.17994100294985252,
+ "full_and_open": [
+  {
+   "agency": "DHS",
+   "k_single": 307,
+   "n_eval": 1596
+  },
+  {
+   "agency": "DOI",
+   "k_single": 198,
+   "n_eval": 1945
+  },
+  {
+   "agency": "HHS",
+   "k_single": 358,
+   "n_eval": 1799
+  },
+  {
+   "agency": "USDA",
+   "k_single": 281,
+   "n_eval": 9246
+  },
+  {
+   "agency": "VA",
+   "k_single": 1970,
+   "n_eval": 6118
+  }
+ ],
+ "offices": {
+  "n_offices": 370,
+  "n_offices_100_plus": 180,
+  "persistence_corr": 0.7505577940189636,
+  "persistence_n": 160
+ },
+ "by_solicitation_id": {
+  "False": {
+   "k_single": 11948,
+   "n_eval": 26521
+  },
+  "True": {
+   "k_single": 10298,
+   "n_eval": 71151
+  }
+ }
+}

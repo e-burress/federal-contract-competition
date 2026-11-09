@@ -1,0 +1,19 @@
+[project]
+name = "federal-contract-competition"
+version = "1.1.0"
+description = "An open, reproducible look at how competitive US federal contracting is, with pre-registered forecasts scored in public."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = [
+    "pandas==3.0.6",
+    "numpy==2.5.4",
+    "pyarrow==26.0.0",
+    "scikit-learn==1.9.1",
+    "statsmodels==0.15.0",
+    "matplotlib==3.11.2",
+]
+
+# No [build-system] on purpose: uv treats this as a virtual project (installs the
+# dependencies only), so `uv run run.py quick` works from the repo root.

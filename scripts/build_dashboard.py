@@ -13,13 +13,19 @@ import json
 import os
 import re
 import shutil
+import tomllib
 from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, "results")
 FC = os.path.join(ROOT, "forecasts")
 DOCS = os.path.join(ROOT, "docs")
-REPO = "https://github.com/e-burress/federal-contract-competition"
+with open(os.path.join(ROOT, "config.toml"), "rb") as _f:
+    CFG = tomllib.load(_f)
+# in a fork, GITHUB_REPOSITORY points the links at the fork
+REPO = "https://github.com/" + (os.environ.get("GITHUB_REPOSITORY") or CFG["project"]["repository"])
+AUTHOR, AUTHOR_URL = CFG["project"]["author"], "https://github.com/" + CFG["project"]["repository"].split("/")[0]
+F1, F2 = CFG["forecasts"]["F1"], CFG["forecasts"]["F2"]
 NAMES = {"HHS": "Health and Human Services", "VA": "Veterans Affairs", "DHS": "Homeland Security",
          "DOI": "Interior", "USDA": "Agriculture"}
 KINDS = {"PO": "Purchase orders", "DEF": "Definitive contracts", "IDV": "Contract vehicles (IDVs)"}
@@ -47,7 +53,7 @@ moved = {int(float(r["threshold"])): r for r in rows("threshold_sat_moved.csv")}
 model = {r["model"]: r for r in rows("model_out_of_time.csv")}
 total_k = sum(int(r["k_single"]) for r in agency)
 total_n = sum(int(r["n_eval"]) for r in agency)
-f2 = json.load(open(os.path.join(FC, "PIO-F2-threshold-fy2027q1-20261024.json"), encoding="utf-8"))
+f2 = json.load(open(os.path.join(ROOT, F2["file"]), encoding="utf-8"))
 hashes = {}
 for line in open(os.path.join(FC, "SHA256SUMS.txt"), encoding="utf-8"):
     parts = line.split()
@@ -77,7 +83,6 @@ if os.path.exists(os.path.join(RES, "atlas_civilian_by_agency.csv")):
     allc, exg = civ_tot["all civilian agencies"], civ_tot["all civilian agencies except GSA"]
     gsa, oth = civ_tot["GSA only"], civ_tot["other civilian agencies except GSA"]
     smallc = civ_tot[f"agencies with fewer than {CIV_MIN} competed awards"]
-    max_change = max(abs(float(r["share_change_points"])) for r in rows("atlas_civilian_five_check.csv"))
     shown = sorted((r for r in civ if int(r["n_eval"]) >= CIV_MIN), key=lambda r: -float(r["share"]))
     top = max(float(r["share"]) for r in shown)
     civ_rows = []
@@ -98,7 +103,7 @@ if os.path.exists(os.path.join(RES, "atlas_civilian_by_agency.csv")):
 <div class="tablewrap"><table class="sortable civ">
   <thead><tr><th>Agency</th><th>Single-offer share</th><th>95% interval</th><th>Competed awards</th><th>FY2024 → FY2025 → FY2026</th></tr></thead>
   <tbody>{''.join(civ_rows)}</tbody></table></div>
-  <p class="note">Tap a column heading to sort. Agencies with at least {CIV_MIN} competed awards with a usable offer count; the other {smallc['n_agencies']} smaller agencies together: {pct(smallc['share'])} of {int(smallc['n_eval']):,} awards. Same definitions as section 2. GSA's drop comes almost entirely from its supply orders, which recorded one offer on 55% of orders in FY2024 but 17% in FY2026; that may reflect a change in how those automated orders are recorded rather than more competition. Downloaded {nice(allc['snapshot'])}: agencies kept reporting late awards after the first analysis, so in this newer download the five departments' shares differ from section 2 by at most {max_change:.1f} percentage points.</p>
+  <p class="note">Tap a column heading to sort. Agencies with at least {CIV_MIN} competed awards with a usable offer count; the other {smallc['n_agencies']} smaller agencies together: {pct(smallc['share'])} of {int(smallc['n_eval']):,} awards. Same definitions as section 2. GSA's drop comes almost entirely from its supply orders, which recorded one offer on 55% of orders in FY2024 but 17% in FY2026; that may reflect a change in how those automated orders are recorded rather than more competition. Data downloaded {nice(allc['snapshot'])}, the same snapshot as every other result on this page.</p>
 </div>"""
 
 # ---- tables ---------------------------------------------------------------------------------
@@ -261,14 +266,14 @@ footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
 <button class="theme" id="theme" type="button">Theme</button>
 <h1>Federal Contract Competition: Findings &amp; Forecasts</h1>
 <p class="sub">How often do competed federal contracts get only one bid, and do purchases bunch under dollar limits? Civilian agencies, fiscal years 2024–2026; the Department of Defense is not included. The threshold test and the agency table cover every civilian agency. The in-depth single-bid analysis and the forecasts cover five departments: VA, HHS, DHS, Interior and USDA.</p>
-<p class="sub">By <a href="https://github.com/e-burress">Ellie Burress</a> · data through Sep 30, 2026 · <a href="{REPO}">code and data</a> · <a href="methodology">methodology</a></p>
+<p class="sub">By <a href="{AUTHOR_URL}">{AUTHOR}</a> · data through {nice(CFG["analysis"]["window_end"])} · <a href="{REPO}">code and data</a> · <a href="methodology">methodology</a></p>
 
 <div class="kpis">
   <div class="card kpi"><b>{pct(total_k / total_n)}</b><span>of {total_n:,} competed awards in five departments got only one offer</span></div>
   {civ_kpi}
   <div class="card kpi"><b>{float(m350['ratio_pre']):.2f} → {float(m350['ratio_post']):.2f}</b><span>pile-up just under the new $350K line, before vs. after it took effect (1.0 = none)</span></div>
   <div class="card kpi"><b>{float(ours['auc']):.2f}</b><span>accuracy (AUC) of the single-bid forecast on unseen data, vs. {float(base['auc']):.2f} for a simple baseline</span></div>
-  <div class="card kpi"><b>150</b><span>open solicitations with sealed single-bid forecasts, scored by Mar 31, 2027</span></div>
+  <div class="card kpi"><b>{F1["n_solicitations"]}</b><span>open solicitations with sealed single-bid forecasts, scored by {nice(F1["checks"][-1])}</span></div>
 </div>
 
 {live_html}
@@ -308,10 +313,10 @@ footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
 <div class="card"><div class="tablewrap"><table class="wrapcells">
   <thead><tr><th>Forecast</th><th>What it predicts</th><th>Resolves</th><th>Result</th></tr></thead>
   <tbody>
-  <tr><td>PIO-F1</td><td>Chance of a single offer for each of 150 open civilian solicitations</td><td>Jan 31, Feb 28, Mar 31, 2027</td><td><span class="pill">Pending</span></td></tr>
+  <tr><td>PIO-F1</td><td>Chance of a single offer for each of {F1["n_solicitations"]} open civilian solicitations</td><td>{", ".join(nice(d) for d in F1["checks"])}</td><td><span class="pill">Pending</span></td></tr>
   <tr><td>PIO-F2</td><td>FY2027 Q1 pile-up under $350K: {q350['forecast']:.2f} (80% range {q350['interval80'][0]:.2f}–{q350['interval80'][1]:.2f}); under $250K: {q250['forecast']:.2f} ({q250['interval80'][0]:.2f}–{q250['interval80'][1]:.2f})</td><td>Feb 28, 2027</td><td>{f2_result}</td></tr>
   </tbody></table></div>
-  <p class="note">Both forecasts were sealed on Oct 24, 2026, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>{f1_hash}</code> · PIO-F2 <code>{f2_hash}</code>. PIO-F2 is <a href="{REPO}/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 will be posted unchanged when it is scored.</p>
+  <p class="note">Both forecasts were sealed on {nice(F1["sealed"])}, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>{f1_hash}</code> · PIO-F2 <code>{f2_hash}</code>. PIO-F2 is <a href="{REPO}/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 will be posted unchanged when it is scored.</p>
 </div>
 {track_html}
 
@@ -320,7 +325,7 @@ footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
   These are signals about markets and buying patterns, not about people. A single bid or a pile-up under a threshold can have ordinary explanations, and none of these numbers shows wrongdoing. Award data has no unit prices, so this does not measure whether single-bid contracts cost more. Offer counts are entered by contracting staff and can contain errors. FY2026 included a government shutdown and reporting changes.
 </div>
 
-<footer>Built by Ellie Burress with AI assistance (Claude Code). Data: <a href="https://www.usaspending.gov">USAspending.gov</a> and <a href="https://sam.gov">SAM.gov</a> (public). Code MIT; text and figures CC BY 4.0. Found an error? <a href="{REPO}/issues">Open an issue</a>. Page built {date.today():%b %d, %Y}.</footer>
+<footer>Built by {AUTHOR} with AI assistance (Claude Code). Data: <a href="https://www.usaspending.gov">USAspending.gov</a> and <a href="https://sam.gov">SAM.gov</a> (public). Code MIT; text and figures CC BY 4.0. Found an error? <a href="{REPO}/issues">Open an issue</a>. Page built {date.today():%b %d, %Y}.</footer>
 </div>
 <script>
 document.querySelectorAll("table.sortable").forEach(function (t) {{

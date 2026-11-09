@@ -13,6 +13,7 @@ import json
 import os
 import re
 import time
+import tomllib
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -26,24 +27,25 @@ FORECASTS = os.path.join(PROJECT, "forecasts")
 for _p in (DATA, RESULTS, FORECASTS):
     os.makedirs(_p, exist_ok=True)
 
+# ---- settings (config.toml in the repository root) ----------------------------------------------
+with open(os.path.join(PROJECT, "config.toml"), "rb") as _f:
+    CONFIG = tomllib.load(_f)
+# in a GitHub fork, GITHUB_REPOSITORY names the fork, so its robot identifies itself correctly
+REPOSITORY = os.environ.get("GITHUB_REPOSITORY") or CONFIG["project"]["repository"]
+FISCAL_YEARS = CONFIG["analysis"]["fiscal_years"]
+WINDOW_END = CONFIG["analysis"]["window_end"]
+
 # ---- how we introduce ourselves to servers ------------------------------------------------------
 # A descriptive User-Agent is polite and some government sites reject the default Python one.
-# Put your own contact address in the environment before running the download scripts, e.g.
-#   Git Bash:    export PIO_CONTACT="you@example.com"
-#   PowerShell:  $env:PIO_CONTACT = "you@example.com"
-CONTACT = os.environ.get("PIO_CONTACT", "contact-not-set")
+# It says who is downloading: the PIO_CONTACT environment variable if set, otherwise the repository's web address
+# (in a fork: the fork's address). Use a web address, not a personal e-mail.
+CONTACT = os.environ.get("PIO_CONTACT") or (
+    f"https://github.com/{os.environ['GITHUB_REPOSITORY']}" if os.environ.get("GITHUB_REPOSITORY") else CONFIG["contact"]["default"])
 UA_USASPENDING = f"federal-contract-competition/1.0 (research; {CONTACT})"
 UA_SAM = f"federal-contract-competition/1.0 (research; {CONTACT})"
 
-# ---- the agencies in the slice (USAspending top-tier names) ------------------------------------
-# Filled in after looking at where open SAM solicitations are (see docs/methodology.md).
-AGENCIES = [
-    "Department of Veterans Affairs",
-    "Department of Health and Human Services",
-    "Department of Homeland Security",
-    "Department of the Interior",
-    "Department of Agriculture",
-]
+# ---- the five departments of the in-depth analysis (config.toml) ------------------------------
+AGENCIES = CONFIG["analysis"]["five_departments"]
 
 
 def http_json(url, method="GET", body=None, headers=None, timeout=60, retries=4, pause=2.0, ua=UA_USASPENDING):

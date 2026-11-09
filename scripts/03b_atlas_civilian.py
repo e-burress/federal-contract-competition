@@ -24,7 +24,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from atlas_lib import share_table  # noqa: E402
-from common import DATA, RESULTS  # noqa: E402
+from common import DATA, FISCAL_YEARS, RESULTS  # noqa: E402
 
 # the five-department short names live in 02_build_awards.py (file name starts with a digit, so import it by path)
 _spec = importlib.util.spec_from_file_location("build02", os.path.join(os.path.dirname(os.path.abspath(__file__)), "02_build_awards.py"))
@@ -35,12 +35,19 @@ MIN_N = 200                                           # agencies with fewer comp
 GSA = "General Services Administration"               # mostly very small supply orders: also shown without it
 
 SRC = os.path.join(DATA, "usaspending_civilian")
+PROCESSED = os.path.join(DATA, "processed")
 zips = glob.glob(os.path.join(SRC, "*.zip"))
-snapshot = datetime.fromtimestamp(max(os.path.getmtime(p) for p in zips), timezone.utc).strftime("%Y-%m-%d")
-abbr = {a["name"]: a.get("abbreviation") or "" for a in json.load(open(os.path.join(SRC, "agencies.json"), encoding="utf-8"))}
+if zips:                                   # built from your own download: its date
+    snapshot = datetime.fromtimestamp(max(os.path.getmtime(p) for p in zips), timezone.utc).strftime("%Y-%m-%d")
+else:                                      # built from the published data snapshot (run.py quick): the date it records
+    snapshot = json.load(open(os.path.join(PROCESSED, "snapshot.json"), encoding="utf-8"))["downloaded"]
+agencies_file = os.path.join(SRC, "agencies.json")
+if not os.path.exists(agencies_file):
+    agencies_file = os.path.join(PROCESSED, "agencies.json")
+abbr = {a["name"]: a.get("abbreviation") or "" for a in json.load(open(agencies_file, encoding="utf-8"))}
 
 base = pd.read_parquet(os.path.join(DATA, "processed", "base_awards_civilian.parquet"))
-base = base[base.fy.between(2024, 2026)].copy()
+base = base[base.fy.between(FISCAL_YEARS[0], FISCAL_YEARS[-1])].copy()
 base["agency"] = base["agency"].astype(str).map(lambda a: FULL.get(a, a))
 ev = base[base.eval_set].copy()
 lines = []

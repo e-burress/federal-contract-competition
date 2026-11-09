@@ -14,3 +14,6 @@ results/threshold_resolution_TEST-*.json
 forecasts/*.csv
 forecasts/superseded_drafts/
 forecasts/PIO-F1-*.json
+
+# export folder for the public data snapshot (run.py export-data)
+dist/

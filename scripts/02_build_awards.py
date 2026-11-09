@@ -16,7 +16,8 @@ Labels
   eval_set    = competed AND offers_ok     <- the denominator for every single-offer share in this project
   single      = offers == 1
 
-Input : data/usaspending/*.zip   (from 01_download_usaspending.py)
+Input : the five departments' rows of data/usaspending_civilian/*.zip (from 01c_download_civilian.py), or
+        data/usaspending/*.zip if you downloaded the five departments separately with 01_download_usaspending.py
 Output: data/processed/base_awards.parquet  and a printed summary
 
 With --civilian it builds the same table for every civilian agency instead (03b_atlas_civilian.py):
@@ -25,6 +26,7 @@ Output: data/processed/base_awards_civilian.parquet
 In that mode only the columns the civilian-wide atlas needs are read, to keep memory low; the rules are the same.
 """
 import glob
+import json
 import os
 import sys
 import zipfile
@@ -33,7 +35,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import DATA  # noqa: E402
+from common import AGENCIES, DATA, RESULTS, WINDOW_END  # noqa: E402
 
 SRC = os.path.join(DATA, "usaspending", "*.zip")
 OUT_DIR = os.path.join(DATA, "processed")
@@ -56,13 +58,16 @@ SHORT = {
 }
 
 
-def read_all(src=SRC, usecols=None):
+def read_all(src=SRC, usecols=None, agencies=None):
+    """read every transaction CSV in the ZIPs matching `src`; keep only `agencies` (awarding agency names) if given"""
     frames = []
     for path in sorted(glob.glob(src)):
         z = zipfile.ZipFile(path)
         for name in z.namelist():
             if "Transactions" in name and name.endswith(".csv"):
                 df = pd.read_csv(z.open(name), dtype=str, keep_default_na=False, usecols=usecols)
+                if agencies is not None:
+                    df = df[df["awarding_agency_name"].isin(agencies)]
                 df["src_file"] = os.path.basename(path)
                 frames.append(df)
     return pd.concat(frames, ignore_index=True)
@@ -72,10 +77,10 @@ def fiscal_year(dt):
     return dt.dt.year + (dt.dt.month >= 10).astype(int)
 
 
-def build(src=SRC, usecols=None, window_end="2026-09-30"):
+def build(src=SRC, usecols=None, window_end=WINDOW_END, agencies=None):
     """Read the transaction ZIPs that match `src` and return the table of base awards (rules in the header).
-    `window_end` is the last day of the download window (used for months_at_risk)."""
-    tx = read_all(src, usecols)
+    `window_end` is the last day of the download window (used for months_at_risk); `agencies` keeps only those agencies."""
+    tx = read_all(src, usecols, agencies)
     print("transaction rows read:", len(tx))
     n0 = len(tx)
     tx = tx.drop_duplicates("contract_transaction_unique_key")
@@ -102,6 +107,8 @@ def build(src=SRC, usecols=None, window_end="2026-09-30"):
     # ---- base action = modification_number 0 (earliest if there are several) ------------------------
     base = tx[tx["modification_number"].isin(["0", "00", "000", ""])].copy()
     base = base.sort_values(["contract_award_unique_key", "action_date"]).drop_duplicates("contract_award_unique_key", keep="first")
+    build.counts = {"transaction_rows": int(n0), "duplicate_transactions_dropped": int(n0 - len(tx)),
+                    "awards_seen": int(tx["contract_award_unique_key"].nunique()), "awards_with_base_action": int(len(base))}
     print("awards seen:", tx["contract_award_unique_key"].nunique(), "| with a base action in window:", len(base),
           f"({100 * len(base) / tx['contract_award_unique_key'].nunique():.1f}%)")
     base = base.merge(agg, left_on="contract_award_unique_key", right_index=True, how="left")
@@ -135,13 +142,21 @@ def build(src=SRC, usecols=None, window_end="2026-09-30"):
 
 
 def main(civilian=False):
+    civ = os.path.join(DATA, "usaspending_civilian", "*.zip")
     if civilian:
-        base = build(os.path.join(DATA, "usaspending_civilian", "*.zip"), CIVILIAN_COLS)
+        base = build(civ, CIVILIAN_COLS)
+    elif glob.glob(SRC):
+        base = build()                                   # a separate five-department download (01_download_usaspending.py)
     else:
-        base = build()
+        base = build(civ, agencies=AGENCIES)             # the five departments' rows of the civilian download
     out = os.path.join(OUT_DIR, "base_awards_civilian.parquet" if civilian else "base_awards.parquet")
     base.to_parquet(out, index=False)
     print("saved", out, base.shape)
+    # the counts behind the methodology's coverage line (results/ keeps them, so `run.py quick` needs no raw files)
+    counts = dict(build.counts, competed=int(base.competed.sum()), eval_set=int(base.eval_set.sum()),
+                  offers_999_among_competed=int((base[base.competed].offers == 999).sum()))
+    with open(os.path.join(RESULTS, f"build_summary_{'civilian' if civilian else 'five'}.json"), "w", encoding="utf-8") as f:
+        json.dump(counts, f, indent=1)
 
     # ---- quick summary ---------------------------------------------------------------------------
     print("\nBase awards by agency x kind:")

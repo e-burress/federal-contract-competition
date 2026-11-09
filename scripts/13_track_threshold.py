@@ -27,7 +27,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bunching_lib import SPEC, boot, bunch, count_bins  # noqa: E402
-from common import FORECASTS, RESULTS  # noqa: E402
+from common import CONFIG, PROJECT, RESULTS  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 spec_ = importlib.util.spec_from_file_location("resolve12", os.path.join(HERE, "12_resolve_threshold.py"))
@@ -36,7 +36,7 @@ spec_.loader.exec_module(r12)
 
 
 def main():
-    fc_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(FORECASTS, "PIO-F2-threshold-fy2027q1-20261024.json")
+    fc_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(PROJECT, CONFIG["forecasts"]["F2"]["file"])
     fc = json.load(open(fc_path, encoding="utf-8"))
     fid, per = fc["id"], fc["period"]
     today = date.today()

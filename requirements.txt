@@ -1,6 +1,7 @@
-pandas>=3.0
-numpy>=2.5
-pyarrow>=26.0
-scikit-learn>=1.9
-statsmodels>=0.15
-matplotlib>=3.11
+# Exact versions used to build the published results (same pins as pyproject.toml).
+pandas==3.0.6
+numpy==2.5.4
+pyarrow==26.0.0
+scikit-learn==1.9.1
+statsmodels==0.15.0
+matplotlib==3.11.2

@@ -26,7 +26,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import AGENCIES, DATA, UA_USASPENDING, download_file, http_json  # noqa: E402
+from common import AGENCIES, DATA, FISCAL_YEARS, UA_USASPENDING, download_file, http_json  # noqa: E402
 
 OUT = os.path.join(DATA, "usaspending")
 os.makedirs(OUT, exist_ok=True)
@@ -53,9 +53,9 @@ COLUMNS = [
     "purchase_card_as_payment_method_code", "cost_or_pricing_data_code",
 ]
 
-# Quarter windows covering FY2024-FY2026 (US fiscal year starts 1 October)
+# Quarter windows covering the analysis years in config.toml (US fiscal year starts 1 October)
 WINDOWS = []
-for fy in (2024, 2025, 2026):
+for fy in FISCAL_YEARS:
     WINDOWS += [
         (f"FY{fy}Q1", f"{fy-1}-10-01", f"{fy-1}-12-31"),
         (f"FY{fy}Q2", f"{fy}-01-01", f"{fy}-03-31"),

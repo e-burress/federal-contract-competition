@@ -11,10 +11,10 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from bunching_lib import SPEC, boot, bunch, count_bins, load_universe  # noqa: E402
+from bunching_lib import SPEC, boot, bunch, count_bins, load_base_actions  # noqa: E402
 from common import RESULTS  # noqa: E402
 
-tx, base = load_universe()
+base = load_base_actions()
 base["fyq"] = "FY" + base.fy.astype(str) + "Q" + (((base.action_date.dt.month - 10) % 12) // 3 + 1).astype(str)
 rows = []
 for q, d in base.groupby("fyq"):

@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
-      PIO_CONTACT: https://github.com/e-burress/federal-contract-competition
+      PIO_CONTACT: https://github.com/${{ github.repository }}     # in a fork, the fork's own address
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v5
@@ -41,15 +41,15 @@ jobs:
 
       - name: Live single-offer table, every civilian agency, this fiscal year so far
         if: ${{ !cancelled() }}
-        run: python -I scripts/15_civilian_fytd.py
+        run: python run.py live
 
       - name: Check the threshold forecast (and score it after the resolution date)
         if: ${{ !cancelled() }}
-        run: python -I scripts/13_track_threshold.py
+        run: python run.py track-f2
 
       - name: Rebuild the dashboard
         if: ${{ !cancelled() }}
-        run: python -I scripts/build_dashboard.py
+        run: python run.py dashboard
 
       - name: Check the sealed forecast is unchanged
         id: seal

@@ -1,0 +1,9 @@
+{
+ "transaction_rows": 515357,
+ "duplicate_transactions_dropped": 0,
+ "awards_seen": 261240,
+ "awards_with_base_action": 182905,
+ "competed": 98432,
+ "eval_set": 97672,
+ "offers_999_among_competed": 760
+}

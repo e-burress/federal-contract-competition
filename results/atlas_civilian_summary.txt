@@ -93,8 +93,8 @@ small business      7809   71669 0.1090 0.1067 0.1113 all civilian agencies exce
 
 CHECK: the original five departments, published download (Oct 24, 2026) vs this download
                                  agency  k_single_original  n_eval_original  share_original  k_single_new  n_eval_new  share_new  share_change_points
-        Department of Homeland Security               4022            15149          0.2655          4031       15159     0.2659               0.0419
-             Department of the Interior               2844            15879          0.1791          2844       15880     0.1791              -0.0011
-Department of Health and Human Services               3868             9592          0.4033          3865        9590     0.4030              -0.0229
-              Department of Agriculture               1961            30006          0.0654          1971       30026     0.0656               0.0290
-         Department of Veterans Affairs               9535            27017          0.3529          9535       27017     0.3529               0.0000
+        Department of Homeland Security               4031            15159          0.2659          4031       15159     0.2659                  0.0
+             Department of the Interior               2844            15880          0.1791          2844       15880     0.1791                  0.0
+Department of Health and Human Services               3865             9590          0.4030          3865        9590     0.4030                  0.0
+              Department of Agriculture               1971            30026          0.0656          1971       30026     0.0656                  0.0
+         Department of Veterans Affairs               9535            27017          0.3529          9535       27017     0.3529                  0.0

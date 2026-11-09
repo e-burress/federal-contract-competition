@@ -10,6 +10,7 @@ Outputs (results/):
   atlas_by_agency.csv, atlas_by_agency_fy.csv, atlas_by_kind.csv, atlas_offices.csv, atlas_by_setaside.csv,
   atlas_by_size.csv, atlas_by_quarter.csv, premium_*.csv   and a printed summary (also saved as atlas_summary.txt)
 """
+import json
 import os
 import sys
 
@@ -19,10 +20,10 @@ import statsmodels.api as sm
 from statsmodels.stats.proportion import proportion_confint
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import DATA, RESULTS  # noqa: E402
+from common import DATA, FISCAL_YEARS, RESULTS  # noqa: E402
 
 base = pd.read_parquet(os.path.join(DATA, "processed", "base_awards.parquet"))
-base = base[base.fy.between(2024, 2026)].copy()
+base = base[base.fy.between(FISCAL_YEARS[0], FISCAL_YEARS[-1])].copy()
 ev = base[base.eval_set].copy()
 lines = []
 
@@ -98,14 +99,24 @@ dw_all = pd.Series({"dollar_weighted_share": po_def.loc[po_def.single, "obligati
 say("\ndollar-weighted single-offer share (purchase orders + definitive contracts; obligations to date within the window)")
 say(dw.round(3).to_string())
 say(f"ALL FIVE: dollar-weighted {dw_all.dollar_weighted_share:.3f} vs count-based {dw_all.count_share:.3f}")
+_r = allp.iloc[0]
+headline = {"k_single": int(_r.k_single), "n_eval": int(_r.n_eval), "share": float(_r.share), "ci": [float(_r.ci_lo), float(_r.ci_hi)],
+            "dollar_weighted_share_po_def": float(dw_all.dollar_weighted_share), "count_share_po_def": float(dw_all.count_share),
+            "n_base": int(len(base)), "n_competed": int(base.competed.sum()),
+            "offers_999_among_competed": int((base[base.competed].offers == 999).sum())}
 big = ev[ev.award_kind.isin(["PO", "DEF"]) & (ev.value0 >= 20_000_000)]
 bigad = big[big.extent_competed_code.isin(["A", "D"])]
 say(f"competed PO/DEF awards with base-and-all-options value >= $20M: n={len(big)}, single-offer share {big.single.mean():.3f}"
     f" | full-and-open (A/D) only: n={len(bigad)}, share {bigad.single.mean():.3f}" if len(big) else "no PO/DEF awards of $20M+ in the eval set")
+headline.update(awards_20m_plus_n=int(len(big)), awards_20m_plus_share=float(big.single.mean()) if len(big) else None)
+headline["full_and_open"] = [{"agency": r.agency, "k_single": int(r.k_single), "n_eval": int(r.n_eval)}
+                             for r in share_table(ad, "agency").itertuples()]
 
 # ---------------------------------------------------------------------------------------------------
 say("\n" + "=" * 100)
 say("HEADLINE 2: buying offices (office = contracting office code; n_eval = competed awards with usable offers)")
+if "awarding_office_name" not in ev.columns:          # the public data snapshot leaves office names out
+    ev["awarding_office_name"] = ev["awarding_office_code"]
 off = ev.groupby(["agency", "awarding_office_code", "awarding_office_name"], observed=True)["single"].agg(["sum", "count"]).reset_index()
 off.columns = ["agency", "office_code", "office_name", "k_single", "n_eval"]
 off["share"] = off.k_single / off.n_eval
@@ -133,6 +144,7 @@ off["ci_lo"], off["ci_hi"] = lo, hi
 off = off.sort_values(["agency", "share"], ascending=[True, False])
 off.to_csv(os.path.join(RESULTS, "atlas_offices.csv"), index=False)
 say(f"offices with at least one eval award: {len(off)} | with n_eval >= 100: {(off.n_eval >= 100).sum()} | with n_eval >= 50: {(off.n_eval >= 50).sum()}")
+headline["offices"] = {"n_offices": int(len(off)), "n_offices_100_plus": int((off.n_eval >= 100).sum())}   # counts only, no names
 big = off[off.n_eval >= 100].sort_values("share", ascending=False)
 say("\nTop 12 offices by raw single-offer share (n_eval >= 100):")
 say(big.head(12)[["agency", "office_code", "office_name", "n_eval", "k_single", "share", "ci_lo", "ci_hi", "agency_share", "share_shrunk"]].round(3).to_string(index=False))
@@ -142,14 +154,15 @@ say("\nSpread of office shares (n_eval >= 100): min %.3f  p25 %.3f  median %.3f 
     big.share.quantile([0, .25, .5, .75, 1]).values))
 
 # persistence of office rates: FY2024-25 vs FY2026 (does an office's past rate predict its next year? -> why office history is a model feature)
-a = ev[ev.fy <= 2025].groupby("awarding_office_code", observed=True)["single"].agg(["sum", "count"])
-b = ev[ev.fy == 2026].groupby("awarding_office_code", observed=True)["single"].agg(["sum", "count"])
+a = ev[ev.fy < FISCAL_YEARS[-1]].groupby("awarding_office_code", observed=True)["single"].agg(["sum", "count"])
+b = ev[ev.fy == FISCAL_YEARS[-1]].groupby("awarding_office_code", observed=True)["single"].agg(["sum", "count"])
 j = a.join(b, lsuffix="_prior", rsuffix="_fy26", how="inner")
 j = j[(j.count_prior >= 30) & (j.count_fy26 >= 30)]
 j["p_prior"] = j.sum_prior / j.count_prior
 j["p_fy26"] = j.sum_fy26 / j.count_fy26
 if len(j) > 5:
     r = np.corrcoef(j.p_prior, j.p_fy26)[0, 1]
+    headline["offices"].update(persistence_corr=float(r), persistence_n=int(len(j)))
     say(f"\nPersistence: across {len(j)} offices with >= 30 eval awards in both periods, corr(FY24-25 share, FY26 share) = {r:.2f}")
 
 # ---------------------------------------------------------------------------------------------------
@@ -176,6 +189,7 @@ t6.to_csv(os.path.join(RESULTS, "atlas_by_quarter.csv"), index=False)
 t7 = share_table(ev, "solicitation_procedures_code")
 say("\nby solicitation procedure (SP1 simplified acquisition, NP negotiated proposal, SB sealed bid, AE architect-engineer, MAFO multiple-award/fair opportunity ...)\n" + t7.round(4).to_string(index=False))
 t8 = share_table(ev, "has_sol_id")
+headline["by_solicitation_id"] = {str(r.has_sol_id): {"k_single": int(r.k_single), "n_eval": int(r.n_eval)} for r in t8.itertuples()}
 say("\nwith / without a solicitation identifier on the award\n" + t8.round(4).to_string(index=False))
 
 # ---------------------------------------------------------------------------------------------------
@@ -232,4 +246,7 @@ rg = pp.groupby(["award_kind", "single"], observed=True)["growth25"].agg(["mean"
 say(rg.to_string())
 
 open(os.path.join(RESULTS, "atlas_summary.txt"), "w", encoding="utf-8").write("\n".join(lines))
+# the headline numbers (published; the summary text above stays private because it names buying offices)
+with open(os.path.join(RESULTS, "atlas_headline.json"), "w", encoding="utf-8") as f:
+    json.dump(headline, f, indent=1)
 print("\nsaved results to", RESULTS)

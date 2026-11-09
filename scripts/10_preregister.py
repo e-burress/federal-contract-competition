@@ -28,6 +28,9 @@ fid = f"PIO-F1-open-solicitations-single-offer-{now.strftime('%Y%m%d')}"
 path = os.path.join(FORECASTS, fid + ".json")
 if os.path.exists(path):
     sys.exit(f"{path} already exists - a registered forecast is never overwritten.")
+# a sealed F1 already exists (its fingerprint is in SHA256SUMS.txt): registering another one must be a deliberate choice
+if "--new-forecast" not in sys.argv and "PIO-F1-" in open(os.path.join(FORECASTS, "SHA256SUMS.txt"), encoding="utf-8").read():
+    sys.exit("A sealed PIO-F1 forecast already exists. This script would register a NEW forecast; rerun with --new-forecast only if you mean that.")
 
 reg = pd.read_csv(os.path.join(FORECASTS, "open_solicitations_forecast_registered.csv"), dtype={"office": str, "psc": str, "naics": str})
 card = json.load(open(os.path.join(RESULTS, "model_card.json")))

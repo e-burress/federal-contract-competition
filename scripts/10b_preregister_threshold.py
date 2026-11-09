@@ -32,6 +32,9 @@ fid = f"PIO-F2-threshold-fy2027q1-{now.strftime('%Y%m%d')}"
 path = os.path.join(FORECASTS, fid + ".json")
 if os.path.exists(path):
     sys.exit(f"{path} already exists - a registered forecast is never overwritten.")
+# a sealed F2 already exists (its fingerprint is in SHA256SUMS.txt): registering another one must be a deliberate choice
+if "--new-forecast" not in sys.argv and "PIO-F2-" in open(os.path.join(FORECASTS, "SHA256SUMS.txt"), encoding="utf-8").read():
+    sys.exit("A sealed PIO-F2 forecast already exists. This script would register a NEW forecast; rerun with --new-forecast only if you mean that.")
 
 q = pd.read_csv(os.path.join(RESULTS, "threshold_quarterly_bunching.csv"))
 yr = pd.read_csv(os.path.join(RESULTS, "threshold_sat_bunching.csv"))

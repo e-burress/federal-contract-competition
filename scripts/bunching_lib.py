@@ -1,7 +1,7 @@
 """
 bunching_lib.py - the small statistical toolkit shared by 04_threshold.py (analysis) and 12_resolve_threshold.py (scoring).
 
-  load_universe()   read the civilian B + D transaction zips and return (all transactions, base actions)
+  load_base_actions()  the civilian purchase-order and definitive-contract base actions (built once, then read from parquet)
   count_bins()      histogram with right-closed bins (a, b]
   bunch()           Poisson-polynomial counterfactual and the bunching ratio observed / predicted just below a threshold
   boot()            bootstrap distribution of that ratio
@@ -22,21 +22,46 @@ from common import DATA  # noqa: E402
 rng = np.random.default_rng(20261023)
 
 
-def load_universe():
+# columns the threshold test uses (a subset of every download: 01b's universe files or 01c's civilian files)
+UNIVERSE_COLS = ["contract_transaction_unique_key", "contract_award_unique_key", "modification_number", "action_date",
+                 "award_type_code", "base_and_all_options_value", "federal_action_obligation", "awarding_agency_name",
+                 "extent_competed_code", "number_of_offers_received", "purchase_card_as_payment_method_code",
+                 "action_type_code", "type_of_set_aside_code"]
+BASE_ACTIONS = os.path.join(DATA, "processed", "threshold_base_actions.parquet")
+
+
+def load_base_actions():
+    """Base actions (modification 0) of civilian purchase orders and definitive contracts: the universe of the threshold test.
+    Reads data/processed/threshold_base_actions.parquet if it exists (built here earlier, or downloaded by `run.py quick`);
+    otherwise builds it from the civilian download (01c_download_civilian.py) or the older universe download (01b), and saves it."""
+    if os.path.exists(BASE_ACTIONS):
+        return pd.read_parquet(BASE_ACTIONS)
+    zips = sorted(glob.glob(os.path.join(DATA, "usaspending_civilian", "*.zip"))) or         sorted(glob.glob(os.path.join(DATA, "usaspending_universe", "*.zip")))
+    if not zips:
+        sys.exit("no downloaded data: run 01c_download_civilian.py first (or `python run.py quick` for the published snapshot)")
     frames = []
-    for p in sorted(glob.glob(os.path.join(DATA, "usaspending_universe", "*.zip"))):
+    for p in zips:
         z = zipfile.ZipFile(p)
         for n in z.namelist():
             if "Transactions" in n and n.endswith(".csv"):
-                frames.append(pd.read_csv(z.open(n), dtype=str, keep_default_na=False))
+                d = pd.read_csv(z.open(n), dtype=str, keep_default_na=False, usecols=lambda c: c in UNIVERSE_COLS)
+                frames.append(d[d.award_type_code.isin(["B", "D"])])
     tx = pd.concat(frames, ignore_index=True).drop_duplicates("contract_transaction_unique_key")
     tx["action_date"] = pd.to_datetime(tx["action_date"])
     for c in ("base_and_all_options_value", "federal_action_obligation"):
         tx[c] = pd.to_numeric(tx[c], errors="coerce")
     base = tx[tx.modification_number.isin(["0", "00", "000", ""])].sort_values("action_date").drop_duplicates("contract_award_unique_key")
+    base = base.drop(columns="contract_transaction_unique_key")
     base["fy"] = base.action_date.dt.year + (base.action_date.dt.month >= 10).astype(int)
     base["kind"] = np.where(base.award_type_code == "B", "PO", "DEF")
-    return tx, base
+    os.makedirs(os.path.dirname(BASE_ACTIONS), exist_ok=True)
+    base.to_parquet(BASE_ACTIONS, index=False)
+    return base
+
+
+def load_universe():
+    """kept for older scripts: (None, base actions)"""
+    return None, load_base_actions()
 
 
 # --------------------------------------------------------------------------------------------------- bunching estimator
@@ -85,3 +110,11 @@ SPEC = {  # threshold: (window_low_edge, window_high_edge, bin width, exclude be
     10_000: (6_000, 14_000, 250, 1_000, 500),
     15_000: (11_000, 20_000, 250, 1_000, 500),
 }
+
+
+if __name__ == "__main__":
+    # python -I scripts/bunching_lib.py --rebuild   (re)builds data/processed/threshold_base_actions.parquet from the download
+    if "--rebuild" in sys.argv and os.path.exists(BASE_ACTIONS):
+        os.remove(BASE_ACTIONS)
+    b = load_base_actions()
+    print(f"{len(b):,} base actions of civilian purchase orders and definitive contracts -> {BASE_ACTIONS}")
