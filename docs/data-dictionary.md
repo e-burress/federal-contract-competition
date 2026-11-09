@@ -57,3 +57,28 @@ Base actions of civilian purchase orders and definitive contracts: the universe 
 ## agencies.json
 
 The 110 civilian top-tier agencies requested, with USAspending's abbreviation and agency code.
+
+## History tables (release `history-v1`)
+
+Built on GitHub by `.github/workflows/history.yml` (scripts `17_history_download.py` and `18_history_build.py`), one pair of files per fiscal year from FY2008, covering civilian agencies and the Department of Defense. `python run.py history` downloads them into `data/history/processed/` and rebuilds the history results. Defense data are published 90 days late, so the latest Defense year is incomplete until its last quarter is out.
+
+**base_actions_FY<year>.parquet**: one row per award whose base action is dated in that fiscal year (purchase orders, definitive contracts and contract vehicles). Columns as in `base_awards_five.parquet`, with the original USAspending names (`awarding_agency_name`, `base_and_all_options_value`, `federal_action_obligation`, `base_and_exercised_options_value`, `period_of_performance_start_date`, `period_of_performance_potential_end_date`, ...), plus:
+
+| Column | Meaning |
+|---|---|
+| vendor_id | Pseudonymous company id: the first 16 hex digits of SHA-256("fcc-v1:" + UEI, or "duns:" + DUNS before 2022). It links awards to the same company without publishing the identifier. Companies may get a new id when their identifier changed from DUNS to UEI in 2022. |
+| is_dod | Awarded by the Department of Defense |
+
+**award_year_FY<year>.parquet**: one row per award with any action in that fiscal year.
+
+| Column | Meaning |
+|---|---|
+| contract_award_unique_key, fy | Award and fiscal year |
+| n_tx | Number of actions (the award itself and its modifications) in the year |
+| obligation_sum | Dollars obligated by those actions |
+| value_max, value_last | Highest and latest base-and-all-options value reported in the year |
+| exercised_last | Latest base-and-exercised-options value in the year |
+| last_action_date | Date of the last action in the year |
+| n_options, n_scope_changes, n_terminations | Actions that exercised an option (FPDS action type G), changed the scope (B, D, L) or terminated the contract (E, F, X) |
+
+**history_FY<year>.json**: row counts and the files the year was built from.

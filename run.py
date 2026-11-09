@@ -5,6 +5,7 @@ run.py - run the whole project with one command. Plain Python; no AI is involved
   python run.py quick     download the published data snapshot, then rebuild every result, chart and the dashboard (minutes)
   python run.py all       rebuild everything from the government sources (about an hour, mostly waiting on downloads)
   python run.py daily     the morning refresh: SAM.gov snapshot, this fiscal year so far, forecast tracking, dashboard
+  python run.py history   download the yearly tables of the long history (FY2008 onward) and rebuild its results
   python run.py verify    compare your results with the published ones (after quick or all)
   python run.py test      run the automatic tests (offline, seconds)
   python run.py steps     list every step
@@ -63,12 +64,16 @@ STEPS = {
     "sam-snapshot":        ("scripts/14_sam_daily_snapshot.py", [], True, "today's SAM.gov list of open notices and the daily counts"),
     "live":                ("scripts/15_civilian_fytd.py", [], True, "single-offer shares this fiscal year so far, every civilian agency"),
     "track-f2":            ("scripts/13_track_threshold.py", [], True, "how the sealed threshold forecast (F2) is tracking"),
+    "history-atlas":       ("scripts/19_history_atlas.py", [], False, "single-offer shares FY2008 onward, civilian and Defense"),
+    "threshold-history":   ("scripts/20_threshold_history.py", [], False, "pile-ups under every simplified-acquisition limit since FY2008"),
+    "threshold-staggered": ("scripts/21_threshold_staggered.py", [], False, "the 2018 change, agency by agency (staggered adoption dates)"),
 }
 PIPELINES = {
     "quick": ["get-snapshot", "atlas", "atlas-civilian", "quality", "threshold", "threshold-quarterly", "figures", "report", "dashboard"],
     "all":   ["download", "build-five", "build-civilian", "build-threshold", "atlas", "atlas-civilian", "quality", "threshold",
               "threshold-quarterly", "sql-check", "figures", "report", "dashboard"],
     "daily": ["sam-snapshot", "live", "track-f2", "dashboard"],
+    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered"],
 }
 # results that change every day, are not rebuilt by quick/all, or are never published (office level); `verify` skips them
 LIVE_OR_FROZEN = ("tracking_", "live_fy", "sam_daily_", "model_", "resolution_", "threshold_resolution_", "atlas_offices")
@@ -81,6 +86,8 @@ def say(msg=""):
 def run_step(name):
     if name == "get-snapshot":
         return get_snapshot()
+    if name == "get-history":
+        return get_history()
     script, args, online, what = STEPS[name]
     if not os.path.exists(os.path.join(ROOT, script)):
         say(f"--- {name}: skipped ({script} is not in this copy of the project)")
@@ -133,6 +140,27 @@ def get_snapshot():
             os.remove(dest)
             sys.exit(f"{name} did not match its published SHA-256 fingerprint; the download was damaged. Run the command again.")
     say("=== get-snapshot: done, every file matches its fingerprint")
+
+
+def get_history():
+    """Download the yearly history tables (public release history-v1) into data/history/processed/."""
+    say("\n=== get-history: yearly tables of the long history (release history-v1)")
+    api = f"https://api.github.com/repos/{DATA_REPO}/releases/tags/history-v1"
+    try:
+        req = urllib.request.Request(api, headers={"User-Agent": f"federal-contract-competition/1.1 ({CONTACT})",
+                                                   "Accept": "application/vnd.github+json"})
+        assets = json.load(urllib.request.urlopen(req, timeout=60))["assets"]
+    except Exception as e:
+        sys.exit(f"Could not read the history release ({e}). Check your internet connection and try again.")
+    out = os.path.join(DATA, "history", "processed")
+    os.makedirs(out, exist_ok=True)
+    for a in sorted(assets, key=lambda a: a["name"]):
+        dest = os.path.join(out, a["name"])
+        if os.path.exists(dest) and os.path.getsize(dest) == a["size"]:
+            continue
+        say(f"  {a['name']}: downloading ({a['size'] / 1e6:.0f} MB)")
+        fetch(a["browser_download_url"], dest)
+    say(f"=== get-history: done, {len(assets)} files in data/history/processed")
 
 
 def keep_published_copy():
@@ -316,7 +344,7 @@ def main():
         say(f"\n{cmd}: finished in {(time.time() - t0) / 60:.1f} minutes. Open docs/index.html in a browser to see the dashboard.")
     elif cmd == "verify":
         verify()
-    elif cmd in STEPS or cmd == "get-snapshot":
+    elif cmd in STEPS or cmd in ("get-snapshot", "get-history"):
         run_step(cmd)
     elif cmd == "export-data":
         export_data()
