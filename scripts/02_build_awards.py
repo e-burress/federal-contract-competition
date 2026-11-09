@@ -18,6 +18,11 @@ Labels
 
 Input : data/usaspending/*.zip   (from 01_download_usaspending.py)
 Output: data/processed/base_awards.parquet  and a printed summary
+
+With --civilian it builds the same table for every civilian agency instead (03b_atlas_civilian.py):
+Input : data/usaspending_civilian/*.zip   (from 01c_download_civilian.py)
+Output: data/processed/base_awards_civilian.parquet
+In that mode only the columns the civilian-wide atlas needs are read, to keep memory low; the rules are the same.
 """
 import glob
 import os
@@ -35,6 +40,13 @@ OUT_DIR = os.path.join(DATA, "processed")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 COMPETED = {"A", "D", "E", "F", "CDO"}
+# columns read in --civilian mode (everything the atlas and the rules below use)
+CIVILIAN_COLS = [
+    "contract_transaction_unique_key", "contract_award_unique_key", "modification_number", "action_date",
+    "award_type_code", "award_or_idv_flag", "awarding_agency_name", "extent_competed_code", "number_of_offers_received",
+    "type_of_set_aside_code", "solicitation_procedures_code", "solicitation_identifier",
+    "federal_action_obligation", "base_and_all_options_value", "base_and_exercised_options_value",
+]
 SHORT = {
     "Department of Veterans Affairs": "VA",
     "Department of Health and Human Services": "HHS",
@@ -44,13 +56,13 @@ SHORT = {
 }
 
 
-def read_all():
+def read_all(src=SRC, usecols=None):
     frames = []
-    for path in sorted(glob.glob(SRC)):
+    for path in sorted(glob.glob(src)):
         z = zipfile.ZipFile(path)
         for name in z.namelist():
             if "Transactions" in name and name.endswith(".csv"):
-                df = pd.read_csv(z.open(name), dtype=str, keep_default_na=False)
+                df = pd.read_csv(z.open(name), dtype=str, keep_default_na=False, usecols=usecols)
                 df["src_file"] = os.path.basename(path)
                 frames.append(df)
     return pd.concat(frames, ignore_index=True)
@@ -60,8 +72,10 @@ def fiscal_year(dt):
     return dt.dt.year + (dt.dt.month >= 10).astype(int)
 
 
-def main():
-    tx = read_all()
+def build(src=SRC, usecols=None, window_end="2026-09-30"):
+    """Read the transaction ZIPs that match `src` and return the table of base awards (rules in the header).
+    `window_end` is the last day of the download window (used for months_at_risk)."""
+    tx = read_all(src, usecols)
     print("transaction rows read:", len(tx))
     n0 = len(tx)
     tx = tx.drop_duplicates("contract_transaction_unique_key")
@@ -101,7 +115,7 @@ def main():
     base["value0"] = base["base_and_all_options_value"]
     base["obl0"] = base["federal_action_obligation"]
     # months between the base action and the end of our window (time the award had to grow)
-    base["months_at_risk"] = ((pd.Timestamp("2026-09-30") - base["action_date"]).dt.days / 30.44).round(1)
+    base["months_at_risk"] = ((pd.Timestamp(window_end) - base["action_date"]).dt.days / 30.44).round(1)
 
     keep = ["contract_award_unique_key", "award_id_piid", "parent_award_id_piid", "agency", "awarding_sub_agency_name",
             "awarding_office_code", "awarding_office_name", "award_kind", "idv_type_code", "multiple_or_single_award_idv_code",
@@ -112,11 +126,20 @@ def main():
             "type_of_contract_pricing_code", "commercial_item_acquisition_procedures_code",
             "fair_opportunity_limited_sources_code", "other_than_full_and_open_competition_code",
             "recipient_uei", "recipient_parent_uei", "purchase_card_as_payment_method_code", "cost_or_pricing_data_code"]
-    base = base[keep]
+    base = base[[c for c in keep if c in base.columns]]
     for c in ("agency", "awarding_sub_agency_name", "award_kind", "idv_type_code", "multiple_or_single_award_idv_code",
               "extent_competed_code", "solicitation_procedures_code", "type_of_set_aside_code"):
-        base[c] = base[c].astype("category")
-    out = os.path.join(OUT_DIR, "base_awards.parquet")
+        if c in base.columns:
+            base[c] = base[c].astype("category")
+    return base
+
+
+def main(civilian=False):
+    if civilian:
+        base = build(os.path.join(DATA, "usaspending_civilian", "*.zip"), CIVILIAN_COLS)
+    else:
+        base = build()
+    out = os.path.join(OUT_DIR, "base_awards_civilian.parquet" if civilian else "base_awards.parquet")
     base.to_parquet(out, index=False)
     print("saved", out, base.shape)
 
@@ -130,4 +153,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(civilian="--civilian" in sys.argv)

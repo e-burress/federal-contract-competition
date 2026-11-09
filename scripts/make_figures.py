@@ -103,4 +103,34 @@ fig.tight_layout()
 fig.savefig(os.path.join(FIG, "single_offer_by_agency.png"), dpi=150)
 plt.close(fig)
 
+
+def short_name(name, abbr):
+    """'Department of the Interior' -> 'Interior'; very long names fall back to the abbreviation."""
+    s = re.sub(r"^Department of (the )?", "", name)
+    return abbr if len(s) > 34 and isinstance(abbr, str) and abbr else s
+
+
+# ---- Figure 4: single-offer share for every civilian agency with enough awards (03b_atlas_civilian.py) --------
+if os.path.exists(os.path.join(RES, "atlas_civilian_by_agency.csv")):
+    c = pd.read_csv(os.path.join(RES, "atlas_civilian_by_agency.csv"))
+    tot = pd.read_csv(os.path.join(RES, "atlas_civilian_totals.csv")).set_index("scope")
+    c = c[c["n_eval"] >= 200].sort_values("share")
+    fig, ax = plt.subplots(figsize=(8, 0.27 * len(c) + 1.4))
+    ys = range(len(c))
+    ax.barh(ys, 100 * c["share"], height=0.62, color=POST)
+    ax.errorbar(100 * c["share"], ys, xerr=[100 * (c["share"] - c["ci_lo"]), 100 * (c["ci_hi"] - c["share"])],
+                fmt="none", ecolor="#333333", elinewidth=0.8)
+    # reference line without GSA: its very small supply orders outnumber every other agency's awards combined
+    exg = 100 * tot.loc["all civilian agencies except GSA", "share"]
+    ax.axvline(exg, color="#555555", lw=1)
+    ax.text(exg + 0.6, -0.9, f"all civilian agencies except GSA: {exg:.1f}%", fontsize=8.5, color="#333333", va="center")
+    ax.set_ylim(-1.5, len(c) - 0.4)
+    ax.set_yticks(list(ys))
+    ax.set_yticklabels([short_name(a, b) for a, b in zip(c["agency"], c["abbreviation"])], fontsize=8.5)
+    ax.set_xlabel("% of competed awards with one offer (FY2024–FY2026, 95% interval)")
+    ax.set_title("Single-offer share, civilian agencies with at least 200 competed awards", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG, "single_offer_civilian.png"), dpi=150)
+    plt.close(fig)
+
 print("wrote", sorted(os.listdir(FIG)))

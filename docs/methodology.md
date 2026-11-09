@@ -44,6 +44,23 @@ Other cuts:
 
 Office-level shares were computed (370 offices, 180 with at least 100 awards). They are persistent over time: the correlation between FY2024–25 and FY2026 office shares is 0.75. They are not published in this release.
 
+## 3b. Every civilian agency (added November 9, 2026)
+
+**Data.** A new download (`01c_download_civilian.py`, November 9, 2026) of the same 36 columns and award types for all 110 civilian top-tier agencies, FY2024–FY2026, one request per quarter: 1,880,096 transactions, 67 MB zipped, every quarter far below the 500,000-row cap. `02_build_awards.py --civilian` applies the same rules as above: 969,601 awards → 812,446 with a base action in the window → 475,212 competed (58.5%) → **466,009 with a usable offer count** (98.1% of competed; 9,201 carry the 999 placeholder). 66 agencies have base awards; 64 have competed awards with a usable offer count.
+
+**Check against the original download.** The five departments, measured again from this newer download, match the published shares to within 0.05 percentage points (VA identical; DHS 15,159 awards instead of 15,149). See `results/atlas_civilian_five_check.csv`.
+
+**GSA.** 295,322 of the 466,009 awards (63%) are GSA's, almost all very small purchase orders from GSA's Federal Acquisition Service (median award $143). In a check of FY2026 Q1, two-thirds came from its supply-chain contracting division, and the most common products were office supplies, hand tools and measuring tools. Their recorded offers changed sharply: one offer on 55.6% in FY2024, 46.6% in FY2025 and 16.8% in FY2026, as most began recording 2 or 3 offers. That may be a change in how these automated orders are recorded rather than in competition. Every civilian-wide total is therefore also given without GSA.
+
+| Scope | Single-offer share, FY2024–26 | Competed awards |
+|---|---|---|
+| All civilian agencies | 34.0% (95% interval 33.9–34.2%) | 466,009 |
+| All civilian agencies except GSA | 25.5% (25.3–25.7%) | 170,687 |
+| Other civilian agencies, not GSA and not the original five | 29.1% (28.7–29.4%) | 73,015 |
+| GSA only | 39.0% | 295,322 |
+
+Without GSA, the share fell from 27.9% (FY2024) to 26.3% (FY2025) and 21.5% (FY2026). Shares by agency, agency and year, award type and set-aside (each with and without GSA) are in `results/atlas_civilian_*.csv`; `03b_atlas_civilian.py` writes them.
+
 ## 4. Threshold bunching test
 
 **Data:** civilian purchase orders and definitive contracts, base actions only. FY2024: 258,717. FY2025: 236,468. FY2026: 262,978.

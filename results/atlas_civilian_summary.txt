@@ -1,0 +1,100 @@
+====================================================================================================
+CIVILIAN-WIDE SINGLE-OFFER ATLAS  (download of 2026-11-09; base awards dated Oct 2023 - Sep 2026; DoD excluded)
+agencies with at least one base award: 66 | with at least one competed award with usable offers: 64
+TOTAL base awards 812,446 | competed 475,212 (58.5%) | eval set 466,009 (98.1% of competed)
+999 sentinel among competed base awards: 9,201
+
+TOTALS
+                                       scope  k_single  n_eval  share  ci_lo  ci_hi  n_agencies  median_award_value  dollar_weighted_share_po_def   snapshot
+                       all civilian agencies    158666  466009 0.3405 0.3391 0.3418          64              570.00                        0.1391 2026-11-09
+                   original five departments     22246   97672 0.2278 0.2251 0.2304           5            74152.92                           NaN 2026-11-09
+                 all other civilian agencies    136420  368337 0.3704 0.3688 0.3719          59              239.85                           NaN 2026-11-09
+            all civilian agencies except GSA     43466  170687 0.2547 0.2526 0.2567          63            42500.00                           NaN 2026-11-09
+                                    GSA only    115200  295322 0.3901 0.3883 0.3918           1              142.99                           NaN 2026-11-09
+          other civilian agencies except GSA     21220   73015 0.2906 0.2873 0.2939          58            25668.75                           NaN 2026-11-09
+agencies with fewer than 200 competed awards       505    1588 0.3180 0.2956 0.3413          44           194350.00                           NaN 2026-11-09
+
+BY AGENCY (competed awards with usable offers >= 200), highest share first
+                                       agency abbreviation  n_eval  k_single  share  ci_lo  ci_hi
+                 U.S. Agency for Global Media        USAGM     281       209  0.744  0.690  0.791
+                  District of Columbia Courts    DC COURTS     342       144  0.421  0.370  0.474
+      Department of Health and Human Services          HHS    9590      3865  0.403  0.393  0.413
+                        Department of Justice          DOJ   29088     11374  0.391  0.385  0.397
+              General Services Administration          GSA  295322    115200  0.390  0.388  0.392
+                      Department of Education           ED     250        95  0.380  0.322  0.442
+               Department of Veterans Affairs           VA   27017      9535  0.353  0.347  0.359
+              Environmental Protection Agency          EPA     941       289  0.307  0.278  0.337
+                   Department of the Treasury        TREAS    2606       742  0.285  0.268  0.302
+               Social Security Administration          SSA     218        62  0.284  0.229  0.348
+              Department of Homeland Security          DHS   15159      4031  0.266  0.259  0.273
+                 Department of Transportation          DOT    5264      1271  0.241  0.230  0.253
+                          Department of Labor          DOL     221        53  0.240  0.188  0.300
+         Agency for International Development        USAID    1500       328  0.219  0.198  0.240
+                          Department of State          DOS   23270      4904  0.211  0.206  0.216
+                       Department of Commerce          DOC    3396       673  0.198  0.185  0.212
+                   Department of the Interior          DOI   15880      2844  0.179  0.173  0.185
+                         Department of Energy          DOE     920       147  0.160  0.138  0.185
+National Aeronautics and Space Administration         NASA    3130       424  0.135  0.124  0.148
+                    Department of Agriculture         USDA   30026      1971  0.066  0.063  0.069
+
+44 smaller agencies (fewer than 200 competed awards each) are pooled in the totals above.
+
+BY FISCAL YEAR
+  fy  k_single  n_eval  share  ci_lo  ci_hi                            scope
+2024     72052  162252 0.4441 0.4417 0.4465            all civilian agencies
+2025     58191  148585 0.3916 0.3892 0.3941            all civilian agencies
+2026     28423  155172 0.1832 0.1813 0.1851            all civilian agencies
+2024     18306   65609 0.2790 0.2756 0.2825 all civilian agencies except GSA
+2025     14269   54314 0.2627 0.2590 0.2664 all civilian agencies except GSA
+2026     10891   50764 0.2145 0.2110 0.2181 all civilian agencies except GSA
+2024     53746   96643 0.5561 0.5530 0.5593                         GSA only
+2025     43922   94271 0.4659 0.4627 0.4691                         GSA only
+2026     17532  104408 0.1679 0.1657 0.1702                         GSA only
+
+BY AWARD KIND (PO = purchase order, DEF = definitive contract, IDV = contract vehicle)
+award_kind  k_single  n_eval  share  ci_lo  ci_hi                            scope
+       DEF      5514   25898 0.2129 0.2080 0.2179            all civilian agencies
+       IDV      2161   27970 0.0773 0.0742 0.0804            all civilian agencies
+        PO    150991  412141 0.3664 0.3649 0.3678            all civilian agencies
+       DEF      2691   22779 0.1181 0.1140 0.1224 all civilian agencies except GSA
+       IDV      2044   24169 0.0846 0.0811 0.0881 all civilian agencies except GSA
+        PO     38731  123739 0.3130 0.3104 0.3156 all civilian agencies except GSA
+       DEF      2823    3119 0.9051 0.8943 0.9149                         GSA only
+       IDV       117    3801 0.0308 0.0257 0.0368                         GSA only
+        PO    112260  288402 0.3892 0.3875 0.3910                         GSA only
+
+BY SET-ASIDE TYPE
+  setaside_grp  k_single  n_eval  share  ci_lo  ci_hi                            scope
+       HUBZone       631     819 0.7705 0.7404 0.7980                         GSA only
+  no set-aside    113754  205569 0.5534 0.5512 0.5555                         GSA only
+   other/blank        65     332 0.1958 0.1567 0.2418                         GSA only
+   WOSB/EDWOSB        11     543 0.0203 0.0113 0.0359                         GSA only
+        SDVOSB        10     546 0.0183 0.0100 0.0334                         GSA only
+          8(a)         7     536 0.0131 0.0063 0.0267                         GSA only
+small business       722   86977 0.0083 0.0077 0.0089                         GSA only
+       HUBZone       680    1177 0.5777 0.5493 0.6057            all civilian agencies
+  no set-aside    146492  288146 0.5084 0.5066 0.5102            all civilian agencies
+   other/blank       792    2655 0.2983 0.2812 0.3160            all civilian agencies
+          VOSB        20     122 0.1639 0.1087 0.2397            all civilian agencies
+         other       402    2492 0.1613 0.1474 0.1763            all civilian agencies
+        SDVOSB      1550   10809 0.1434 0.1369 0.1501            all civilian agencies
+   WOSB/EDWOSB       126    1027 0.1227 0.1040 0.1442            all civilian agencies
+          8(a)        73     935 0.0781 0.0626 0.0970            all civilian agencies
+small business      8531  158646 0.0538 0.0527 0.0549            all civilian agencies
+  no set-aside     32738   82577 0.3965 0.3931 0.3998 all civilian agencies except GSA
+   other/blank       727    2323 0.3130 0.2944 0.3321 all civilian agencies except GSA
+   WOSB/EDWOSB       115     484 0.2376 0.2018 0.2775 all civilian agencies except GSA
+          8(a)        66     399 0.1654 0.1322 0.2050 all civilian agencies except GSA
+          VOSB        20     122 0.1639 0.1087 0.2397 all civilian agencies except GSA
+         other       402    2492 0.1613 0.1474 0.1763 all civilian agencies except GSA
+        SDVOSB      1540   10263 0.1501 0.1433 0.1571 all civilian agencies except GSA
+       HUBZone        49     358 0.1369 0.1051 0.1764 all civilian agencies except GSA
+small business      7809   71669 0.1090 0.1067 0.1113 all civilian agencies except GSA
+
+CHECK: the original five departments, published download (Oct 24, 2026) vs this download
+                                 agency  k_single_original  n_eval_original  share_original  k_single_new  n_eval_new  share_new  share_change_points
+        Department of Homeland Security               4022            15149          0.2655          4031       15159     0.2659               0.0419
+             Department of the Interior               2844            15879          0.1791          2844       15880     0.1791              -0.0011
+Department of Health and Human Services               3868             9592          0.4033          3865        9590     0.4030              -0.0229
+              Department of Agriculture               1961            30006          0.0654          1971       30026     0.0656               0.0290
+         Department of Veterans Affairs               9535            27017          0.3529          9535       27017     0.3529               0.0000

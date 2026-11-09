@@ -25,6 +25,9 @@ table { width:100%; border-collapse:collapse; font-size:.94rem; }
 th, td { text-align:left; padding:8px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
 th { color:var(--muted); font-weight:600; cursor:pointer; user-select:none; } th:hover { color:var(--accent); }
 table.wrapcells td { white-space:normal; } table.wrapcells td:last-child { white-space:nowrap; }
+table.civ td:first-child { white-space:normal; min-width:190px; }
+.bar { display:inline-block; width:84px; height:8px; margin-right:8px; vertical-align:middle; background:var(--soft); border-radius:4px; overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--accent); border-radius:4px; }
 code { font-size:.8rem; word-break:break-all; white-space:normal; }
 .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:var(--soft); color:var(--accent); font-size:.8rem; font-weight:600; }
 a { color:var(--accent); } .theme { float:right; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:4px 10px; cursor:pointer; font:inherit; font-size:.85rem; }
@@ -34,11 +37,12 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
 <body><div class="wrap">
 <button class="theme" id="theme" type="button">Theme</button>
 <h1>Federal Contract Competition: Findings &amp; Forecasts</h1>
-<p class="sub">How often do competed federal contracts get only one bid, and do purchases bunch under dollar limits? Five civilian departments (VA, HHS, DHS, Interior, USDA), fiscal years 2024–2026. Department of Defense not included.</p>
+<p class="sub">How often do competed federal contracts get only one bid, and do purchases bunch under dollar limits? Civilian agencies, fiscal years 2024–2026; the Department of Defense is not included. The threshold test and the agency table cover every civilian agency. The in-depth single-bid analysis and the forecasts cover five departments: VA, HHS, DHS, Interior and USDA.</p>
 <p class="sub">By <a href="https://github.com/e-burress">Ellie Burress</a> · data through Sep 30, 2026 · <a href="https://github.com/e-burress/federal-contract-competition">code and data</a> · <a href="methodology">methodology</a></p>
 
 <div class="kpis">
-  <div class="card kpi"><b>22.8%</b><span>of 97,643 competed awards got only one offer</span></div>
+  <div class="card kpi"><b>22.8%</b><span>of 97,643 competed awards in five departments got only one offer</span></div>
+  <div class="card kpi"><b>25.5%</b><span>of 170,687 competed awards across 63 civilian agencies (all except GSA) got only one offer</span></div>
   <div class="card kpi"><b>0.97 → 1.95</b><span>pile-up just under the new $350K line, before vs. after it took effect (1.0 = none)</span></div>
   <div class="card kpi"><b>0.75</b><span>accuracy (AUC) of the single-bid forecast on unseen data, vs. 0.62 for a simple baseline</span></div>
   <div class="card kpi"><b>150</b><span>open solicitations with sealed single-bid forecasts, scored by Mar 31, 2027</span></div>
@@ -47,14 +51,14 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
 <h2>1. When the threshold moved, the pile-up moved</h2>
 <div class="card">
   <img src="figures/threshold_shift.png" alt="Award counts near $250K and $350K before and after the October 2025 threshold change">
-  <p class="note">On Oct 1, 2025, the simplified-acquisition threshold rose from $250K to $350K. The pile-up just under $250K fell from 1.79 to 1.24, and a new one formed under $350K (0.97 → 1.95). Comparison lines at $200K and $450K, where nothing changed, did not move.</p>
+  <p class="note">On Oct 1, 2025, the simplified-acquisition threshold rose from $250K to $350K. Across all civilian agencies, the pile-up just under $250K fell from 1.79 to 1.24, and a new one formed under $350K (0.97 → 1.95). Comparison lines at $200K and $450K, where nothing changed, did not move.</p>
 </div>
 <div class="card" style="margin-top:12px">
   <img src="figures/bunching_by_quarter.png" alt="Bunching ratio by fiscal quarter for $250K and $350K">
-  <p class="note">Bunching ratio by fiscal quarter, with 95% intervals. Civilian purchase orders and definitive contracts.</p>
+  <p class="note">Bunching ratio by fiscal quarter, with 95% intervals. Purchase orders and definitive contracts of all civilian agencies.</p>
 </div>
 
-<h2>2. About one in four competed awards got a single offer</h2>
+<h2>2. Five departments: about one in four competed awards got a single offer</h2>
 <div class="card">
   <img src="figures/single_offer_by_agency.png" alt="Single-offer share by department and fiscal year">
 </div>
@@ -74,7 +78,15 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <p class="note">Awards open to everyone (no set-aside) drew a single offer far more often than small-business set-asides.</p>
 </div>
 
-<h2>3. Forecast scoreboard</h2>
+<h2>3. Every civilian agency</h2>
+<div class="card"><p class="sub" style="margin:0 0 12px">Across all 64 civilian agencies, <b>34.0%</b> of 466,009 competed awards got a single offer. GSA accounts for 63% of those awards, mostly very small supply orders (median $143), so without GSA the share is <b>25.5%</b> (170,687 awards). Outside GSA and the five departments above, it is <b>29.1%</b> (73,015 awards).</p>
+<div class="tablewrap"><table class="sortable civ">
+  <thead><tr><th>Agency</th><th>Single-offer share</th><th>95% interval</th><th>Competed awards</th><th>FY2024 → FY2025 → FY2026</th></tr></thead>
+  <tbody><tr><td>U.S. Agency for Global Media (USAGM)</td><td data-v='0.7437722419928826'><span class='bar'><i style='width:100.0%'></i></span><b>74.4%</b></td><td>69.0%–79.1%</td><td data-v='281'>281</td><td>84.5% → 65.2% → 52.5%</td></tr><tr><td>District of Columbia Courts (DC COURTS)</td><td data-v='0.42105263157894735'><span class='bar'><i style='width:56.6%'></i></span><b>42.1%</b></td><td>37.0%–47.4%</td><td data-v='342'>342</td><td>35.9% → 36.0% → 52.8%</td></tr><tr><td>Health and Human Services (HHS) <span class='pill'>section 2</span></td><td data-v='0.4030239833159541'><span class='bar'><i style='width:54.2%'></i></span><b>40.3%</b></td><td>39.3%–41.3%</td><td data-v='9590'>9,590</td><td>41.8% → 39.6% → 38.1%</td></tr><tr><td>Justice (DOJ)</td><td data-v='0.3910203520352035'><span class='bar'><i style='width:52.6%'></i></span><b>39.1%</b></td><td>38.5%–39.7%</td><td data-v='29088'>29,088</td><td>38.8% → 38.5% → 40.1%</td></tr><tr><td>General Services Administration (GSA)</td><td data-v='0.3900826894034308'><span class='bar'><i style='width:52.4%'></i></span><b>39.0%</b></td><td>38.8%–39.2%</td><td data-v='295322'>295,322</td><td>55.6% → 46.6% → 16.8%</td></tr><tr><td>Education (ED)</td><td data-v='0.38'><span class='bar'><i style='width:51.1%'></i></span><b>38.0%</b></td><td>32.2%–44.2%</td><td data-v='250'>250</td><td>59.6% → 19.3% → 5.3%</td></tr><tr><td>Veterans Affairs (VA) <span class='pill'>section 2</span></td><td data-v='0.3529259355220787'><span class='bar'><i style='width:47.5%'></i></span><b>35.3%</b></td><td>34.7%–35.9%</td><td data-v='27017'>27,017</td><td>37.4% → 36.8% → 30.1%</td></tr><tr><td>Environmental Protection Agency (EPA)</td><td data-v='0.3071200850159405'><span class='bar'><i style='width:41.3%'></i></span><b>30.7%</b></td><td>27.8%–33.7%</td><td data-v='941'>941</td><td>37.5% → 29.8% → 22.2%</td></tr><tr><td>Treasury (TREAS)</td><td data-v='0.2847275518035303'><span class='bar'><i style='width:38.3%'></i></span><b>28.5%</b></td><td>26.8%–30.2%</td><td data-v='2606'>2,606</td><td>31.7% → 29.4% → 18.7%</td></tr><tr><td>Social Security Administration (SSA)</td><td data-v='0.28440366972477066'><span class='bar'><i style='width:38.2%'></i></span><b>28.4%</b></td><td>22.9%–34.8%</td><td data-v='218'>218</td><td>38.3% → 25.0% → 15.4%</td></tr><tr><td>Homeland Security (DHS) <span class='pill'>section 2</span></td><td data-v='0.26591463816874467'><span class='bar'><i style='width:35.8%'></i></span><b>26.6%</b></td><td>25.9%–27.3%</td><td data-v='15159'>15,159</td><td>31.0% → 27.8% → 20.3%</td></tr><tr><td>Transportation (DOT)</td><td data-v='0.241451367781155'><span class='bar'><i style='width:32.5%'></i></span><b>24.1%</b></td><td>23.0%–25.3%</td><td data-v='5264'>5,264</td><td>28.2% → 23.7% → 20.0%</td></tr><tr><td>Labor (DOL)</td><td data-v='0.2398190045248869'><span class='bar'><i style='width:32.2%'></i></span><b>24.0%</b></td><td>18.8%–30.0%</td><td data-v='221'>221</td><td>27.8% → 22.0% → 22.2%</td></tr><tr><td>Agency for International Development (USAID)</td><td data-v='0.21866666666666668'><span class='bar'><i style='width:29.4%'></i></span><b>21.9%</b></td><td>19.8%–24.0%</td><td data-v='1500'>1,500</td><td>23.3% → 16.3% → 13.3%</td></tr><tr><td>State (DOS)</td><td data-v='0.21074344649763643'><span class='bar'><i style='width:28.3%'></i></span><b>21.1%</b></td><td>20.6%–21.6%</td><td data-v='23270'>23,270</td><td>20.5% → 20.6% → 23.0%</td></tr><tr><td>Commerce (DOC)</td><td data-v='0.1981743227326266'><span class='bar'><i style='width:26.6%'></i></span><b>19.8%</b></td><td>18.5%–21.2%</td><td data-v='3396'>3,396</td><td>25.1% → 19.4% → 14.5%</td></tr><tr><td>Interior (DOI) <span class='pill'>section 2</span></td><td data-v='0.17909319899244333'><span class='bar'><i style='width:24.1%'></i></span><b>17.9%</b></td><td>17.3%–18.5%</td><td data-v='15880'>15,880</td><td>20.6% → 17.5% → 14.9%</td></tr><tr><td>Energy (DOE)</td><td data-v='0.15978260869565217'><span class='bar'><i style='width:21.5%'></i></span><b>16.0%</b></td><td>13.8%–18.5%</td><td data-v='920'>920</td><td>17.1% → 15.8% → 14.7%</td></tr><tr><td>National Aeronautics and Space Administration (NASA)</td><td data-v='0.13546325878594248'><span class='bar'><i style='width:18.2%'></i></span><b>13.5%</b></td><td>12.4%–14.8%</td><td data-v='3130'>3,130</td><td>16.0% → 10.9% → 13.7%</td></tr><tr><td>Agriculture (USDA) <span class='pill'>section 2</span></td><td data-v='0.06564310930526877'><span class='bar'><i style='width:8.8%'></i></span><b>6.6%</b></td><td>6.3%–6.9%</td><td data-v='30026'>30,026</td><td>9.8% → 6.7% → 4.1%</td></tr></tbody></table></div>
+  <p class="note">Tap a column heading to sort. Agencies with at least 200 competed awards with a usable offer count; the other 44 smaller agencies together: 31.8% of 1,588 awards. Same definitions as section 2. GSA's drop comes almost entirely from its supply orders, which recorded one offer on 55% of orders in FY2024 but 17% in FY2026; that may reflect a change in how those automated orders are recorded rather than more competition. Downloaded Nov 9, 2026: agencies kept reporting late awards after the first analysis, so in this newer download the five departments' shares differ from section 2 by at most 0.0 percentage points.</p>
+</div>
+
+<h2>4. Forecast scoreboard</h2>
 <div class="card"><div class="tablewrap"><table class="wrapcells">
   <thead><tr><th>Forecast</th><th>What it predicts</th><th>Resolves</th><th>Result</th></tr></thead>
   <tbody>
@@ -84,7 +96,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <p class="note">Both forecasts were sealed on Oct 24, 2026, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>a8d1bb3319bf2fc1439550ee99c971742408a99a4772db426b26dec15f0657d2</code> · PIO-F2 <code>5a7009ba0f17e953bd1fea32d2b7fe9241a849b85222266506c5312e4790c43b</code>. PIO-F2 is <a href="https://github.com/e-burress/federal-contract-competition/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 will be posted unchanged when it is scored.</p>
 </div>
 
-<h2 id="tracking">4. Forecast progress (updated weekly)</h2>
+<h2 id="tracking">5. Forecast progress (updated weekly)</h2>
 <div class="card"><div class="tablewrap"><table>
   <thead><tr><th>PIO-F2 quantity</th><th>Forecast (80% range)</th><th>So far</th><th>95% interval so far</th><th>So far vs. range</th></tr></thead>
   <tbody><tr><td>Pile-up under $350K</td><td>2.03 (1.40–2.66)</td><td><b>1.76</b></td><td>0.79–5.29</td><td>inside</td></tr><tr><td>Pile-up under $250K</td><td>1.23 (0.88–1.58)</td><td><b>1.88</b></td><td>1.21–3.03</td><td>outside</td></tr><tr><td>Share of $10K–$20K orders under $15K</td><td>36.1% (32.0%–40.1%)</td><td><b>33.2%</b></td><td>29.7%–37.1%</td><td>inside</td></tr></tbody></table></div>
