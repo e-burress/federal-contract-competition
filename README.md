@@ -126,10 +126,12 @@ sha256sum forecasts/PIO-F2-threshold-fy2027q1-20261024.json
 | 8 | `08_model_forecast.py` | Model training, out-of-time test, live probabilities |
 | 9–12 | `09_…`, `10_…`, `11_…`, `12_…` | Pre-registration, resolution backtest and scoring |
 | — | `make_figures.py` | The charts in this README |
-| 13 | `13_track_threshold.py` | Weekly provisional check of PIO-F2 against the FY2027 Q1 data so far; runs the official score after the resolution date |
+| 13 | `13_track_threshold.py` | Daily provisional check of PIO-F2 against the FY2027 Q1 data so far; runs the official score after the resolution date |
+| 14 | `14_sam_daily_snapshot.py` | Saves SAM.gov's nightly list of active notices (contact details removed) and updates daily counts of open solicitations |
+| 15 | `15_civilian_fytd.py` | Live single-offer table for every civilian agency, this fiscal year so far |
 | — | `build_dashboard.py` | The [public dashboard](https://e-burress.github.io/federal-contract-competition/) (`docs/index.html`) |
 
-A GitHub Actions job (`.github/workflows/weekly-refresh.yml`) runs steps 13 and the dashboard build every Monday and publishes the result. It checks the sealed PIO-F2 fingerprint on every run and never changes the forecast files.
+A GitHub Actions job (`.github/workflows/daily-refresh.yml`) runs steps 14, 15 and 13 and the dashboard build every morning and publishes the result. It checks the sealed PIO-F2 fingerprint on every run and never changes the forecast files. The full daily SAM.gov snapshots are kept in draft (non-public) releases of this repository; the daily counts in `results/sam_daily_counts.csv` are public.
 
 Details, definitions and data-quality notes are in [`docs/methodology.md`](docs/methodology.md).
 

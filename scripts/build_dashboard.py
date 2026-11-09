@@ -137,6 +137,57 @@ def fmt(name, x):
     return "—" if x is None else (pct(x) if name.startswith("po_share") else f"{x:.2f}")
 
 
+# ---- live, refreshed every morning: this fiscal year so far (15_civilian_fytd.py) and today's open solicitations
+# (14_sam_daily_snapshot.py); each part is left out until its results exist ---------------------------------------
+LIVE_MIN = 50
+
+
+def sam_name(d):
+    """'VETERANS AFFAIRS, DEPARTMENT OF' -> 'Veterans Affairs'"""
+    n = d.split(",")[0] if ", DEPARTMENT OF" in d else d
+    n = n.title()
+    for w in ("And", "Of", "For", "The"):
+        n = n.replace(f" {w} ", f" {w.lower()} ")
+    return n
+
+
+live_parts, live_tiles = [], []
+lt_files = sorted(f for f in os.listdir(RES) if f.startswith("live_fy") and f.endswith("_totals.json"))
+if lt_files:
+    lt = json.load(open(os.path.join(RES, lt_files[-1]), encoding="utf-8"))
+    lx = lt["excluding_gsa"]
+    lrows = sorted((r for r in rows(f"live_fy{lt['fiscal_year']}_by_agency.csv") if int(r["n_eval"]) >= LIVE_MIN),
+                   key=lambda r: -float(r["share"]))
+    ltop = max([float(r["share"]) for r in lrows] or [1])
+    ltr = "".join(
+        f"<tr><td>{esc(short_name(r['agency']))}{' (' + esc(r['abbreviation']) + ')' if r['abbreviation'] else ''}</td>"
+        f"<td data-v='{r['share']}'><span class='bar'><i style='width:{100 * float(r['share']) / ltop:.1f}%'></i></span><b>{pct(r['share'])}</b></td>"
+        f"<td>{pct(r['ci_lo'])}–{pct(r['ci_hi'])}</td><td data-v='{r['n_eval']}'>{int(r['n_eval']):,}</td></tr>" for r in lrows)
+    live_tiles.append(f'<div class="card kpi"><b>{pct(lx["share"])}</b><span>of {lx["n_eval"]:,} competed awards so far in FY{lt["fiscal_year"]} got only one offer (civilian agencies except GSA)</span></div>')
+    live_parts.append(f"""<p class="sub" style="margin:0 0 10px">Fiscal year {lt['fiscal_year']} so far: awards dated {nice(lt['data_from'])} to {nice(lt['data_to'])}, every civilian agency. With GSA's very small supply orders included, the share is {pct(lt['share'])} of {lt['n_eval']:,} awards. USAspending's latest data load: {nice(lt['usaspending_last_updated']) if lt['usaspending_last_updated'] else 'unknown'}.</p>
+<div class="tablewrap"><table class="sortable civ">
+  <thead><tr><th>Agency</th><th>Single-offer share so far</th><th>95% interval</th><th>Competed awards so far</th></tr></thead>
+  <tbody>{ltr}</tbody></table></div>
+<p class="note">Agencies with at least {LIVE_MIN} competed awards so far. The newest weeks are always incomplete: agencies have three business days to report an award, data loads happen on business days, and corrections keep arriving for weeks. Early-year shares are based on few awards and move a lot; compare them with the full-year shares in section 3.</p>""")
+sam_path = os.path.join(RES, "sam_daily_latest.json")
+if os.path.exists(sam_path):
+    sd = json.load(open(sam_path, encoding="utf-8"))
+    op = sd["open_solicitations"]
+    live_tiles.append(f'<div class="card kpi"><b>{op["civilian"]["distinct_sol_numbers"]:,}</b><span>civilian solicitations open today ({op["dod"]["distinct_sol_numbers"]:,} more at Defense); {op["deadline_next_7d_civilian"]["distinct_sol_numbers"]:,} civilian ones close within 7 days</span></div>')
+    srows = "".join(f"<tr><td>{esc(sam_name(d['department']))}</td><td data-v='{d['open_distinct_sol_numbers']}'>{d['open_distinct_sol_numbers']:,}</td></tr>"
+                    for d in sorted(sd["top10_civilian_departments_by_open_solicitations"], key=lambda d: -d["open_distinct_sol_numbers"]))
+    live_parts.append(f"""<h3 style="margin:22px 0 8px;font-size:1.05rem">Open solicitations today (SAM.gov, {nice(sd['snapshot_date'])})</h3>
+<div class="tablewrap"><table class="sortable">
+  <thead><tr><th>Civilian department</th><th>Open solicitations</th></tr></thead>
+  <tbody>{srows}</tbody></table></div>
+<p class="note">Distinct solicitation numbers with a response deadline on or after today, from SAM.gov's nightly list of active notices. Defense solicitations are public right away, even though Defense awards are published 90 days late.</p>""")
+live_html = ""
+if live_parts:
+    live_html = f"""
+<h2 id="live">Live: updated every morning</h2>
+<div class="kpis" style="margin-top:0">{''.join(live_tiles)}</div>
+<div class="card" style="margin-top:12px">{''.join(live_parts)}</div>"""
+
 if off:
     hits = sum(r["inside_interval80"] for r in off["results"])
     f2_result = f"<span class='pill'>Scored: {hits} of {len(off['results'])} inside the 80% range</span>"
@@ -154,7 +205,7 @@ if trk:
                    f"({fmt(q['name'], lo)}–{fmt(q['name'], hi)})</td><td><b>{fmt(q['name'], q['so_far'])}</b></td>"
                    f"<td>{'—' if not ci else fmt(q['name'], ci[0]) + '–' + fmt(q['name'], ci[1])}</td><td>{state}</td></tr>")
     track_html = f"""
-<h2 id="tracking">5. Forecast progress (updated weekly)</h2>
+<h2 id="tracking">5. Forecast progress (updated daily)</h2>
 <div class="card"><div class="tablewrap"><table>
   <thead><tr><th>PIO-F2 quantity</th><th>Forecast (80% range)</th><th>So far</th><th>95% interval so far</th><th>So far vs. range</th></tr></thead>
   <tbody>{''.join(trs)}</tbody></table></div>
@@ -219,6 +270,8 @@ footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
   <div class="card kpi"><b>{float(ours['auc']):.2f}</b><span>accuracy (AUC) of the single-bid forecast on unseen data, vs. {float(base['auc']):.2f} for a simple baseline</span></div>
   <div class="card kpi"><b>150</b><span>open solicitations with sealed single-bid forecasts, scored by Mar 31, 2027</span></div>
 </div>
+
+{live_html}
 
 <h2>1. When the threshold moved, the pile-up moved</h2>
 <div class="card">

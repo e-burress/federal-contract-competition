@@ -1,0 +1,138 @@
+{
+ "snapshot_date": "2026-11-09",
+ "built_utc": "2026-11-09T21:41:15Z",
+ "source": "SAM.gov Contract Opportunities Full CSV (active notices only)",
+ "total_active_notices": 70329,
+ "by_type": {
+  "Combined Synopsis/Solicitation": 21225,
+  "Solicitation": 19163,
+  "Award Notice": 11466,
+  "Presolicitation": 6965,
+  "Sources Sought": 5135,
+  "Special Notice": 5025,
+  "Modification/Amendment/Cancel": 648,
+  "Justification": 599,
+  "Justification and Approval (J&A)": 81,
+  "Sale of Surplus Property": 14,
+  "Consolidate/(Substantially) Bundle": 8
+ },
+ "solicitation_types": [
+  "Solicitation",
+  "Combined Synopsis/Solicitation"
+ ],
+ "active_solicitations_in_file": {
+  "notice_rows": 40388,
+  "distinct_sol_numbers": 21994
+ },
+ "active_solicitations_deadline_passed": {
+  "notice_rows": 30738,
+  "distinct_sol_numbers": 15870
+ },
+ "active_solicitations_no_deadline": {
+  "notice_rows": 230,
+  "distinct_sol_numbers": 181
+ },
+ "open_solicitations": {
+  "definition": "solicitation type and response deadline on or after 00:00 UTC of the snapshot date",
+  "all": {
+   "notice_rows": 9420,
+   "distinct_sol_numbers": 6793
+  },
+  "dod": {
+   "notice_rows": 7322,
+   "distinct_sol_numbers": 5708
+  },
+  "civilian": {
+   "notice_rows": 2098,
+   "distinct_sol_numbers": 1085
+  },
+  "dod_department_label": "DEPT OF DEFENSE",
+  "deadline_next_7d": {
+   "notice_rows": 3158,
+   "distinct_sol_numbers": 2534
+  },
+  "deadline_next_30d": {
+   "notice_rows": 7764,
+   "distinct_sol_numbers": 6261
+  },
+  "deadline_next_7d_civilian": {
+   "notice_rows": 714,
+   "distinct_sol_numbers": 428
+  },
+  "deadline_next_30d_civilian": {
+   "notice_rows": 1622,
+   "distinct_sol_numbers": 952
+  }
+ },
+ "top10_civilian_departments_by_open_solicitations": [
+  {
+   "department": "VETERANS AFFAIRS, DEPARTMENT OF",
+   "open_notice_rows": 484,
+   "open_distinct_sol_numbers": 245
+  },
+  {
+   "department": "AGRICULTURE, DEPARTMENT OF",
+   "open_notice_rows": 234,
+   "open_distinct_sol_numbers": 127
+  },
+  {
+   "department": "HOMELAND SECURITY, DEPARTMENT OF",
+   "open_notice_rows": 199,
+   "open_distinct_sol_numbers": 127
+  },
+  {
+   "department": "INTERIOR, DEPARTMENT OF THE",
+   "open_notice_rows": 199,
+   "open_distinct_sol_numbers": 121
+  },
+  {
+   "department": "GENERAL SERVICES ADMINISTRATION",
+   "open_notice_rows": 181,
+   "open_distinct_sol_numbers": 45
+  },
+  {
+   "department": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
+   "open_notice_rows": 171,
+   "open_distinct_sol_numbers": 72
+  },
+  {
+   "department": "JUSTICE, DEPARTMENT OF",
+   "open_notice_rows": 156,
+   "open_distinct_sol_numbers": 85
+  },
+  {
+   "department": "TRANSPORTATION, DEPARTMENT OF",
+   "open_notice_rows": 116,
+   "open_distinct_sol_numbers": 38
+  },
+  {
+   "department": "ENERGY, DEPARTMENT OF",
+   "open_notice_rows": 107,
+   "open_distinct_sol_numbers": 60
+  },
+  {
+   "department": "STATE, DEPARTMENT OF",
+   "open_notice_rows": 87,
+   "open_distinct_sol_numbers": 70
+  }
+ ],
+ "windows": "next_7d = deadline in [start, start+7d), next_30d = [start, start+30d), start = 00:00 UTC of the snapshot date",
+ "kw_flag_counts_among_open_solicitations": {
+  "kw_brand": 43,
+  "kw_sole": 78
+ },
+ "quality": {
+  "encoding": "decoded as UTF-8 with cp1252 fallback: 1,506 valid UTF-8 multi-byte sequences, 85,303 stray bytes decoded as cp1252",
+  "raw_rows_read": 70329,
+  "malformed_rows_skipped": 0,
+  "rows_kept": 70329,
+  "extra_columns_ignored": [],
+  "rows_without_notice_id_dropped": 0,
+  "duplicate_notice_ids_dropped": 0,
+  "posted_date_unparsed": 0,
+  "response_deadline_unparsed": 0,
+  "archive_date_unparsed": 0,
+  "award_date_unparsed": 0,
+  "award_amount_unparsed": 6
+ }
+}

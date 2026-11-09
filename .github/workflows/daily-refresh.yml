@@ -1,0 +1,69 @@
+# Every morning: save SAM.gov's nightly list of open notices, update the live single-offer table for every civilian agency,
+# check how the sealed threshold forecast (PIO-F2) is tracking, rebuild the dashboard, and publish it.
+# After the resolution date (Feb 28, 2027) the same run produces F2's official score once.
+# The sealed forecast files are never changed. Run it by hand from the Actions tab ("Run workflow").
+name: Daily dashboard refresh
+
+on:
+  schedule:
+    - cron: "0 12 * * *"     # every day 12:00 UTC (7 AM Eastern in winter, 8 AM in summer); SAM.gov's file is rebuilt ~04:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write            # commit the results, and keep the daily SAM.gov snapshots in draft (non-public) releases
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PIO_CONTACT: https://github.com/e-burress/federal-contract-competition
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      # The data steps keep going if one source is down: the dashboard still updates with what worked,
+      # and the run is marked failed so GitHub sends a notification.
+      - name: Save today's SAM.gov list of open notices (snapshot kept private) and update the daily counts
+        run: python -I scripts/14_sam_daily_snapshot.py --upload
+
+      - name: Live single-offer table, every civilian agency, this fiscal year so far
+        if: ${{ !cancelled() }}
+        run: python -I scripts/15_civilian_fytd.py
+
+      - name: Check the threshold forecast (and score it after the resolution date)
+        if: ${{ !cancelled() }}
+        run: python -I scripts/13_track_threshold.py
+
+      - name: Rebuild the dashboard
+        if: ${{ !cancelled() }}
+        run: python -I scripts/build_dashboard.py
+
+      - name: Check the sealed forecast is unchanged
+        id: seal
+        if: ${{ !cancelled() }}
+        run: |
+          cd forecasts
+          grep PIO-F2 SHA256SUMS.txt | awk '{print $1"  "$2}' | sha256sum -c -
+
+      - name: Publish
+        if: ${{ !cancelled() && steps.seal.outcome == 'success' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results docs
+          if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
+          git commit -m "Daily refresh: $(date -u +%Y-%m-%d)"
+          git push
