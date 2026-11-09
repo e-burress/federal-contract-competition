@@ -1,0 +1,201 @@
+{
+  "n_flags": 85,
+  "by_metric": {
+    "competed": 28,
+    "volume": 27,
+    "offers_1": 14,
+    "offers_3": 6,
+    "offers_unusable": 5,
+    "offers_2": 5
+  },
+  "top_15": [
+    {
+      "agency": "General Services Administration",
+      "award_kind": "IDV",
+      "quarter": "FY2025Q1",
+      "metric": "volume",
+      "before": 401.0,
+      "after": 2805.0,
+      "change_points": 599.501246882793,
+      "z": null,
+      "n_before": 401,
+      "n_after": 2805
+    },
+    {
+      "agency": "USDA",
+      "award_kind": "IDV",
+      "quarter": "FY2026Q4",
+      "metric": "volume",
+      "before": 427.0,
+      "after": 2199.0,
+      "change_points": 414.9882903981265,
+      "z": null,
+      "n_before": 427,
+      "n_after": 2199
+    },
+    {
+      "agency": "General Services Administration",
+      "award_kind": "IDV",
+      "quarter": "FY2025Q3",
+      "metric": "volume",
+      "before": 573.0,
+      "after": 1282.0,
+      "change_points": 123.73472949389179,
+      "z": null,
+      "n_before": 573,
+      "n_after": 1282
+    },
+    {
+      "agency": "DOI",
+      "award_kind": "PO",
+      "quarter": "FY2025Q3",
+      "metric": "volume",
+      "before": 1818.0,
+      "after": 4055.0,
+      "change_points": 123.04730473047303,
+      "z": null,
+      "n_before": 1818,
+      "n_after": 4055
+    },
+    {
+      "agency": "USDA",
+      "award_kind": "IDV",
+      "quarter": "FY2026Q3",
+      "metric": "volume",
+      "before": 2794.0,
+      "after": 297.0,
+      "change_points": -89.37007874015748,
+      "z": null,
+      "n_before": 2794,
+      "n_after": 297
+    },
+    {
+      "agency": "General Services Administration",
+      "award_kind": "IDV",
+      "quarter": "FY2026Q1",
+      "metric": "volume",
+      "before": 2805.0,
+      "after": 426.0,
+      "change_points": -84.81283422459893,
+      "z": null,
+      "n_before": 2805,
+      "n_after": 426
+    },
+    {
+      "agency": "General Services Administration",
+      "award_kind": "DEF",
+      "quarter": "FY2025Q4",
+      "metric": "volume",
+      "before": 855.0,
+      "after": 211.0,
+      "change_points": -75.3216374269006,
+      "z": null,
+      "n_before": 855,
+      "n_after": 211
+    },
+    {
+      "agency": "General Services Administration",
+      "award_kind": "IDV",
+      "quarter": "FY2026Q3",
+      "metric": "volume",
+      "before": 1282.0,
+      "after": 344.0,
+      "change_points": -73.16692667706708,
+      "z": null,
+      "n_before": 1282,
+      "n_after": 344
+    },
+    {
+      "agency": "HHS",
+      "award_kind": "PO",
+      "quarter": "FY2026Q1",
+      "metric": "volume",
+      "before": 864.0,
+      "after": 238.0,
+      "change_points": -72.4537037037037,
+      "z": null,
+      "n_before": 864,
+      "n_after": 238
+    },
+    {
+      "agency": "General Services Administration",
+      "award_kind": "DEF",
+      "quarter": "FY2025Q4",
+      "metric": "competed",
+      "before": 78.51637764932563,
+      "after": 15.639810426540285,
+      "change_points": -62.87656722278534,
+      "z": -19.53612332866576,
+      "n_before": 2076,
+      "n_after": 211
+    },
+    {
+      "agency": "Department of State",
+      "award_kind": "IDV",
+      "quarter": "FY2026Q1",
+      "metric": "volume",
+      "before": 1895.0,
+      "after": 704.0,
+      "change_points": -62.84960422163588,
+      "z": null,
+      "n_before": 1895,
+      "n_after": 704
+    },
+    {
+      "agency": "USDA",
+      "award_kind": "PO",
+      "quarter": "FY2026Q3",
+      "metric": "volume",
+      "before": 670.0,
+      "after": 1072.0,
+      "change_points": 60.00000000000001,
+      "z": null,
+      "n_before": 670,
+      "n_after": 1072
+    },
+    {
+      "agency": "General Services Administration",
+      "award_kind": "PO",
+      "quarter": "FY2026Q3",
+      "metric": "volume",
+      "before": 33248.0,
+      "after": 52513.0,
+      "change_points": 57.943334937439836,
+      "z": null,
+      "n_before": 33248,
+      "n_after": 52513
+    },
+    {
+      "agency": "Department of the Treasury",
+      "award_kind": "PO",
+      "quarter": "FY2025Q3",
+      "metric": "volume",
+      "before": 539.0,
+      "after": 237.0,
+      "change_points": -56.029684601113175,
+      "z": null,
+      "n_before": 539,
+      "n_after": 237
+    },
+    {
+      "agency": "General Services Administration",
+      "award_kind": "IDV",
+      "quarter": "FY2025Q4",
+      "metric": "volume",
+      "before": 1487.0,
+      "after": 677.0,
+      "change_points": -54.47209145931405,
+      "z": null,
+      "n_before": 1487,
+      "n_after": 677
+    }
+  ],
+  "thresholds": {
+    "min_n": 200,
+    "z_bar": 6.0,
+    "min_points": 10.0,
+    "volume_pct": 40.0,
+    "baseline": "previous four quarters pooled (at least 2 present)",
+    "volume_baseline": "same quarter one year earlier"
+  }
+}

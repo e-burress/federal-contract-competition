@@ -53,6 +53,7 @@ STEPS = {
     "build-threshold":     ("scripts/bunching_lib.py", ["--rebuild"], False, "base actions of civilian purchase orders and contracts (threshold test)"),
     "atlas":               ("scripts/03_atlas.py", [], False, "single-offer shares, five departments"),
     "atlas-civilian":      ("scripts/03b_atlas_civilian.py", [], False, "single-offer shares, every civilian agency"),
+    "quality":             ("scripts/16_quality_monitor.py", [], False, "flags sudden changes in how agencies record their data"),
     "threshold":           ("scripts/04_threshold.py", [], False, "the $250K/$350K pile-up test"),
     "threshold-quarterly": ("scripts/04b_threshold_quarterly.py", [], False, "pile-ups quarter by quarter"),
     "sql-check":           ("scripts/check_counts_sql.py", [], False, "independent SQL recount of the headline counts (needs the raw download)"),
@@ -64,8 +65,8 @@ STEPS = {
     "track-f2":            ("scripts/13_track_threshold.py", [], True, "how the sealed threshold forecast (F2) is tracking"),
 }
 PIPELINES = {
-    "quick": ["get-snapshot", "atlas", "atlas-civilian", "threshold", "threshold-quarterly", "figures", "report", "dashboard"],
-    "all":   ["download", "build-five", "build-civilian", "build-threshold", "atlas", "atlas-civilian", "threshold",
+    "quick": ["get-snapshot", "atlas", "atlas-civilian", "quality", "threshold", "threshold-quarterly", "figures", "report", "dashboard"],
+    "all":   ["download", "build-five", "build-civilian", "build-threshold", "atlas", "atlas-civilian", "quality", "threshold",
               "threshold-quarterly", "sql-check", "figures", "report", "dashboard"],
     "daily": ["sam-snapshot", "live", "track-f2", "dashboard"],
 }

@@ -52,16 +52,16 @@ def months(start, end):
     return out
 
 
-def fetch(label, start, end, agencies, out=OUT, force=False):
-    """Download one window into `out`. Returns 'done', 'split' (too big: use smaller windows) or 'failed'.
-    A window already downloaded is skipped unless force=True."""
+def fetch(label, start, end, agencies, out=OUT, force=False, prefix="CIVILIAN", columns=None):
+    """Download one window into `out` as <prefix>__<label>.zip. Returns 'done', 'split' (too big: use smaller windows) or
+    'failed'. A window already downloaded is skipped unless force=True."""
     mpath = os.path.join(out, f"manifest_{label}.json")
     if not force and os.path.exists(mpath) and json.load(open(mpath, encoding="utf-8")).get("done"):
         return "done"
     body = {"filters": {"award_type_codes": dl.AWARD_TYPES,
                         "agencies": [{"type": "awarding", "tier": "toptier", "name": n} for n in agencies],
                         "time_period": [{"start_date": start, "end_date": end, "date_type": "action_date"}]},
-            "columns": dl.COLUMNS, "file_format": "csv"}
+            "columns": columns or dl.COLUMNS, "file_format": "csv"}
     print(f"[{time.strftime('%H:%M:%S')}] {label} {start}..{end}", flush=True)
     resp = http_json(f"{dl.API}/download/transactions/", method="POST", body=body, ua=UA_USASPENDING)
     if not resp or "file_name" not in resp:
@@ -81,7 +81,7 @@ def fetch(label, start, end, agencies, out=OUT, force=False):
             rec.update(split=True, note="above the 25 MB / 500,000-row limits: split into months")
             result = "split"
         else:
-            dest = os.path.join(out, f"CIVILIAN__{label}.zip")
+            dest = os.path.join(out, f"{prefix}__{label}.zip")
             n = download_file(resp["file_url"], dest, ua=UA_USASPENDING)
             rec.update(bytes=n, path=os.path.basename(dest), done=bool(n), downloaded_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
             result = "done" if n else "failed"

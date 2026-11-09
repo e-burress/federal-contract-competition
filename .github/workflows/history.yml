@@ -1,0 +1,72 @@
+# Builds the long history (FY2008 onward; civilian agencies and the Department of Defense) on GitHub's computers, one job per fiscal year,
+# and publishes the compact yearly tables (scripts/18_history_build.py) as assets of the public release "history-v1".
+# Start it from the Actions tab ("Run workflow"). Each year takes up to an hour, mostly waiting on USAspending; rerunning a year replaces its files.
+name: History backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      first_fy:
+        description: "First fiscal year"
+        default: "2008"
+        required: true
+      last_fy:
+        description: "Last fiscal year"
+        default: "2026"
+        required: true
+      scope:
+        description: "Which agencies"
+        type: choice
+        options: [all, civilian, defense]
+        default: all
+
+permissions:
+  contents: write            # publish the yearly tables to the history-v1 release
+
+concurrency:
+  group: history-backfill
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      years: ${{ steps.years.outputs.years }}
+    steps:
+      - id: years
+        run: python3 -c "import json; print('years=' + json.dumps(list(range(int('${{ inputs.first_fy }}'), int('${{ inputs.last_fy }}') + 1))))" >> "$GITHUB_OUTPUT"
+
+  year:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    strategy:
+      fail-fast: false
+      max-parallel: 3        # be polite to USAspending: at most three years download at once
+      matrix:
+        fy: ${{ fromJson(needs.plan.outputs.years) }}
+    env:
+      PIO_CONTACT: https://github.com/${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Download FY${{ matrix.fy }}
+        run: python -I scripts/17_history_download.py ${{ matrix.fy }} ${{ inputs.scope }}
+
+      - name: Build the yearly tables
+        run: python -I scripts/18_history_build.py ${{ matrix.fy }}
+
+      - name: Publish to the history-v1 release
+        run: |
+          gh release view history-v1 > /dev/null 2>&1 || gh release create history-v1 --title "History tables" \
+            --notes "Yearly tables for the long history (FY2008 onward, civilian agencies and the Department of Defense), built by .github/workflows/history.yml. Office names are left out and company identifiers are replaced by pseudonymous ids. See docs/data-dictionary.md." || true
+          gh release upload history-v1 data/history/processed/*FY${{ matrix.fy }}* --clobber
