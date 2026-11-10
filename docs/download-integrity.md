@@ -24,6 +24,24 @@ The yearly tables built from these files were 3.6 to 31 percent short (fiscal ye
 2008, 2009, 2014, 2015 and 2016 in the public release `history-v1`). The comparison with USAspending's yearly totals
 (`scripts/28_reconcile.py`) caught it afterwards. Nothing caught it at download time.
 
+## What was affected and what was not
+
+All times are November 10, 2026, in UTC.
+
+- **Results in the repository: not affected.** The long-history results published before the problem (commits up to
+  `0c1bd91`, 11:20) were computed from yearly tables downloaded the night before. The totals check ran on those tables
+  at 10:25 and they matched USAspending's counts to the transaction (see `results/reconciliation.csv` at that commit).
+  The cut-off files arrived later, in a second download made to add columns. The analyses were rerun on the cut-off
+  tables, the totals check flagged the difference, and those results were thrown away. They were never committed.
+  The results in the repository were next replaced at 18:41 (commit `bfbbfe0`), from tables that all match.
+- **The forecast model: not affected.** Its training table was built at about 11:25 from tables that matched.
+- **The daily dashboard: not affected.** That morning's live table was downloaded again with the check and matched
+  the count.
+- **The public data release `history-v1`: affected for about four to six hours.** The tables of fiscal years 2008,
+  2009, 2014, 2015 and 2016 were replaced by cut-off versions between 12:47 and 14:26, and by verified versions by
+  18:45. A warning stood in the release notes from about 15:50. Anyone who downloaded those five years in that window
+  should download them again.
+
 ## How the project protects itself now
 
 Every script that uses the download service goes through one function, `fetch_verified` in
