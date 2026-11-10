@@ -221,6 +221,29 @@ class Pipeline(unittest.TestCase):
         self.assertEqual(len(cp), 0)
         self.assertNotIn("new_companies_above_25k", s)
 
+    def test_never_seen_gaps_and_switch(self):
+        base = fillers("f", 20)
+        b = code("B")
+        # B won only in FY2009, which is missing: without the gap rule B would count as "never seen" in FY2013
+        tabs = {2008: table(2008, base), 2010: table(2010, base), 2011: table(2011, base), 2012: table(2012, base),
+                2013: table(2013, base + [b])}
+        t, _, _, _ = self.run_(tabs)
+        self.assertTrue(np.isnan(self.row(t, 2013).new_share_companies_never_seen))
+        self.assertTrue(pd.isna(self.row(t, 2013).never_seen_comparable))
+        # FY2025: its own 3-year look-back (FY2022-FY2024) has the link columns, but "never seen" looks back to FY2018, whose
+        # table cannot link DUNS and UEI: only the never-seen share is marked not comparable
+        duns, uei = code("duns:4"), code("UEI4")
+        tabs = {2018: table(2018, base + [duns]), 2019: table(2019, base), 2020: table(2020, base), 2021: table(2021, base)}
+        tabs.update({y: table(y, base + [uei], link={uei: (uei, duns)}) for y in (2022, 2023, 2024, 2025)})
+        t, _, _, s = self.run_(tabs)
+        r = self.row(t, 2025)
+        self.assertTrue(r.new_measures_comparable)
+        self.assertFalse(r.never_seen_comparable)
+        self.assertIn("never-seen share not comparable", r.note)
+        self.assertNotIn("new-company measures", r.note)
+        self.assertIsNone(s["new_companies_above_25k"]["share_of_companies_never_seen_last"])
+        self.assertTrue(self.row(t, 2021).never_seen_comparable)          # look-back ends before the switch
+
     def test_no_identifiers_in_outputs(self):
         base = fillers("f", 25)
         duns, uei = code("duns:55"), code("UEI55")

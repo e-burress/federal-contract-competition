@@ -1874,14 +1874,20 @@ def r_supplier():
     if nw:
         txt.append(f"In an average year ({fy_text(nw['years'])}), {pct(nw['share_of_companies_mean'], 0)} of the companies winning "
                    f"above $25,000 had won no such award in the three years before. These new companies won {pct(nw['share_of_awards_mean'], 0)} "
-                   f"of those awards and {pct(nw['share_of_dollars_mean'], 0)} of their initial dollars.")
+                   f"of those awards and {pct(nw['share_of_dollars_mean'], 0)} of the initial dollars of purchase orders and definitive "
+                   "contracts above $25,000.")
     if st and st.get("next_year_mean") is not None:
         txt.append(f"About {pct(st['next_year_mean'], 0)} of the companies won again the next year"
                    + (f", and {pct(st['within_3_years_mean'], 0)} within three years." if st.get("within_3_years_mean") is not None else "."))
     k = s.get("concentration_above_25k")
     if k and k.get("top1pct_last") is not None:
+        top = [fl(r.get("top1pct_share_dollars")) for r in opt_rows("supplier_base_concentration.csv")
+               if r.get("sector") == "all sectors" and r.get("award_scope") == "above_25k"]
+        top = [v for v in top if v is not None]
+        span = (f"; from FY{k['first_year']} to FY{k['last_year']} the yearly share moved between {pct(min(top), 0)} and "
+                f"{pct(max(top), 0)}, and a few very large awards can move it from one year to the next." if len(top) > 2 else ".")
         txt.append(f"The top 1% of companies won {pct(k['top1pct_last'], 0)} of the initial dollars of purchase orders and definitive "
-                   f"contracts above $25,000 in FY{k['last_year']} ({pct(k['top1pct_first'], 0)} in FY{k['first_year']}).")
+                   f"contracts above $25,000 in FY{k['last_year']}" + span)
     cp = s.get("competition_above_25k_pooled") or {}
     new, old = cp.get("single_offer_share_new"), cp.get("single_offer_share_established")
     if new and old:
@@ -1925,7 +1931,7 @@ def m_supplier():
         k = conc.get(r["fy"], {})
         hhi = fl(k.get("hhi_median_award_weighted"))
         out.append(f"| FY{r['fy']} | {n(r['n_awards'])} | {n(r['n_companies'])} | {cell(r, 'new_share_companies', 'new_measures_comparable')} | "
-                   f"{cell(r, 'new_share_companies_never_seen')} | {cell(r, 'stay_share_next_year', 'stay_next_year_comparable')} | "
+                   f"{cell(r, 'new_share_companies_never_seen', 'never_seen_comparable')} | {cell(r, 'stay_share_next_year', 'stay_next_year_comparable')} | "
                    f"{cell(r, 'stay_share_within_3_years', 'stay_3_years_comparable')} | {cell(k, 'top1pct_share_dollars')} | "
                    f"{cell(k, 'top10pct_share_dollars')} | {n(round(hhi)) if hhi is not None else ''} |")
     by = sw.get("by_year") or {}
@@ -1937,8 +1943,12 @@ def m_supplier():
     uni = [(y, d) for y, d in by.items() if d.get("has_link_columns") and d.get("share_with_uei") is not None]
     if uni:
         lo = min(uni, key=lambda x: x[1]["share_with_uei"])
-        sw_txt += (f" In those tables, {pct(lo[1]['share_with_uei'])} or more of awards carry a UEI (lowest: FY{lo[0]}), and at most "
-                   f"{pct(max(d.get('share_duns_only_unlinked') or 0 for _, d in uni), 2)} carry only a DUNS that no record links to a UEI.")
+        duns_only = max(d.get('share_duns_only_unlinked') or 0 for _, d in uni)
+        if lo[1]["share_with_uei"] >= 0.99995 and duns_only < 0.00005:
+            sw_txt += " In those tables every award carries a UEI, and none carries only a DUNS that no record links to a UEI."
+        else:
+            sw_txt += (f" In those tables, at least {pct(lo[1]['share_with_uei'])} of awards carry a UEI (lowest: FY{lo[0]}), and at most "
+                       f"{pct(duns_only, 2)} carry only a DUNS that no record links to a UEI.")
     old = [(y, d) for y, d in by.items() if not d.get("has_link_columns") and d.get("share_id_matching_a_known_duns_code") is not None]
     if old:
         sw_txt += (f" In the tables without the codes, at most {pct(max(d['share_id_matching_a_known_duns_code'] for _, d in old), 2)} of "

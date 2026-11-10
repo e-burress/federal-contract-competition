@@ -6,7 +6,7 @@ Same request as 01c_download_civilian.py (the same 36 columns; purchase orders, 
   civilian agencies (all top-tier agencies except DoD): one request per quarter
   Department of Defense: one request per month (it has many more records)
 Every window must stay under the download service's limits (500,000 rows, and our 25 MB cap per file); a window that is too big is split in
-half, and again, until it fits.  The script is RESUMABLE: finished windows are skipped.
+half, and again, until it fits.  The script is RESUMABLE: finished windows are skipped, and windows that fail are asked again (three passes).
 Defense data are published 90 days late, so the most recent Defense months are always incomplete.
 
 This is meant to run on GitHub's computers (.github/workflows/history.yml, one job per year), but it works on any computer.
@@ -17,6 +17,7 @@ Output: data/history/FY<fy>/CIVILIAN__<window>.zip and DEFENSE__<window>.zip, ma
 import importlib.util
 import os
 import sys
+import time
 from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -28,6 +29,7 @@ _spec.loader.exec_module(civ)
 DOD = "Department of Defense"
 # the 36 columns of 01c, plus the pre-2022 company identifier (DUNS), so awards to the same company can be linked across the years
 COLUMNS = civ.dl.COLUMNS + ["recipient_duns"]
+ROUNDS, RETRY_WAIT = 3, 120          # passes over the year's windows, and seconds between passes
 
 
 def year_dir(fy):
@@ -72,13 +74,8 @@ def windows(fy, monthly):
     return out
 
 
-def main():
-    if len(sys.argv) < 2:
-        sys.exit(__doc__)
-    fy = int(sys.argv[1])
-    scope = sys.argv[2] if len(sys.argv) > 2 else "all"
-    out = year_dir(fy)
-    os.makedirs(out, exist_ok=True)
+def one_pass(fy, scope, out):
+    """request every window of the year once (finished windows are skipped); returns the labels that failed"""
     failed = []
     if scope in ("all", "civilian"):
         agencies = civ.civilian_agencies(out)
@@ -91,6 +88,23 @@ def main():
             if date.fromisoformat(s) > date.today():
                 break
             failed += fetch_split(label, s, e, [DOD], out, "DEFENSE")
+    return failed
+
+
+def main():
+    if len(sys.argv) < 2:
+        sys.exit(__doc__)
+    fy = int(sys.argv[1])
+    scope = sys.argv[2] if len(sys.argv) > 2 else "all"
+    out = year_dir(fy)
+    os.makedirs(out, exist_ok=True)
+    failed = []
+    for attempt in range(1, ROUNDS + 1):                    # the download service sometimes drops one window: ask again
+        failed = one_pass(fy, scope, out)
+        if not failed or attempt == ROUNDS:
+            break
+        print(f"round {attempt}: {failed} failed; asking again in {RETRY_WAIT} seconds (finished windows are skipped)", flush=True)
+        time.sleep(RETRY_WAIT)
     print("FAILED (rerun to retry):", failed if failed else "none", flush=True)
     if failed:
         sys.exit(1)

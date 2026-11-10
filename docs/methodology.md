@@ -1,8 +1,6 @@
 # Methodology
 
-<!-- auto:m-header -->
-First version built October 23–24, 2026. Every result was rebuilt on November 9, 2026 from one public data snapshot, [`data-2026-11-09`](https://github.com/e-burress/federal-contract-competition/releases/tag/data-2026-11-09) (USAspending, downloaded November 9, 2026). USAspending data runs through 2026-09-30. The forecast model (section 5) and the sealed forecasts (section 6) are from the October 24, 2026 build and are frozen.
-<!-- /auto:m-header -->
+<!-- auto:m-header -->First version built October 23–24, 2026. Every result was rebuilt on November 9, 2026 from one public data snapshot, [`data-2026-11-09`](https://github.com/e-burress/federal-contract-competition/releases/tag/data-2026-11-09) (USAspending, downloaded November 9, 2026). USAspending data runs through 2026-09-30. The forecast model (section 5) and the sealed forecasts (section 6) are from the October 24, 2026 build and are frozen.<!-- /auto:m-header -->
 
 Every number in this document is written by `scripts/build_report.py` from the result files in `results/` and `forecasts/`.
 
@@ -19,11 +17,9 @@ Sections 1 to 6 use the FY2024–FY2026 snapshot. Sections 8 to 15 use the long 
 | SAM.gov contract-opportunity archive files | One file per fiscal year with every past notice. Training data of forecast model version 2 (section 17) | Free, no key |
 | SAM.gov entity registration extract (Public V2, monthly) | Counts of registered companies per industry code (section 16). Only counts are kept | Free, no key |
 
-<!-- auto:m-download -->
-**One download, one snapshot.** `01c_download_civilian.py` downloads the contract transactions of every civilian agency (1,880,096 transactions, FY2024–FY2026), one request per quarter. From them, `02_build_awards.py` builds the five-department table (default) and the civilian table (`--civilian`), and `bunching_lib.py --rebuild` builds the threshold test's base actions. These three tables are published as the snapshot [`data-2026-11-09`](https://github.com/e-burress/federal-contract-competition/releases/tag/data-2026-11-09), downloaded November 9, 2026; `python run.py quick` downloads it and rebuilds every result. `01_download_usaspending.py` (the five departments, one request per agency) and `01b_download_threshold_universe.py` (purchase orders and definitive contracts only) are older alternatives.
+<!-- auto:m-download -->**One download, one snapshot.** `01c_download_civilian.py` downloads the contract transactions of every civilian agency (1,880,096 transactions, FY2024–FY2026), one request per quarter. From them, `02_build_awards.py` builds the five-department table (default) and the civilian table (`--civilian`), and `bunching_lib.py --rebuild` builds the threshold test's base actions. These three tables are published as the snapshot [`data-2026-11-09`](https://github.com/e-burress/federal-contract-competition/releases/tag/data-2026-11-09), downloaded November 9, 2026; `python run.py quick` downloads it and rebuilds every result. `01_download_usaspending.py` (the five departments, one request per agency) and `01b_download_threshold_universe.py` (purchase orders and definitive contracts only) are older alternatives.
 
-The first release (October 24, 2026) used an earlier download that was not kept. Rebuilt from this snapshot, single-offer shares moved by at most 0.05 percentage points (five departments: 97,643 → 97,672 awards, still 22.8%) and bunching ratios by at most 0.02 ($350K after the change: 1.95 → 1.96).
-<!-- /auto:m-download -->
+The first release (October 24, 2026) used an earlier download that was not kept. Rebuilt from this snapshot, single-offer shares moved by at most 0.05 percentage points (five departments: 97,643 → 97,672 awards, still 22.8%) and bunching ratios by at most 0.02 ($350K after the change: 1.95 → 1.96).<!-- /auto:m-download -->
 
 **Useful discovery.** The USAspending download service accepts a `columns` list. Requesting 36 columns instead of the 297-column bulk format cuts file size about sixfold (about 47 bytes per row instead of about 300). That makes the full FY2008–FY2026 history practical on a laptop. The service caps each file at 500,000 rows, so the download goes one quarter at a time and splits a quarter into months if it would pass the cap.
 
@@ -41,71 +37,49 @@ The first release (October 24, 2026) used an earlier download that was not kept.
 
 Single-offer shares are computed by department, fiscal year, award type, set-aside and size, with Wilson 95% intervals.
 
-<!-- auto:m-recount -->
-An independent recount, `scripts/check_counts_sql.py`, reads the raw download with Python's csv module and counts in SQLite (SQL), with no pandas and none of the pipeline's code. It reproduces every count, for the five departments and for every civilian agency (in the five departments: 182,905 base awards, 97,672 competed with a usable offer count, 22,246 single-offer awards). It needs the raw download, so it runs in `python run.py all`.
-<!-- /auto:m-recount -->
+<!-- auto:m-recount -->An independent recount, `scripts/check_counts_sql.py`, reads the raw download with Python's csv module and counts in SQLite (SQL), with no pandas and none of the pipeline's code. It reproduces every count, for the five departments and for every civilian agency (in the five departments: 182,905 base awards, 97,672 competed with a usable offer count, 22,246 single-offer awards). It needs the raw download, so it runs in `python run.py all`.<!-- /auto:m-recount -->
 
-<!-- auto:m-five-table -->
-| Department | Single-offer share, FY2024–26 | FY2024 | FY2025 | FY2026 |
+<!-- auto:m-five-table -->| Department | Single-offer share, FY2024–26 | FY2024 | FY2025 | FY2026 |
 |---|---|---|---|---|
 | HHS | 40.3% (n = 9,590) | 41.8% | 39.6% | 38.1% |
 | VA | 35.3% (n = 27,017) | 37.4% | 36.8% | 30.1% |
 | DHS | 26.6% (n = 15,159) | 31.0% | 27.8% | 20.3% |
 | Interior | 17.9% (n = 15,880) | 20.6% | 17.5% | 14.9% |
 | USDA | 6.6% (n = 30,026) | 9.8% | 6.7% | 4.1% |
-| **All five** | **22.8%** (n = 97,672) | | | |
-<!-- /auto:m-five-table -->
+| **All five** | **22.8%** (n = 97,672) | | | |<!-- /auto:m-five-table -->
 
-<!-- auto:m-other-cuts -->
-Other cuts:
+<!-- auto:m-other-cuts -->Other cuts:
 - **Full-and-open competition only:** VA 32.2%, HHS 19.9%, DHS 19.2%, Interior 10.2%, USDA 3.0%.
 - **By solicitation identifier:** awards carrying one had a 14.5% single-offer rate; awards without one, 45.1%.
 - **Dollar-weighted** (purchase orders and definitive contracts): 15.7% of competed obligations.
-- **Awards of $20M or more:** 18.0% (n = 339).
-<!-- /auto:m-other-cuts -->
+- **Awards of $20M or more:** 18.0% (n = 339).<!-- /auto:m-other-cuts -->
 
-<!-- auto:m-premium -->
-**Price premium (preliminary).** Federal award data has no unit prices, so a true price premium can't be measured. Within agency × year × award type × 4-character product code cells (58,284 awards, 2,157 cells), single-offer awards are 27.2% smaller in initial value (95% interval −33.6% to −20.1%). That is a size difference, not a price. After award, we compare the dollars obligated by every action in the window with the award's initial potential value (base and all options), within agency × year × 2-character product code × value quintile cells, with standard errors clustered by buying office. Among multi-offer purchase orders in those cells, 4.4% were obligated at 125% or more of their initial value; single-offer ones differed by −0.61 percentage points (−1.15 to −0.08). For definitive contracts the base rate was 2.8% and the difference +1.30 percentage points (−0.17 to +2.77). Dollars obligated as a percentage of initial value (limited to 0% to 300%) averaged 90.9% for multi-offer purchase orders, and single-offer ones differed by +1.01 percentage points (+0.04 to +1.98); for definitive contracts, 97.0% and +1.53 percentage points (−0.96 to +4.02). The differences are small and do not all point the same way, so they show no clear pattern. An earlier version reported growth in potential value of 25% or more, measured with the largest value on any single action. In this data each action records a change, not a running total, so that measure missed most growth; it was replaced by the obligation measures above. Growth of the potential value itself needs the sum of every action's change, which the public data snapshot does not hold.
-<!-- /auto:m-premium -->
+<!-- auto:m-premium -->**Price premium (preliminary).** Federal award data has no unit prices, so a true price premium can't be measured. Within agency × year × award type × 4-character product code cells (58,284 awards, 2,157 cells), single-offer awards are 27.2% smaller in initial value (95% interval −33.6% to −20.1%). That is a size difference, not a price. After award, we compare the dollars obligated by every action in the window with the award's initial potential value (base and all options), within agency × year × 2-character product code × value quintile cells, with standard errors clustered by buying office. Among multi-offer purchase orders in those cells, 4.4% were obligated at 125% or more of their initial value; single-offer ones differed by −0.61 percentage points (−1.15 to −0.08). For definitive contracts the base rate was 2.8% and the difference +1.30 percentage points (−0.17 to +2.77). Dollars obligated as a percentage of initial value (limited to 0% to 300%) averaged 90.9% for multi-offer purchase orders, and single-offer ones differed by +1.01 percentage points (+0.04 to +1.98); for definitive contracts, 97.0% and +1.53 percentage points (−0.96 to +4.02). The differences are small and do not all point the same way, so they show no clear pattern. An earlier version reported growth in potential value of 25% or more, measured with the largest value on any single action. In this data each action records a change, not a running total, so that measure missed most growth; it was replaced by the obligation measures above. Growth of the potential value itself needs the sum of every action's change, which the public data snapshot does not hold.<!-- /auto:m-premium -->
 
-<!-- auto:m-offices -->
-Office-level shares were computed (370 offices, 180 with at least 100 awards). They are persistent over time: the correlation between FY2024–25 and FY2026 office shares is 0.75. They are not published in this release.
-<!-- /auto:m-offices -->
+<!-- auto:m-offices -->Office-level shares were computed (370 offices, 180 with at least 100 awards). They are persistent over time: the correlation between FY2024–25 and FY2026 office shares is 0.75. They are not published in this release.<!-- /auto:m-offices -->
 
 ## 3b. Every civilian agency (added November 9, 2026)
 
-<!-- auto:m-civ-data -->
-**Data.** The same download, all civilian agencies, FY2024–FY2026: 1,880,096 transactions. `02_build_awards.py --civilian` applies the same rules as above: 969,601 awards → 812,446 with a base action in the window → 475,212 competed (58.5%) → **466,009 with a usable offer count** (98.1% of competed; 9,201 carry the 999 placeholder). 64 agencies have competed awards with a usable offer count.
-<!-- /auto:m-civ-data -->
+<!-- auto:m-civ-data -->**Data.** The same download, all civilian agencies, FY2024–FY2026: 1,880,096 transactions. `02_build_awards.py --civilian` applies the same rules as above: 969,601 awards → 812,446 with a base action in the window → 475,212 competed (58.5%) → **466,009 with a usable offer count** (98.1% of competed; 9,201 carry the 999 placeholder). 64 agencies have competed awards with a usable offer count.<!-- /auto:m-civ-data -->
 
-<!-- auto:m-civ-check -->
-**Check against the five-department table.** The five departments, measured from the civilian table, match it exactly, award for award. See `results/atlas_civilian_five_check.csv`.
-<!-- /auto:m-civ-check -->
+<!-- auto:m-civ-check -->**Check against the five-department table.** The five departments, measured from the civilian table, match it exactly, award for award. See `results/atlas_civilian_five_check.csv`.<!-- /auto:m-civ-check -->
 
-<!-- auto:m-gsa -->
-**GSA.** 295,322 of the 466,009 awards (63%) are GSA's, almost all very small purchase orders from GSA's Federal Acquisition Service (median award $143). In a check of FY2026 Q1, most came from its supply-chain contracting division, and the most common products were office supplies, hand tools and measuring tools. Their recorded offers changed sharply: one offer on 55.6% in FY2024, 46.6% in FY2025 and 16.8% in FY2026, as most began recording more than one offer. That may be a change in how these automated orders are recorded rather than in competition. Every civilian-wide total is therefore also given without GSA.
-<!-- /auto:m-gsa -->
+<!-- auto:m-gsa -->**GSA.** 295,322 of the 466,009 awards (63%) are GSA's, almost all very small purchase orders from GSA's Federal Acquisition Service (median award $143). In a check of FY2026 Q1, most came from its supply-chain contracting division, and the most common products were office supplies, hand tools and measuring tools. Their recorded offers changed sharply: one offer on 55.6% in FY2024, 46.6% in FY2025 and 16.8% in FY2026, as most began recording more than one offer. That may be a change in how these automated orders are recorded rather than in competition. Every civilian-wide total is therefore also given without GSA.<!-- /auto:m-gsa -->
 
-<!-- auto:m-civ-table -->
-| Scope | Single-offer share, FY2024–26 | Competed awards |
+<!-- auto:m-civ-table -->| Scope | Single-offer share, FY2024–26 | Competed awards |
 |---|---|---|
 | All civilian agencies | 34.0% (95% interval 33.9–34.2%) | 466,009 |
 | All civilian agencies except GSA | 25.5% (25.3–25.7%) | 170,687 |
 | Other civilian agencies, not GSA and not the original five | 29.1% (28.7–29.4%) | 73,015 |
-| GSA only | 39.0% | 295,322 |
-<!-- /auto:m-civ-table -->
+| GSA only | 39.0% | 295,322 |<!-- /auto:m-civ-table -->
 
-<!-- auto:m-civ-trend -->
-Without GSA, the share fell from 27.9% (FY2024) to 26.3% (FY2025) and 21.5% (FY2026).
-<!-- /auto:m-civ-trend -->
+<!-- auto:m-civ-trend -->Without GSA, the share fell from 27.9% (FY2024) to 26.3% (FY2025) and 21.5% (FY2026).<!-- /auto:m-civ-trend -->
 
 Shares by agency, agency and year, award type and set-aside (each with and without GSA) are in `results/atlas_civilian_*.csv`; `03b_atlas_civilian.py` writes them.
 
 ## 4. Threshold bunching test
 
-<!-- auto:m-threshold-data -->
-**Data:** civilian purchase orders and definitive contracts (66 agencies), base actions only, from the same download. FY2024: 258,718. FY2025: 236,470. FY2026: 263,196.
-<!-- /auto:m-threshold-data -->
+<!-- auto:m-threshold-data -->**Data:** civilian purchase orders and definitive contracts (66 agencies), base actions only, from the same download. FY2024: 258,718. FY2025: 236,470. FY2026: 263,196.<!-- /auto:m-threshold-data -->
 
 **Method,** fixed before looking at the post-change period:
 - Award values are base-and-all-options value at the base action.
@@ -117,14 +91,12 @@ Shares by agency, agency and year, award type and set-aside (each with and witho
 
 **Results:**
 
-<!-- auto:m-threshold-table -->
-| Line | FY2024 | FY2025 | FY2026 | Change, FY2025 → FY2026 |
+<!-- auto:m-threshold-table -->| Line | FY2024 | FY2025 | FY2026 | Change, FY2025 → FY2026 |
 |---|---|---|---|---|
 | $250K | 1.80 (1.64–1.94) | 1.79 (1.64–1.97) | 1.24 (1.13–1.35) | −0.55 (−0.74 to −0.37) |
 | $350K | 1.16 (0.95–1.38) | 0.97 (0.81–1.19) | 1.96 (1.69–2.35) | +0.99 (+0.65 to +1.36) |
 | $200K (placebo) | 1.31 | 1.46 | 1.31 | −0.15 (−0.38 to +0.10) |
-| $450K (placebo) | 1.17 | 0.86 | 1.02 | +0.16 (−0.13 to +0.44) |
-<!-- /auto:m-threshold-table -->
+| $450K (placebo) | 1.17 | 0.86 | 1.02 | +0.16 (−0.13 to +0.44) |<!-- /auto:m-threshold-table -->
 
 **Robustness:** the same pattern holds when using obligations instead of value, for purchase orders only, and in each half of FY2026 (`results/threshold_sat_robustness.csv`). <!-- auto:m-threshold-quarters -->By fiscal quarter after the change, the $350K ratio rose 1.51 → 1.65 → 1.90 → 2.18.<!-- /auto:m-threshold-quarters -->
 
@@ -134,15 +106,11 @@ Shares by agency, agency and year, award type and set-aside (each with and witho
 
 ## 5. Single-offer forecasting model
 
-<!-- auto:m-model-frozen -->
-These results are from the October 24, 2026 build and are frozen. Its SAM.gov training inputs were not kept, so `run.py` does not rebuild them (scripts 05–08 and 11); the model will be rebuilt on SAM.gov's official archive files. The files are `results/model_*` and `results/resolution_backtest_summary.csv`.
-<!-- /auto:m-model-frozen -->
+<!-- auto:m-model-frozen -->These results are from the October 24, 2026 build and are frozen. Its SAM.gov training inputs were not kept, so `run.py` does not rebuild them (scripts 05–08 and 11); the model will be rebuilt on SAM.gov's official archive files. The files are `results/model_*` and `results/resolution_backtest_summary.csv`.<!-- /auto:m-model-frozen -->
 
-<!-- auto:m-model-pop -->
-- **Population:** 49,556 competed solicitations (one per solicitation number, FY2024–FY2026) with a single-offer share of 19.6%.
+<!-- auto:m-model-pop -->- **Population:** 49,556 competed solicitations (one per solicitation number, FY2024–FY2026) with a single-offer share of 19.6%.
 - **Response windows:** looked up in SAM.gov for a random sample. 2,398 solicitation numbers were looked up and 1,826 found (76.1%). After dropping missing, negative or extreme windows, 1,802 were usable.
-- **Model:** L2 logistic regression (C = 0.03, chosen by 5-fold cross-validation inside the training period).
-<!-- /auto:m-model-pop -->
+- **Model:** L2 logistic regression (C = 0.03, chosen by 5-fold cross-validation inside the training period).<!-- /auto:m-model-pop -->
 - **Features, all known when a notice is posted:**
   - department; product/service code (2 characters); industry code (3 digits); set-aside group
   - solicitation-number letter; notice type
@@ -151,48 +119,36 @@ These results are from the October 24, 2026 build and are frozen. Its SAM.gov tr
   - presolicitation and sources-sought flags; two keyword flags (brand name; sole/single/limited source)
 - **Excluded because they leak future information:** the number of amendments and extended deadlines.
 
-<!-- auto:m-oot -->
-**Out-of-time test** (train on awards through 2025-09-30, n = 1,251; test on FY2026 awards, n = 551, 14.2% single-offer):
+<!-- auto:m-oot -->**Out-of-time test** (train on awards through 2025-09-30, n = 1,251; test on FY2026 awards, n = 551, 14.2% single-offer):
 - AUC 0.754 (95% interval 0.695–0.811), against 0.622 for the department-wide baseline.
 - Brier score 0.1116 against 0.1196 (6.7% skill).
-- Calibration is good below 0.2 (0.142 forecast vs 0.140 observed in the 0.1–0.2 bin). The 0.2–0.3 bin was under-forecast (0.239 vs 0.394, n = 71).
-<!-- /auto:m-oot -->
+- Calibration is good below 0.2 (0.142 forecast vs 0.140 observed in the 0.1–0.2 bin). The 0.2–0.3 bin was under-forecast (0.239 vs 0.394, n = 71).<!-- /auto:m-oot -->
 
-<!-- auto:m-effects -->
-**Largest effects** (odds ratios):
+<!-- auto:m-effects -->**Largest effects** (odds ratios):
 - no set-aside 1.57
 - buying-office history 1.33 per standard deviation
 - medical-supply product codes 1.19
 - small-business set-aside 0.79
 - service-disabled-veteran set-aside 0.83
-- longer response window 0.89 per standard deviation
-<!-- /auto:m-effects -->
+- longer response window 0.89 per standard deviation<!-- /auto:m-effects -->
 
 ## 6. Live forecasts and how they will be scored
 
-<!-- auto:m-open -->
-**Open solicitations** (pulled 2026-10-24): 240 candidate notices in the five modeled departments, 239 of them open, not canceled, of an eligible type and with a deadline between 2026-11-01 and 2026-12-15.
-<!-- /auto:m-open -->
+<!-- auto:m-open -->**Open solicitations** (pulled 2026-10-24): 240 candidate notices in the five modeled departments, 239 of them open, not canceled, of an eligible type and with a deadline between 2026-11-01 and 2026-12-15.<!-- /auto:m-open -->
 
 **Eligibility rule,** fixed in advance: the notice must be open, not canceled, of type Solicitation or Combined Synopsis/Solicitation, with a deadline in the window, first posted on or after 2026-06-01, and an original response window of 0–120 days.
 
-<!-- auto:m-registered -->
-- 224 notices met the rule. 15 were excluded by the date-plausibility check, mostly for typo'd deadlines.
-- **150 were registered**, by stratified random sample (seed 20261023): VA 69, USDA 33, Interior 21, DHS 14, HHS 13.
-<!-- /auto:m-registered -->
+<!-- auto:m-registered -->- 224 notices met the rule. 15 were excluded by the date-plausibility check, mostly for typo'd deadlines.
+- **150 were registered**, by stratified random sample (seed 20261023): VA 69, USDA 33, Interior 21, DHS 14, HHS 13.<!-- /auto:m-registered -->
 
 **Resolution:**
 - Each registered solicitation number is matched (normalized) to USAspending base actions dated after the forecast. The earliest action wins.
 - A forecast is scored only if the award was competed with 1–998 offers.
 - The baseline is the department-wide rate.
 
-<!-- auto:m-backtest -->
-**Expected resolution rate.** A backtest on 2,251 solicitations with March–April 2026 deadlines found that 70.8% matched an award and 66.3% were scoreable. Expect about 100 of the 150 forecasts to resolve by 2027-03-31. Single-offer events among them will be few, so the first batch will measure calibration roughly, not skill.
-<!-- /auto:m-backtest -->
+<!-- auto:m-backtest -->**Expected resolution rate.** A backtest on 2,251 solicitations with March–April 2026 deadlines found that 70.8% matched an award and 66.3% were scoreable. Expect about 100 of the 150 forecasts to resolve by 2027-03-31. Single-offer events among them will be few, so the first batch will measure calibration roughly, not skill.<!-- /auto:m-backtest -->
 
-<!-- auto:m-f2 -->
-**Threshold forecast (PIO-F2):** FY2027 Q1 bunching ratios, scored once that quarter's data is in USAspending (from 2027-02-15).
-<!-- /auto:m-f2 -->
+<!-- auto:m-f2 -->**Threshold forecast (PIO-F2):** FY2027 Q1 bunching ratios, scored once that quarter's data is in USAspending (from 2027-02-15).<!-- /auto:m-f2 -->
 
 **How the scoring works.** [`scoring-forecasts.md`](scoring-forecasts.md) is a step-by-step guide for a person, with no AI involved. PIO-F1 is scored with `python run.py score-f1` (`scripts/09_resolve_forecast.py`) on each check date. The script first fingerprints the private forecast file and refuses to score it if the SHA-256 does not match the published one. It then applies the resolution rule written into the file: normalised solicitation number, base actions dated on or after the forecast date, the earliest one wins, scored only if competed with 1 to 998 offers. Unresolved forecasts are counted by reason and not scored. Scores are the Brier score, log loss, ROC-AUC and a calibration table, with the same numbers for the stored baseline. Only aggregate numbers are made public, and only once at least 20 forecasts have resolved, with small cells hidden; the row-level file stays private because it names buying offices. PIO-F2 is scored by `12_resolve_threshold.py` with exactly the estimator of section 4; the daily job tracks it with `13_track_threshold.py` and checks its fingerprint on every run.
 
@@ -200,9 +156,7 @@ These results are from the October 24, 2026 build and are frozen. Its SAM.gov tr
 
 Every morning `31_daily_forecast.py` forecasts each new open solicitation in SAM.gov's daily list of active notices with model version 2 (section 17), writes the day's forecasts to one private batch file and publishes its SHA-256 fingerprint, a row of counts and short hashes of the solicitation numbers in [`forecasts/daily/`](../forecasts/daily/). `32_score_daily.py` scores the sealed batches once the awards appear, with the rule written in every batch: an award counts only if it is a base action with the same normalised solicitation number dated on or after the day offers were due, competed with 1 to 998 offers. Only totals are published, with small cells hidden. The step-by-step guide is [`daily-forecasts.md`](daily-forecasts.md).
 
-<!-- auto:m-daily-forecasts -->
-**Daily forecasts.** The daily series is built and tested; the first batch has not been sealed yet.
-<!-- /auto:m-daily-forecasts -->
+<!-- auto:m-daily-forecasts -->**Daily forecasts.** The daily series is built and tested; the first batch has not been sealed yet.<!-- /auto:m-daily-forecasts -->
 
 ## 7. Data-quality monitor
 
@@ -214,8 +168,7 @@ Every morning `31_daily_forecast.py` forecasts each new open solicitation in SAM
 
 **Method.** A share in one quarter is compared with the previous four quarters pooled (at least two of them must exist) using a two-proportion z-test with a pooled standard error. Both conditions must hold: a high |z| bar, because there are thousands of comparisons, and a minimum move in percentage points. Award counts are compared with the same quarter one year earlier, to avoid seasonality, with no z-test. The newest quarter is skipped for counts if the data stop before its last day.
 
-<!-- auto:m-quality -->
-**Rules** (from `results/quality_summary.json`): both sides need at least 200 awards; a share is flagged only if |z| ≥ 6 and it moved by at least 10 percentage points; award counts are flagged when they move by 40% or more against the same quarter one year earlier. Share baseline: previous four quarters pooled (at least 2 present).
+<!-- auto:m-quality -->**Rules** (from `results/quality_summary.json`): both sides need at least 200 awards; a share is flagged only if |z| ≥ 6 and it moved by at least 10 percentage points; award counts are flagged when they move by 40% or more against the same quarter one year earlier. Share baseline: previous four quarters pooled (at least 2 present).
 
 **Results** (FY2024–FY2026 civilian table): 85 flags, in quarters from FY2024 Q3 to FY2026 Q4. The largest of each kind:
 
@@ -226,8 +179,7 @@ Every morning `31_daily_forecast.py` forecasts each new open solicitation in SAM
 | the share with one offer | 14 | Department of Justice, purchase orders, FY2024 Q4: 28.6% → 57.4% |
 | the share with three offers | 6 | USDA, definitive contracts, FY2026 Q1: 35.8% → 7.9% |
 | the share with no usable offer count | 5 | General Services Administration, contract vehicles, FY2024 Q4: 80.2% → 34.7% |
-| the share with two offers | 5 | General Services Administration, purchase orders, FY2026 Q2: 39.9% → 56.6% |
-<!-- /auto:m-quality -->
+| the share with two offers | 5 | General Services Administration, purchase orders, FY2026 Q2: 39.9% → 56.6% |<!-- /auto:m-quality -->
 
 **Limits.** A flag does not say which is true: a coding change, late reporting or a real change. It says "check before you trust numbers from this agency and quarter". The monitor reads the FY2024–FY2026 table only; the long history is not monitored yet.
 
@@ -247,8 +199,7 @@ Every morning `31_daily_forecast.py` forecasts each new open solicitation in SAM
 
 **Script:** `19_history_atlas.py`. Same definitions as sections 3 and 3b: among base awards that were competed with a usable offer count, the share with exactly one offer, with 95% Wilson intervals, by sector, fiscal year and award kind (`results/history_by_fy.csv`) and by agency and fiscal year (`results/history_by_agency_fy.csv`).
 
-<!-- auto:m-history -->
-**Results** (FY2008–FY2021). Competed awards with a usable offer count: 1,830,549 (civilian agencies except GSA), 444,130 (GSA) and 4,832,104 (Defense). Single-offer share (95% interval):
+<!-- auto:m-history -->**Results** (FY2008–FY2021). Competed awards with a usable offer count: 1,830,549 (civilian agencies except GSA), 444,130 (GSA) and 4,832,104 (Defense). Single-offer share (95% interval):
 
 | Fiscal year | Civilian agencies except GSA | GSA | Defense |
 |---|---|---|---|
@@ -265,8 +216,7 @@ Every morning `31_daily_forecast.py` forecasts each new open solicitation in SAM
 | FY2018 | 28.4% (28.1–28.6%), n = 109,368 | 30.0% (29.0–31.1%), n = 7,160 | 21.7% (21.5–21.8%), n = 510,256 |
 | FY2019 | 30.2% (29.8–30.5%), n = 78,078 | 33.4% (33.1–33.7%), n = 73,859 | 25.4% (25.3–25.6%), n = 451,059 |
 | FY2020 | 31.2% (30.8–31.5%), n = 71,212 | 40.5% (40.1–40.8%), n = 73,338 | 24.6% (24.4–24.7%), n = 379,697 |
-| FY2021 | 30.8% (30.4–31.1%), n = 68,141 | 39.5% (39.1–39.8%), n = 77,127 | 23.9% (23.8–24.0%), n = 352,917 |
-<!-- /auto:m-history -->
+| FY2021 | 30.8% (30.4–31.1%), n = 68,141 | 39.5% (39.1–39.8%), n = 77,127 | 23.9% (23.8–24.0%), n = 352,917 |<!-- /auto:m-history -->
 
 **Limits.** Defense data are published 90 days late, so the latest Defense year is incomplete until its last quarter is out. A change in a share can be a change in how offers are recorded (section 7). GSA's yearly counts swing widely, so its share is hard to read as competition.
 
@@ -278,8 +228,7 @@ Every morning `31_daily_forecast.py` forecasts each new open solicitation in SAM
 
 **The multi-threshold estimator.** For every fiscal year and each of the four lines, the bunching ratio is the number of awards in the four $5,000 bins just under the line divided by the number a smooth curve predicts there. The curve is the one of section 4 (a degree-5 Poisson polynomial over the line's window), but it is fitted outside the bins near **any** of the four lines, so one line's pile-up cannot distort another line's baseline. The windows for $250K and $350K are the ones fixed in `bunching_lib.SPEC`. Intervals come from 200 bootstrap resamples of the awards. If the rule shapes behavior, each line's ratio should rise when it becomes the limit and fade after it stops being one.
 
-<!-- auto:m-threshold-history -->
-**Results** (FY2008–FY2021; bold = the line was the limit that year):
+<!-- auto:m-threshold-history -->**Results** (FY2008–FY2021; bold = the line was the limit that year):
 
 | Fiscal year | Civilian agencies, $100K | Civilian agencies, $150K | Civilian agencies, $250K | Civilian agencies, $350K | Defense, $100K | Defense, $150K | Defense, $250K | Defense, $350K |
 |---|---|---|---|---|---|---|---|---|
@@ -305,8 +254,7 @@ Each change, from the last year before it to the first full year after it (95% i
 - Civilian agencies, $100K → $150K: under $150K, 1.16 (1.04–1.29) in FY2010 → 1.39 (1.26–1.52) in FY2011; under $100K, 1.53 (1.46–1.62) → 1.34 (1.28–1.41).
 - Civilian agencies, $150K → $250K: under $250K, 1.18 (1.06–1.33) in FY2017 → 1.46 (1.32–1.61) in FY2019; under $150K, 1.36 (1.22–1.49) → 1.09 (0.98–1.17).
 - Defense, $100K → $150K: under $150K, 1.31 (1.21–1.42) in FY2010 → 2.09 (1.94–2.26) in FY2011; under $100K, 1.75 (1.69–1.82) → 1.25 (1.21–1.30).
-- Defense, $150K → $250K: under $250K, 0.78 (0.70–0.88) in FY2017 → 2.00 (1.85–2.15) in FY2019; under $150K, 2.47 (2.29–2.69) → 1.19 (1.11–1.27).
-<!-- /auto:m-threshold-history -->
+- Defense, $150K → $250K: under $250K, 0.78 (0.70–0.88) in FY2017 → 2.00 (1.85–2.15) in FY2019; under $150K, 2.47 (2.29–2.69) → 1.19 (1.11–1.27).<!-- /auto:m-threshold-history -->
 
 **Limits.** This is a pattern, not proof of why it happens: budgets written to fit the rules, small-business rules tied to the line and contract splitting all produce it. Ratios above 1 in years a line was not the limit show that round values attract awards anyway.
 
@@ -318,8 +266,7 @@ Each change, from the last year before it to the first full year after it (95% i
 
 **Placebo.** The same calculation with every adoption date moved one year **earlier**. A real effect shows a break at quarter 0 with the true dates and at quarter +4 (not 0) with the placebo dates.
 
-<!-- auto:m-staggered -->
-**Agencies:** 22 civilian agencies with a documented date of high or medium confidence (7 medium).
+<!-- auto:m-staggered -->**Agencies:** 22 civilian agencies with a documented date of high or medium confidence (7 medium).
 
 **Civilian agencies.** Pooling the awards of civilian agencies (FY2016–FY2021) by quarter around each agency's own date, the ratio under $250K averaged 1.10 in the 8 quarters before the switch and 1.51 in the 9 quarters from it on. Its largest one-quarter rise came at quarter 0 (1.12 to 1.64). The 95% intervals of those two quarters (0.81–1.49 and 1.31–2.03) overlap, so the timing rests on the whole pattern, not on one quarter. Placebo: with every date moved one year earlier, the largest rise came at quarter +4, four quarters later, as a real effect predicts.
 
@@ -347,8 +294,7 @@ Bunching ratio (95% interval) by quarter around the adoption date (quarter 0 sta
 | +5 | 1.19 (1.00–1.40) | 1.30 (1.07–1.54) | 1.52 (1.23–1.76) | 0.89 (0.79–1.01) | 2.54 (2.30–2.84) | 1.46 (1.29–1.63) |
 | +6 | 1.13 (0.85–1.42) | 1.52 (1.27–1.90) | 1.28 (0.98–1.63) | 1.14 (0.94–1.36) | 2.90 (2.37–3.37) | 1.50 (1.28–1.81) |
 | +7 | 1.24 (0.97–1.54) | 1.52 (1.20–1.91) | 1.49 (1.16–2.01) | 0.85 (0.72–0.97) | 2.07 (1.75–2.47) | 1.74 (1.48–2.09) |
-| +8 | 1.28 (1.07–1.50) | 1.81 (1.53–2.14) | 1.51 (1.25–1.82) | 1.12 (0.93–1.31) | 3.16 (2.80–3.66) | 2.49 (2.15–2.91) |
-<!-- /auto:m-staggered -->
+| +8 | 1.28 (1.07–1.50) | 1.81 (1.53–2.14) | 1.51 (1.25–1.82) | 1.12 (0.93–1.31) | 3.16 (2.80–3.66) | 2.49 (2.15–2.91) |<!-- /auto:m-staggered -->
 
 **Limits.** A pattern test: it cannot tell budgets written to fit the rules from contracts split to stay under them. Some dates are of medium confidence, and contracting offices may have started earlier or later than their agency's memo.
 
@@ -363,8 +309,7 @@ Bunching ratio (95% interval) by quarter around the adoption date (quarter 0 sta
 - Round numbers: each line is compared with nearby round placebo values that were never a threshold, and with the same value in years when it was not a threshold.
 - Each change: ratios under the old and the new line in the two years before and the two years after. Difference-in-differences = (new line: after − before) − (old line: after − before). It is positive if the pile-up moved with the line; "moved" means its 95% interval is above zero, "moved the wrong way" below zero.
 
-<!-- auto:m-scan -->
-**Results** (FY2008–FY2021; civilian agencies and Defense; the combined rows are in the file). 33 of 104 changes can be tested:
+<!-- auto:m-scan -->**Results** (FY2008–FY2021; civilian agencies and Defense; the combined rows are in the file). 33 of 104 changes can be tested:
 
 | Limit | Change | Date | Sector | Difference-in-differences (95% interval) | Reading |
 |---|---|---|---|---|---|
@@ -406,8 +351,7 @@ Waiting for later years (the numbers so far use part of the windows and are not 
 
 Not testable (71): 18 need years before or after the data's range, 35 wait for fiscal years that are not in the data yet and 18 have too few awards near the line.
 
-**Level check.** In 6 of 17 limit-and-sector pairs with both kinds of year, the pile-up was larger in the years the value was the limit than in years it was not (95% interval of the difference above zero).
-<!-- /auto:m-scan -->
+**Level check.** In 6 of 17 limit-and-sector pairs with both kinds of year, the pile-up was larger in the years the value was the limit than in years it was not (95% interval of the difference above zero).<!-- /auto:m-scan -->
 
 **Limits.** Many lines move on the same day (1 October of 2010, 2015, 2020 and 2025), so a test of one change is confounded by the others, and the first day of a fiscal year has its own pattern. Justification level 1 and the subcontracting plan have had the same value since 2010 and overlapping universes, so their results are not independent. The reporting floor moves with the micro-purchase line, so counts just under it change for reporting reasons too. Samples near the largest lines are small. Delivery orders and BPA calls are not in the data.
 
@@ -421,8 +365,7 @@ Not testable (71): 18 need years before or after the data's range, 35 wait for f
 
 **Blocks.** The model is fitted on earlier years and scored on the latest complete year held out. The change in log loss and AUC when each block of factors is dropped, and when it is used alone, shows how much each block explains.
 
-<!-- auto:m-drivers -->
-**Results** (model years FY2011–FY2021; shares use FY2008–FY2021). Quota per fiscal year × sector: 12,121 awards (seed 20261109). Incumbency is measured for FY2011–FY2021.
+<!-- auto:m-drivers -->**Results** (model years FY2011–FY2021; shares use FY2008–FY2021). Quota per fiscal year × sector: 12,121 awards (seed 20261109). Incumbency is measured for FY2011–FY2021.
 
 | Scope | Sampled awards | Single-offer share | Buying offices (clusters) | McFadden R² | AUC (in sample) |
 |---|---|---|---|---|---|
@@ -452,8 +395,7 @@ Not testable (71): 18 need years before or after the data's range, 35 wait for f
 | buying-office workload | 0.0004 (0.0002 to 0.0006) | 0.0002 (0.0001 to 0.0003) | 0.534 |
 | timing (September rush) | 0.0000 (−0.0003 to 0.0004) | 0.0002 (0.0001 to 0.0003) | 0.513 |
 | incumbency | −0.0004 (−0.0008 to −0.0000) | 0.0001 (−0.0001 to 0.0002) | 0.489 |
-| market depth | −0.0005 (−0.0011 to 0.0001) | −0.0006 (−0.0008 to −0.0003) | 0.533 |
-<!-- /auto:m-drivers -->
+| market depth | −0.0005 (−0.0011 to 0.0001) | −0.0006 (−0.0008 to −0.0003) | 0.533 |<!-- /auto:m-drivers -->
 
 **Limits.** These are associations, not causes: the factors travel together and with things the data do not record. Coding differences between agencies can look like drivers; the agency and sector × year controls absorb level differences but not coding that differs within an agency. Company codes changed with the switch from DUNS to UEI in 2022, so incumbency is undercounted around it. Market depth is one 2026 count applied to every year. Out-of-time log loss also moves with the overall single-offer rate; AUC is the steadier measure. Defense years whose September is missing or thin are left out.
 
@@ -469,8 +411,7 @@ Not testable (71): 18 need years before or after the data's range, 35 wait for f
 
 **Checks.** Two placebos that competition cannot affect: whether the award was signed on an even day of the month, and a coin flip tied to the award's ID number. Balance tests on things fixed at award (value, planned length, options, month). Other size floors; bureau and department cells; cells without the product code; value deciles; cells without the quarter; cells of five or more awards only.
 
-<!-- auto:m-outcomes -->
-**Results** (award-year tables present: FY2008–FY2021). Follow-up t to t+3 (through the third fiscal year after award): cohorts FY2008–FY2018, 1,068,615 awards at or above the size floor (28.6% single-offer), of which 333,302 in 44,205 cells with both kinds of award, from 2,040 buying offices. Follow-up t to t+1 (through the next fiscal year): cohorts FY2008–FY2020, 1,254,069 awards at or above the size floor (28.5% single-offer), of which 405,373 in 52,943 cells with both kinds of award, from 2,175 buying offices.
+<!-- auto:m-outcomes -->**Results** (award-year tables present: FY2008–FY2021). Follow-up t to t+3 (through the third fiscal year after award): cohorts FY2008–FY2018, 1,068,615 awards at or above the size floor (28.6% single-offer), of which 333,302 in 44,205 cells with both kinds of award, from 2,040 buying offices. Follow-up t to t+1 (through the next fiscal year): cohorts FY2008–FY2020, 1,254,069 awards at or above the size floor (28.5% single-offer), of which 405,373 in 52,943 cells with both kinds of award, from 2,175 buying offices.
 
 | Outcome | Multi-offer mean, t to t+3 | Single minus multi, t to t+3 (95% interval) | Multi-offer mean, t to t+1 | Single minus multi, t to t+1 (95% interval) |
 |---|---|---|---|---|
@@ -489,8 +430,7 @@ Shares and ratios are in percent and percentage points; the number of scope chan
 
 **Balance on things fixed at award** (t to t+3): log of the initial value +0.008 (+0.005 to +0.010) (interval excludes zero); planned length in years +0.016 (+0.005 to +0.027) (interval excludes zero); has options +0.026 (−0.131 to +0.183); month of award +0.005 (−0.004 to +0.015).
 
-**Checks** (t to t+3; other size floors and other cells): 30 alternative estimates. In 6 of them the interval changes side of zero compared with the main design: dollars obligated, as a share of the initial value, size floor $100,000; dollars obligated, as a share of the initial value, size floor $250,000; dollars obligated, as a share of the initial value, size floor $1,000,000; obligated 125% or more of the initial value, size floor $10,000; any scope change, size floor $1,000,000; any scope change, cells: only cells with five or more awards (the rule in 03_atlas.py).
-<!-- /auto:m-outcomes -->
+**Checks** (t to t+3; other size floors and other cells): 30 alternative estimates. In 6 of them the interval changes side of zero compared with the main design: dollars obligated, as a share of the initial value, size floor $100,000; dollars obligated, as a share of the initial value, size floor $250,000; dollars obligated, as a share of the initial value, size floor $1,000,000; obligated 125% or more of the initial value, size floor $10,000; any scope change, size floor $1,000,000; any scope change, cells: only cells with five or more awards (the rule in 03_atlas.py).<!-- /auto:m-outcomes -->
 
 **What is not measured.** Prices (the data hold none). Total growth of potential value: the yearly tables of the first build keep each year's largest and last change, not their sum, so the value-jump outcomes are a lower bound. Whether extra obligations, scope changes or terminations were justified; they are often legitimate. **Limits.** Only awards in cells with both kinds of award carry the estimate, a minority, and offices that never or always get one offer are not in it. Single-offer awards can differ in ways the cells do not capture (urgency, specialised requirements, incumbents). Values are typed in by staff. A follow-up that ends in the newest year is short for Defense.
 
@@ -506,8 +446,7 @@ Shares and ratios are in percent and percentage points; the number of scope chan
 
 **When a limit rose.** For each increase (old line X0 to new line X1), the band measure counts clusters with every award at or under X0 and a total above X0 but at or under X1. Once the line rises, such a requirement fits in one simplified purchase, so its excess should fall.
 
-<!-- auto:m-split -->
-**Results** (FY2008–FY2021; links at most 30 days apart; placebo multiples 0.50, 0.60, 0.70, 0.80, 1.25, 1.40, 1.60, 2.00; 200 bootstrap resamples of company within sector and fiscal year). Excess ratio, pooled over the years (1.00 = no excess; 95% interval):
+<!-- auto:m-split -->**Results** (FY2008–FY2021; links at most 30 days apart; placebo multiples 0.50, 0.60, 0.70, 0.80, 1.25, 1.40, 1.60, 2.00; 200 bootstrap resamples of company within sector and fiscal year). Excess ratio, pooled over the years (1.00 = no excess; 95% interval):
 
 | Sector | Simplified acquisition | Same, donut | Micro-purchase | Same, donut |
 |---|---|---|---|---|
@@ -531,8 +470,7 @@ Shares and ratios are in percent and percentage points; the number of scope chan
 | micro-purchase | $3,500 → $10K | GSA | 1.03 (FY2016–FY2017) | 0.98 (FY2021 so far) | −0.05 (−0.50 to +0.59) |
 | micro-purchase | $3,500 → $10K | Defense | 1.05 (FY2016–FY2017) | 1.00 (FY2021 so far) | −0.05 (−0.09 to −0.01) |
 
-It fell clearly in 4, rose clearly in 0 and was unclear in 7 of 11 tests.
-<!-- /auto:m-split -->
+It fell clearly in 4, rose clearly in 0 and was unclear in 7 of 11 tests.<!-- /auto:m-split -->
 
 **Limits.** It cannot tell a prohibited split from legitimate repeat buying (monthly supplies, task-sized orders). It is a pattern in public data, not evidence that any purchase was split. Dollar totals of split-like clusters are left blank when fewer than 3 clusters stand behind them; company and office codes never leave the computation.
 
@@ -544,7 +482,7 @@ It fell clearly in 4, rose clearly in 0 and was unclear in 7 of 11 tests.
 
 **Two series.** All awards, and awards above $25,000 of initial potential value (base and all options). Reporting of very small purchases changed over time (for example the FY2008 Veterans Affairs micro-purchases, see the `note` column of `results/history_by_fy.csv`, and the higher micro-purchase limits from FY2016 and FY2018), so the above-$25,000 series is the headline. Inside a series every rule uses that series' awards: in the above-$25,000 series, a company "won" in a year if it won an award above $25,000. Dollars are not adjusted for inflation.
 
-**New companies.** A company is new in year t if it won no award in t−1, t−2 and t−3. The look-back is fixed, so every year is measured the same way; the first measurable year is the fourth year present, and a year whose three previous years are not all present gets no value. As a sensitivity, "never seen" means no award in any earlier year present (since FY2008); it falls over time by construction, because the look-back grows. Reported: the number of new companies and their share of companies, of awards and of initial dollars.
+**New companies.** A company is new in year t if it won no award in t−1, t−2 and t−3. The look-back is fixed, so every year is measured the same way; the first measurable year is the fourth year present, and a year whose three previous years are not all present gets no value. As a sensitivity, "never seen" means no award in any earlier year present (since FY2008); it falls over time by construction, because the look-back grows. New and staying are judged across all sectors and award kinds: a company that won from any agency in the look-back years is not new. Reported: the number of new companies and their share of companies, of awards and of initial dollars.
 
 **Staying.** Of the companies that won in year t, the share that won again in t+1, and within t+1 to t+3. Only when those years are present and complete (a Defense year whose September is missing or thin is incomplete).
 
@@ -556,8 +494,7 @@ It fell clearly in 4, rose clearly in 0 and was unclear in 7 of 11 tests.
 
 **Privacy.** Company and buying-office codes are used inside the computation only. No output names or codes a company or an office, no statistic describes one company, and every cell resting on fewer than 10 companies is left blank. No single industry's HHI is published.
 
-<!-- auto:m-supplier-base -->
-**Results** (fiscal years present: FY2008–FY2025). All sectors, awards above $25,000:
+<!-- auto:m-supplier-base -->**Results** (fiscal years present: FY2008–FY2025). All sectors, awards above $25,000:
 
 | Fiscal year | Awards | Companies | New companies (3-year look-back) | Never seen since the first year | Won again next year | Won again within 3 years | Top 1% share of dollars | Top 10% share | Median HHI (award-weighted) |
 |---|---|---|---|---|---|---|---|---|---|
@@ -580,18 +517,15 @@ It fell clearly in 4, rose clearly in 0 and was unclear in 7 of 11 tests.
 | FY2024 | 158,158 | 45,757 | 33.9% (not comparable) | 22.4% | 49.2% |  | 67.0% | 91.3% | 409 |
 | FY2025 | 162,999 | 44,466 | 33.0% | 22.0% |  |  | 65.1% | 90.7% | 410 |
 
-**Identifier switch.** Tables with both identifier codes: FY2022–FY2025; without them: FY2008–FY2021. 15,397 DUNS codes are linked to a UEI code; 0 linked groups hold more than two codes. In those tables, 100.0% or more of awards carry a UEI (lowest: FY2022), and at most 0.00% carry only a DUNS that no record links to a UEI. In the tables without the codes, at most 0.00% of awards carry a company id that matches a DUNS code seen in the newer tables, a sign that the older records carry UEIs too (USAspending has added UEIs to old records); the check covers only companies whose DUNS appears in a newer table. Linking changes the new-company share by at most 0.00 percentage points in any year. A one-time sample from the USAspending download service (1,452 transactions of Department of the Interior, 2010-03-01 to 2010-03-05 (FY2010), checked November 10, 2026) found 100.0% with a UEI ([reference/uei_backfill_check.json](../reference/uei_backfill_check.json)).
+**Identifier switch.** Tables with both identifier codes: FY2022–FY2025; without them: FY2008–FY2021. 15,397 DUNS codes are linked to a UEI code; 0 linked groups hold more than two codes. In those tables every award carries a UEI, and none carries only a DUNS that no record links to a UEI. In the tables without the codes, at most 0.00% of awards carry a company id that matches a DUNS code seen in the newer tables, a sign that the older records carry UEIs too (USAspending has added UEIs to old records); the check covers only companies whose DUNS appears in a newer table. Linking changes the new-company share by at most 0.00 percentage points in any year. A one-time sample from the USAspending download service (1,452 transactions of Department of the Interior, 2010-03-01 to 2010-03-05 (FY2010), checked November 10, 2026) found 100.0% with a UEI ([reference/uei_backfill_check.json](../reference/uei_backfill_check.json)).
 
-**Link to competition** (FY2011–FY2021 and FY2025 pooled, all sectors, awards above $25,000): single-offer share of competed awards won by new companies 21.0% (20.8–21.2%), by established companies 26.5% (26.4–26.6%); new companies won 9.9% (9.8–10.0%) of competed awards with one offer and 12.9% (12.9–13.0%) of those with two or more; new companies' share of awards by set-aside: 8(a) 8.5% (8.4–8.7%); service-disabled veteran-owned small business 9.1% (8.8–9.3%); no set-aside 11.0% (10.9–11.0%); HUBZone small business 11.4% (10.7–12.1%); veteran-owned small business 15.2% (13.5–17.2%); small business 16.3% (16.2–16.4%); women-owned small business 23.1% (22.1–24.2%).
-<!-- /auto:m-supplier-base -->
+**Link to competition** (FY2011–FY2021 and FY2025 pooled, all sectors, awards above $25,000): single-offer share of competed awards won by new companies 21.0% (20.8–21.2%), by established companies 26.5% (26.4–26.6%); new companies won 9.9% (9.8–10.0%) of competed awards with one offer and 12.9% (12.9–13.0%) of those with two or more; new companies' share of awards by set-aside: 8(a) 8.5% (8.4–8.7%); service-disabled veteran-owned small business 9.1% (8.8–9.3%); no set-aside 11.0% (10.9–11.0%); HUBZone small business 11.4% (10.7–12.1%); veteran-owned small business 15.2% (13.5–17.2%); small business 16.3% (16.2–16.4%); women-owned small business 23.1% (22.1–24.2%).<!-- /auto:m-supplier-base -->
 
 **Limits.** Only prime awards: subcontractors are not counted. Only new awards: orders under existing contract vehicles (delivery and task orders) are not in these tables, so a company that wins only such orders is missing, and a falling count can partly reflect a shift of buying toward orders under vehicles. These are patterns, not accusations and not proof of causes: fewer companies is not by itself less competition. GAO also reports fewer businesses, small and larger, receiving Defense contract obligations over FY2011 to FY2020 ([GAO-22-104621](https://www.gao.gov/products/gao-22-104621)); its counts use a different base (all obligations, Defense only) and are not compared number for number here.
 
 ## 16. Reference data
 
-<!-- auto:m-reference -->
-**Reference data.** [`reference/thresholds.csv`](../reference/thresholds.csv) lists 108 value periods of 28 FAR dollar thresholds, each with its source and the words that show the value ([notes](../reference/thresholds.md)). [`reference/threshold_adoption_2018.csv`](../reference/threshold_adoption_2018.csv) gives the date each agency adopted the 2018 limits: 24 of its 33 rows (agencies and the FAR itself) have a date, from February 27, 2018 to August 31, 2020, 7 of them of medium confidence ([notes](../reference/README.md)). [`reference/market_depth_naics.csv`](../reference/market_depth_naics.csv) counts the companies registered in SAM.gov to compete for federal contracts in each industry code: 1,085 codes, a median of 842 companies per code, on November 1, 2026. A registration is not a capable bidder ([notes](../reference/market_depth.md)).
-<!-- /auto:m-reference -->
+<!-- auto:m-reference -->**Reference data.** [`reference/thresholds.csv`](../reference/thresholds.csv) lists 108 value periods of 28 FAR dollar thresholds, each with its source and the words that show the value ([notes](../reference/thresholds.md)). [`reference/threshold_adoption_2018.csv`](../reference/threshold_adoption_2018.csv) gives the date each agency adopted the 2018 limits: 24 of its 33 rows (agencies and the FAR itself) have a date, from February 27, 2018 to August 31, 2020, 7 of them of medium confidence ([notes](../reference/README.md)). [`reference/market_depth_naics.csv`](../reference/market_depth_naics.csv) counts the companies registered in SAM.gov to compete for federal contracts in each industry code: 1,085 codes, a median of 842 companies per code, on November 1, 2026. A registration is not a capable bidder ([notes](../reference/market_depth.md)).<!-- /auto:m-reference -->
 
 - **Thresholds** (`reference/thresholds.csv`, compiled by hand): values read in the Federal Register inflation rules, the statutes and DoD class deviations, checked against the eCFR. Several thresholds move on the same day.
 - **2018 adoption dates** (`reference/threshold_adoption_2018.csv`, compiled by hand): the date each agency's class deviation took effect, with the evidence quoted and a confidence level. Dates of low confidence are left blank and never guessed.
@@ -603,9 +537,7 @@ It fell clearly in 4, rose clearly in 0 and was unclear in 7 of 11 tests.
 
 **Model version 2** (`30_model_v2.py`). Trained on every archived solicitation that can be matched to a competed award in the history tables, for every agency, with the outcome rule of `09_resolve_forecast.py`. Evaluation is rolling-origin: for each test year, train on solicitations posted and awarded before it and test on the solicitations posted in it, against simple baselines and version 1's feature set refitted. Which model is shipped follows rules fixed in the script. Public files are at agency level or coarser.
 
-<!-- auto:m-model-v2 -->
-- **Forecast model, version 2 (built November 10, 2026).** It is the model of the daily forecasts (see *Pre-registered forecasts*). Trained on 656,878 solicitations from SAM.gov's archive that were matched to a competed award (award years FY2008–FY2021; its award history ends September 30, 2021). Tested out of time on FY2009–FY2021, the shipped L2 logistic regression ranks solicitations with an AUC of 0.692 (0.583 for the best simple baseline, the buying office's past rate, and 0.681 for version 1's features refitted), with a Brier score of 0.160 against 0.179 for that baseline and a calibration slope of 0.95 (1.00 is ideal). Its award history ends more than 9 months before it was trained, so it must not score live solicitations until it is retrained on newer award years; the daily forecast script refuses a model this old. Version 1 (section 5) is the earlier model, frozen since the October 24, 2026 build. Both are risk indicators about markets, not statements about anyone's conduct. Details: [`results/model_v2_card.json`](../results/model_v2_card.json).
-<!-- /auto:m-model-v2 -->
+<!-- auto:m-model-v2 -->- **Forecast model, version 2 (built November 10, 2026).** It is the model of the daily forecasts (see *Pre-registered forecasts*). Trained on 930,423 solicitations from SAM.gov's archive that were matched to a competed award (award years FY2008–FY2026; its award history ends September 30, 2026). Tested out of time on FY2009–FY2026, the shipped L2 logistic regression ranks solicitations with an AUC of 0.712 (0.590 for the best simple baseline, the buying office's past rate, and 0.701 for version 1's features refitted), with a Brier score of 0.161 against 0.181 for that baseline and a calibration slope of 1.03 (1.00 is ideal). Version 1 (section 5) is the earlier model, frozen since the October 24, 2026 build. Both are risk indicators about markets, not statements about anyone's conduct. Details: [`results/model_v2_card.json`](../results/model_v2_card.json).<!-- /auto:m-model-v2 -->
 
 ## 18. Known limitations
 

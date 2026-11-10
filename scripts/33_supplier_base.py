@@ -99,7 +99,7 @@ LINK_COLS = ["vendor_uei_code", "vendor_duns_code"]
 BY_FY_COLS = ["fy", "sector", "award_scope", "award_kind", "n_awards", "n_awards_no_company_id", "n_companies", "n_companies_unlinked_ids",
               "initial_dollars", "n_new_companies", "new_share_companies", "new_share_awards", "new_share_dollars",
               "new_share_companies_unlinked_ids", "new_share_companies_never_seen", "stay_share_next_year",
-              "stay_share_next_year_unlinked_ids", "stay_share_within_3_years", "new_measures_comparable", "stay_next_year_comparable",
+              "stay_share_next_year_unlinked_ids", "stay_share_within_3_years", "new_measures_comparable", "never_seen_comparable", "stay_next_year_comparable",
               "stay_3_years_comparable", "note"]
 
 
@@ -389,6 +389,11 @@ def year_tables(y, b, cid, rid, sets, years, complete, diag, issue_notes):
     f1ok, f1why = window_ok([y, y + 1], diag)
     f3ok, f3why = window_ok([y] + fwd if fwd else None, diag)
     earlier = [t for t in years if t < y]
+    # "never seen" needs every year from the first one present (a gap would make companies of the missing year look new), and its
+    # look-back spans the identifier switch from FY2022 on: the same comparability rule as the other new-company measures
+    if earlier and earlier != list(range(years[0], y)):
+        earlier = []
+    eok, ewhy = window_ok(earlier + [y], diag) if earlier else (True, "")
     by_fy, conc, comp_rows = [], [], []
     for scope in SCOPES:
         in_scope = above if scope == "above_25k" else np.ones(len(b), dtype=bool)
@@ -415,12 +420,15 @@ def year_tables(y, b, cid, rid, sets, years, complete, diag, issue_notes):
                 notes += issue_notes.get((y, scope, sname), [])
                 if newf is not None and not bok:
                     notes.append("new-company measures " + bwhy)
+                if ever is not None and not eok:
+                    notes.append("never-seen share " + ewhy)
                 if one_ok and not f1ok:
                     notes.append("next-year staying " + f1why)
                 if fwd_ok and not f3ok:
                     notes.append("three-year staying " + f3why)
                 row = {"fy": y, "sector": sname, "award_scope": scope, "award_kind": k, **st}
                 row["new_measures_comparable"] = bool(bok) if newf is not None else None
+                row["never_seen_comparable"] = bool(eok) if ever is not None else None
                 row["stay_next_year_comparable"] = bool(f1ok) if one_ok else None
                 row["stay_3_years_comparable"] = bool(f3ok) if fwd_ok else None
                 row["note"] = "; ".join(notes)
@@ -708,7 +716,8 @@ def build_summary(t, cdf, cp, years, link_years, diag, group_sizes, comparable_y
             "share_of_companies_last": _f(ok.new_share_companies.iloc[-1]), "last_year": y_last,
             "share_of_companies_mean": _f(ok.new_share_companies.mean()), "share_of_awards_mean": _f(ok.new_share_awards.mean()),
             "share_of_dollars_mean": _f(ok.new_share_dollars.mean()),
-            "share_of_companies_never_seen_last": _f(ok.new_share_companies_never_seen.iloc[-1]),
+            "share_of_companies_never_seen_last": _f(ok.new_share_companies_never_seen.iloc[-1])
+            if ok.never_seen_comparable.iloc[-1] == True else None,  # noqa: E712  (its look-back reaches back to the first year)
             "largest_gap_linked_vs_unlinked_points": _f(100 * gap.max(), 2) if len(gap) else None,
             "largest_gap_year": int(gap.idxmax()) if len(gap) else None}
     stay = h25[h25.stay_share_next_year.notna() & (h25.stay_next_year_comparable == True)]  # noqa: E712
