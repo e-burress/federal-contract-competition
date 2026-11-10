@@ -135,6 +135,7 @@ Everything else can be rebuilt.
 ## 7. Troubleshooting
 
 - **A download is slow or fails.** Run the same command again. Parts that already finished are skipped.
+- **A download says NOT VERIFIED or REJECTED.** The file did not match USAspending's own row count, or the count could not be checked. Nothing unchecked is used. Run the same command again later. See [`download-integrity.md`](download-integrity.md).
 - **Out of memory.** Close other programs. The full rebuild (`all`) needs about 3 GB of free memory. `quick` needs less.
 - **Spaces in the folder path (Windows).** These are fine.
 - **Downloads are blocked.** Work or school networks sometimes block them. Try a home network, or use Codespaces (route 2).

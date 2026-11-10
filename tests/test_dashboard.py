@@ -265,6 +265,17 @@ class Polish(unittest.TestCase):
         self.assertIn("90 days late", t)
         self.assertNotIn("—", t)
 
+    def test_unverified_live_table_is_marked(self):
+        note = bd.live_verification_note({"fiscal_year": 2027, "verified": False})
+        self.assertIn("Not verified", note)
+        self.assertNotIn("—", note)
+        check_html(self, note)
+        self.assertEqual(bd.live_verification_note({"fiscal_year": 2027, "verified": True}), "")
+        self.assertEqual(bd.live_verification_note({"fiscal_year": 2027}), "")          # files written before the check existed
+        with open(os.path.join(SCRIPTS, "build_dashboard.py"), encoding="utf-8") as f:
+            src = f.read()
+        self.assertIn("live_parts.append(live_verification_note(lt) +", src)
+
     def test_history_caution_is_shown(self):
         p = os.path.join(self.res, "history_by_fy.csv")
         with open(p, encoding="utf-8") as f:

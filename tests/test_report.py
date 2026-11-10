@@ -260,6 +260,22 @@ class ReportBlocks(unittest.TestCase):
         self.assertIn("21.5% (95% interval 21.3–21.7%) against 26.3% (26.2–26.4%)", su)
         self.assertIn("| FY2013 | 900 | 800 | 35.0% |", self.render("m-supplier-base"))
 
+    def test_no_component_below_agency_is_named(self):
+        """published text names nothing below agency level (no GSA component or division)"""
+        tot = [dict(scope=sc, n_agencies=40, n_eval=ne, k_single=int(ne * 0.25), share=0.25, median_award_value=mv)
+               for sc, ne, mv in (("all civilian agencies", 4000, 500), ("all civilian agencies except GSA", 1500, 40000),
+                                  ("GSA only", 2500, 143), ("other civilian agencies except GSA", 600, 30000))]
+        write_csv(os.path.join(br.RESULTS, "atlas_civilian_totals.csv"), tot)
+        write_csv(os.path.join(br.RESULTS, "atlas_civilian_by_fy.csv"),
+                  [dict(scope=sc, fy=fy, share=0.3, n_eval=100) for sc in ("GSA only", "all civilian agencies except GSA") for fy in (2024, 2025, 2026)])
+        write_csv(os.path.join(br.RESULTS, "atlas_civilian_five_check.csv"),
+                  [dict(k_single_original=1, k_single_new=1, n_eval_original=2, n_eval_new=2, share_change_points=0.0)])
+        br.clear_caches()
+        for name in ("civilian", "m-gsa"):
+            out = self.render(name)
+            self.assertNotIn("Federal Acquisition Service", out)
+            self.assertNotIn("division", out)
+
     def test_model_v2_appears_with_its_card(self):
         synthetic(self.tmp.name)
         write_json(os.path.join(br.RESULTS, "model_v2_card.json"), {
@@ -283,6 +299,23 @@ class ReportBlocks(unittest.TestCase):
         m = self.render("m-model-v2")
         self.assertIn("(../results/model_v2_card.json)", m)
         self.assertIn("Version 1 (section 5)", m)
+
+    def test_model_v2_reads_the_shipped_name_from_the_card(self):
+        synthetic(self.tmp.name)
+        ship = "logistic v2, half-life 3 years, correction by sector"
+        card = {"built_utc": "2026-11-12T10:00:00Z", "data": {"resolved_solicitations": 10, "award_years_present": [2008, 2026]},
+                "shipped": {"name_in_evaluation": ship, "kind": "L2 logistic regression"}, "evaluation": {"test_years": [2025]}}
+        write_json(os.path.join(br.RESULTS, "model_v2_card.json"), card)
+        ev = [{"test_fy": "pooled", "sector": "all", "model": m, "auc": a, "brier": b, "cal_slope": 0.95}
+              for m, a, b in (("logistic v2", 0.70, 0.15), (ship, 0.76, 0.14), ("sector rate (baseline)", 0.50, 0.17))]
+        write_csv(os.path.join(br.RESULTS, "model_v2_evaluation.csv"), ev)
+        br.clear_caches()
+        out = self.render("model-v2")
+        self.assertIn("an AUC of 0.760", out)                               # the shipped model's row, not "logistic v2"
+        card["shipped"].pop("name_in_evaluation")                           # no name in the card: the fallback row
+        write_json(os.path.join(br.RESULTS, "model_v2_card.json"), card)
+        br.clear_caches()
+        self.assertIn("an AUC of 0.700", self.render("model-v2"))
 
     def test_model_v2_staleness_follows_the_history_end(self):
         synthetic(self.tmp.name)

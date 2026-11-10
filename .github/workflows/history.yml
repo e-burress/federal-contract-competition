@@ -61,11 +61,16 @@ jobs:
       - name: Download FY${{ matrix.fy }} (civilian agencies and Defense)
         run: python -I scripts/17_history_download.py ${{ matrix.fy }} all
 
+      # Every downloaded file was checked against USAspending's own row count (17_history_download.py). The build carries that
+      # check into history_FY<fy>.json and, with --require-verified, fails when the year is not verified, so the publish step
+      # below never runs for an incomplete year (see docs/download-integrity.md).
       - name: Build the yearly tables
-        run: python -I scripts/18_history_build.py ${{ matrix.fy }}
+        run: python -I scripts/18_history_build.py ${{ matrix.fy }} --require-verified
 
       - name: Publish to the history-v1 release
         run: |
+          # second gate: never upload a year whose history_FY<fy>.json does not say verified: true
+          python -I -c "import json, sys; d = json.load(open('data/history/processed/history_FY${{ matrix.fy }}.json', encoding='utf-8')); sys.exit(0 if d.get('verified') is True else 'FY${{ matrix.fy }} is not verified: not published')"
           gh release view history-v1 > /dev/null 2>&1 || gh release create history-v1 --title "History tables" \
             --notes "Yearly tables for the long history (FY2008 onward, civilian agencies and the Department of Defense), built by .github/workflows/history.yml. Office names and raw company identifiers are left out only to keep the tables small and focused. vendor_id is a short code derived from the company's public identifier, so the same company can be followed across awards; it is not anonymous. Contract numbers are kept, and every award is public on USAspending.gov. See docs/data-dictionary.md." || true
           gh release upload history-v1 data/history/processed/*FY${{ matrix.fy }}* --clobber

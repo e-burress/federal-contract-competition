@@ -293,6 +293,7 @@ def model_rows(src):
     return ours, base
 
 
+V2_SHIPPED_FALLBACK = "logistic v2"       # used when the card names no shipped model (or one with no pooled row)
 V2_BASELINES = ("sector rate (baseline)", "agency rate (baseline)", "office history only (baseline)")
 
 
@@ -303,7 +304,7 @@ def model_v2_rows(src):
         return None
     card = src.json("model_v2_card.json") or {}
     pooled = {r.get("model"): r for r in (card.get("evaluation") or {}).get("pooled") or [] if r.get("sector") == "all"}
-    ours = pooled.get((card.get("shipped") or {}).get("name_in_evaluation"))
+    ours = pooled.get((card.get("shipped") or {}).get("name_in_evaluation")) or pooled.get(V2_SHIPPED_FALLBACK)
     bases = [pooled[b] for b in V2_BASELINES if b in pooled and fl(pooled[b].get("auc")) is not None]
     if not ours or fl(ours.get("auc")) is None or not bases:
         return None

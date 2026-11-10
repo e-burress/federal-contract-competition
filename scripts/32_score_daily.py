@@ -14,7 +14,8 @@ What it does
      forecast date on: offers were due at least a day after each daily forecast, so an earlier award under the same number
      cannot come from them.  Award transactions come from:
        civilian  <DATA>/usaspending_live/*.zip, filled every morning by 15_civilian_fytd.py (this fiscal year so far; the files
-                 carry solicitation_identifier and modification_number)
+                 carry solicitation_identifier and modification_number).  Used only when 15's record of the download
+                 (download_check.json) says every file matched USAspending's own count; otherwise nothing is scored (exit 4).
        Defense   only with --defense: Department of Defense transactions downloaded for the months since the oldest Defense
                  forecast that still has no matching award (17_history_download.py's window splitting, 9 columns only).
                  Defense data are published 90 days late, so Defense forecasts resolve months after civilian ones.
@@ -110,6 +111,7 @@ D31 = load("daily31", "31_daily_forecast.py")
 
 MIN_PUBLIC, MIN_CELL, BANDS = R09.MIN_PUBLIC, R09.MIN_CELL, R09.BANDS
 LIVE_GLOB = os.path.join(DATA, "usaspending_live", "*.zip")
+LIVE_CHECK = "download_check.json"       # left next to the live files by 15_civilian_fytd.py once its download is complete
 DEFENSE_DIR = os.path.join(DATA, "score_daily_tmp", "defense")
 PRIVATE_DIR = os.path.join(DATA, "private")
 OUTCOMES_NAME = "daily_forecast_outcomes.csv"
@@ -237,6 +239,30 @@ def base_actions_from_zips(paths, wanted, source):
     return out[out["action_date"].notna()].drop_duplicates().reset_index(drop=True)
 
 
+def live_problem(live_glob):
+    """None when the civilian live files may be used, otherwise the reason why not. 15_civilian_fytd.py empties the folder, downloads,
+    and only then writes LIVE_CHECK (the files of the download, and verified: true only when every file matched USAspending's own
+    count). So a run that stopped half-way leaves files without a record. No live folder at all: nothing is read (None)."""
+    folder = os.path.dirname(live_glob)
+    if not os.path.isdir(folder):
+        return None
+    try:
+        with open(os.path.join(folder, LIVE_CHECK), encoding="utf-8") as fh:
+            rec = json.load(fh)
+    except FileNotFoundError:
+        return (f"the civilian live download has no {LIVE_CHECK}: 15_civilian_fytd.py stopped before it finished (or is still "
+                "running), so its files may be incomplete")
+    except (OSError, ValueError):
+        return f"{LIVE_CHECK} of the civilian live download cannot be read"
+    if not isinstance(rec, dict) or rec.get("verified") is not True:
+        probs = (rec.get("problems") or [])[:3] if isinstance(rec, dict) else []
+        return ("the civilian live download is NOT VERIFIED against USAspending's own count"
+                + (f" ({'; '.join(probs)})" if probs else ""))
+    if sorted(os.path.basename(p) for p in glob.glob(live_glob)) != sorted(rec.get("files") or []):
+        return "the civilian live files are not the ones the verified download recorded"
+    return None
+
+
 def date_span(base):
     if not len(base):
         return None
@@ -244,17 +270,10 @@ def date_span(base):
 
 
 def fetch_split(label, start, end, agencies, out, prefix):
-    """17_history_download.fetch_split with the scorer's 9 columns: download start..end, halving the window until it fits."""
+    """the shared verified download (01_download_usaspending.fetch_verified) with the scorer's 9 columns: the file's rows must
+    match USAspending's own count, a window that is too big or cut off is split. Strict: an unverified window counts as failed."""
     H17 = load("hist17", "17_history_download.py")
-    r = H17.civ.fetch(label, start, end, agencies, out=out, prefix=prefix, columns=TX_COLS)
-    if r == "done":
-        return []
-    if r != "split":
-        return [label]
-    h = H17.halves(start, end)
-    if h is None:
-        return [label]
-    return fetch_split(label + "a", *h[0], agencies, out, prefix) + fetch_split(label + "b", *h[1], agencies, out, prefix)
+    return H17.civ.dl.fetch_verified(label, start, end, agencies, out, prefix=prefix, columns=TX_COLS)
 
 
 def download_defense(start, end, out_dir):
@@ -604,6 +623,11 @@ def run(argv=None, paths=None):
         with open(pub_path, encoding="utf-8") as fh:
             prev_public = json.load(fh)
     wanted = set(items["sol_norm"])
+    problem = live_problem(P["live_glob"])
+    if problem:
+        say(f"ERROR: {problem}.\nNothing was scored or written (missing awards would look like 'no award yet'). Run "
+            "'python run.py live' again, then score.")
+        return EXIT_DATA
     live = sorted(glob.glob(P["live_glob"]))
     civ = base_actions_from_zips(live, wanted, "civilian_live")
     award_data = {"civilian": {"source": "USAspending live download of this fiscal year so far (15_civilian_fytd.py)",

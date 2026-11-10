@@ -50,7 +50,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import CONFIG, DATA, FORECASTS, RESULTS, UA_USASPENDING, download_file, http_json  # noqa: E402
+from common import CONFIG, DATA, FORECASTS, RESULTS  # noqa: E402
 
 API = "https://api.usaspending.gov/api/v2"
 SUMS_NAME = "SHA256SUMS.txt"
@@ -158,39 +158,28 @@ def load_checked_forecast(path, sums_path):
 # getting the award data
 # ---------------------------------------------------------------------------------------------------------------------
 def _fetch_window(ag, start, end, out_dir, depth=0):
-    """One agency, one date window. Returns a list of DataFrames, or None if it failed. Splits the window in two if the file is too big."""
-    body = {"filters": {"award_type_codes": ["B", "D", "IDV_A", "IDV_B", "IDV_B_A", "IDV_B_B", "IDV_B_C", "IDV_C", "IDV_D", "IDV_E"],
-                        "agencies": [{"type": "awarding", "tier": "toptier", "name": ag}],
-                        "time_period": [{"start_date": start, "end_date": end, "date_type": "action_date"}]},
-            "columns": COLS, "file_format": "csv"}
-    resp = http_json(f"{API}/download/transactions/", method="POST", body=body, ua=UA_USASPENDING)
-    if not resp or "file_name" not in resp:
-        return None
-    st = {}
-    for _ in range(100):
-        st = http_json(f"{API}/download/status?file_name={resp['file_name']}", ua=UA_USASPENDING) or {}
-        if st.get("status") in ("finished", "failed"):
-            break
-        time.sleep(8)
-    if st.get("status") != "finished":
-        return None
-    if float(st.get("total_size") or 0) > 25_000:                  # the 25 MB rule of common.download_file; split instead of skipping
-        d0, d1 = pd.Timestamp(start), pd.Timestamp(end)
-        if depth >= 5 or (d1 - d0).days < 1:
-            return None
-        mid = d0 + (d1 - d0) // 2
-        a = _fetch_window(ag, start, mid.strftime("%Y-%m-%d"), out_dir, depth + 1)
-        time.sleep(3)
-        b = _fetch_window(ag, (mid + pd.Timedelta(days=1)).strftime("%Y-%m-%d"), end, out_dir, depth + 1)
-        return None if a is None or b is None else a + b
-    dest = os.path.join(out_dir, resp["file_name"])
-    if not download_file(resp["file_url"], dest, ua=UA_USASPENDING):
+    """One agency, one date window, through the shared verified download (01_download_usaspending.fetch_verified): the rows in the
+    file must match USAspending's own count, and a window that is too big or cut off is split. Returns a list of DataFrames, or
+    None if it failed or could not be verified (also when the count service does not answer: never score from unchecked data)."""
+    import importlib.util
+    import shutil
+    spec = importlib.util.spec_from_file_location("dl01", os.path.join(os.path.dirname(os.path.abspath(__file__)), "01_download_usaspending.py"))
+    DL = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(DL)
+    d = os.path.join(out_dir, "f1_" + re.sub(r"\W+", "_", ag))
+    shutil.rmtree(d, ignore_errors=True)                       # always fresh
+    os.makedirs(d)
+    failed = DL.fetch_verified("W", start, end, [ag], d, prefix="TX", columns=COLS, force=True)
+    check, leaves = DL.verification(d, ["W"])
+    if failed or not check["verified"]:
+        print("  not verified:", "; ".join(check["problems"]) or failed, flush=True)
         return None
     frames = []
-    with zipfile.ZipFile(dest) as z:
-        for n in z.namelist():
-            if "Transactions" in n and n.endswith(".csv"):
-                frames.append(pd.read_csv(z.open(n), dtype=str, keep_default_na=False))
+    for lf in leaves:
+        with zipfile.ZipFile(lf["zip"]) as z:
+            for n in z.namelist():
+                if "Transactions" in n and n.endswith(".csv"):
+                    frames.append(pd.read_csv(z.open(n), dtype=str, keep_default_na=False))
     if any(not set(COLS) <= set(f.columns) for f in frames):
         return None
     return frames

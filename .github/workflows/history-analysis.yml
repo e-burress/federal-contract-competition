@@ -1,6 +1,8 @@
 # Reruns the long-history analyses (single offers since FY2008, pile-ups under every dollar limit, the 2018 agency-by-agency
 # test, drivers, split-like clusters, post-award outcomes) from the public yearly tables in the release "history-v1",
 # then rebuilds the README numbers, the dashboard and the explorer, and commits the results.
+# It first checks that every yearly table was verified when it was downloaded (run.py get-history --require-verified) and
+# compares the settled years with USAspending's own totals (scripts/28_reconcile.py --strict); it stops if either check fails.
 # Runs every Sunday and on demand (Actions tab, "Run workflow"). Takes about half an hour.
 name: History analyses
 
@@ -32,6 +34,17 @@ jobs:
 
       - name: Install
         run: pip install -r requirements.txt
+
+      # Two checks before anything is analysed or committed (see docs/download-integrity.md):
+      # 1. every yearly table must say it was verified against USAspending's own counts when it was downloaded
+      #    (get-history --require-verified fails, listing the years, for a table marked not verified or with no record);
+      # 2. 28_reconcile.py --strict compares each settled year (ended more than 15 months ago) with USAspending's totals today:
+      #    more than 0.5 percent apart fails. A recent year fails only if our count is above USAspending's. If USAspending
+      #    cannot be reached, the check fails and nothing is committed that week.
+      - name: Check the yearly tables (verification records, then USAspending's totals)
+        run: |
+          python run.py get-history --require-verified
+          python -I scripts/28_reconcile.py --strict
 
       - name: Download the yearly tables and rerun the history analyses
         run: python run.py history

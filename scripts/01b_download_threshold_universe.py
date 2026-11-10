@@ -4,7 +4,8 @@ purchase orders (B) and definitive contracts (D) only, with just 14 columns.
 
 Why a second pull?  The threshold test (bunching just under $250K / $350K and the $10K / $15K micro-purchase line)
 needs many awards near each line.  Five agencies give a few hundred per year; the whole civilian government gives thousands.
-Same method as 01_download_usaspending.py (Advanced Search transaction download with a `columns` list).
+Same method as 01_download_usaspending.py (Advanced Search transaction download with a `columns` list), through its shared verified
+download (fetch_verified): every file's rows must match USAspending's own count; a window that is too big or cut off is split.
 
 DoD is excluded on purpose: its public data are delayed by 90 days.
 
@@ -13,13 +14,12 @@ Usage:  python -I scripts/01b_download_threshold_universe.py [--reverse] [FY2026
           labels     only these quarters
 Output: data/usaspending_universe/CIVILIAN__FYyyyyQn.zip + manifest_<quarter>.json
 """
-import json
+import importlib.util
 import os
 import sys
-import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import DATA, UA_USASPENDING, download_file, http_json  # noqa: E402
+from common import DATA, UA_USASPENDING, http_json  # noqa: E402
 
 OUT = os.path.join(DATA, "usaspending_universe")
 os.makedirs(OUT, exist_ok=True)
@@ -54,40 +54,15 @@ def main():
         wins = [w for w in wins if w[0] in only]
     if "--reverse" in sys.argv:
         wins = wins[::-1]
+    _spec = importlib.util.spec_from_file_location("dl01", os.path.join(os.path.dirname(os.path.abspath(__file__)), "01_download_usaspending.py"))
+    DL = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(DL)
+    failed = []
     for label, start, end in wins:
-        if os.path.exists(os.path.join(OUT, f"CIVILIAN__{label}.zip")):
-            continue                                   # already downloaded (possibly by the other copy of this script)
-        body = {
-            "filters": {
-                "award_type_codes": ["B", "D"],
-                "agencies": [{"type": "awarding", "tier": "toptier", "name": n} for n in agencies],
-                "time_period": [{"start_date": start, "end_date": end, "date_type": "action_date"}],
-            },
-            "columns": COLUMNS, "file_format": "csv",
-        }
-        print(f"[{time.strftime('%H:%M:%S')}] {label}", flush=True)
-        resp = http_json(f"{API}/download/transactions/", method="POST", body=body, ua=UA_USASPENDING)
-        if not resp or "file_name" not in resp:
-            print("  submit failed")
-            time.sleep(10)
-            continue
-        st = {}
-        t0 = time.time()
-        while time.time() - t0 < 900:
-            st = http_json(f"{API}/download/status?file_name={resp['file_name']}", ua=UA_USASPENDING) or {}
-            if st.get("status") in ("finished", "failed"):
-                break
-            time.sleep(10)
-        rec = {"window": label, "status": st.get("status"), "total_rows": st.get("total_rows"), "total_size_kb": st.get("total_size")}
-        if st.get("status") == "finished" and float(st.get("total_size") or 0) <= 25_000:
-            dest = os.path.join(OUT, f"CIVILIAN__{label}.zip")
-            n = download_file(resp["file_url"], dest, ua=UA_USASPENDING)
-            rec.update(bytes=n, path=os.path.basename(dest), done=bool(n))
-            if st.get("total_rows") and int(st["total_rows"]) >= 499_000:
-                rec.update(done=False, warning="hit the 500,000-row cap: split this window")
-        json.dump(rec, open(os.path.join(OUT, f"manifest_{label}.json"), "w"), indent=1)
-        print("  ", rec, flush=True)
-        time.sleep(3)
+        failed += DL.fetch_verified(label, start, end, agencies, OUT, prefix="CIVILIAN", columns=COLUMNS, award_types=["B", "D"])
+    print("FAILED (rerun to retry):", failed if failed else "none", flush=True)
+    if failed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 {
  "model": "single-offer forecast, version 2",
- "built_utc": "2026-11-10T15:07:09Z",
+ "built_utc": "2026-11-10T16:28:37Z",
  "what_it_predicts": "P(exactly one offer), given that the solicitation ends in a competed award with a usable offer count. A risk indicator about the market for a requirement, not a statement about anyone's conduct.",
  "outcome_rule": "Earliest base action (purchase order, definitive contract or contract vehicle) with the same normalised solicitation number, dated on or after first posting and at most 730 days later. Resolved only if competed (A, D, E, F, CDO) with 1 to 998 offers. Numbers shorter than 8 characters are not matched.",
  "data": {
@@ -658,21 +658,264 @@
  "no_leakage": "Only the first version of the notice and awards from quarters ending at least 1 full quarter(s) before the posting quarter (a 12-quarter window). Not used: amendments, final deadline, award notices.",
  "shipped": {
   "kind": "L2 logistic regression",
-  "name_in_evaluation": "logistic v2",
-  "training_window": "all earlier years",
+  "name_in_evaluation": "logistic v2, half-life 3 years, correction by sector",
+  "training_window": "all earlier years, time-decay weights with a half-life of 3 years",
+  "interactions": [],
   "why": [
-   "Training window: log loss 0.4976 with all earlier years, 0.4962 with the last 6 years (test years where the two differ). Kept: all earlier years.",
-   "Gradient boosting against the logistic regression, pooled out of time: log loss 0.4876 against 0.4919 (+0.9%), better in 78% of the test years, calibration slope 1.00 against 1.03. That is not clearly better by the fixed rule (2% lower log loss, 80% of the years, slope no worse), so the readable logistic regression is shipped."
+   "Rule 1 (fixed before the candidates were fitted): 12 logistic candidates (6 raw models, each with one correction for all sectors or a correction by sector), scored by log loss pooled over the last five test years, FY2022 to FY2026. A simpler candidate gives way only to one that lowers that log loss by at least 0.5%.",
+   "The lowest log loss is 0.4837 (logistic v2, half-life 3 years, correction by sector). The model shipped until now (one correction for all sectors) has 0.4920. Rule 1 selects logistic v2, half-life 3 years, with 0.4861 (-1.2% against the model shipped until now; lower in 5 of the 5 years). It is the candidate with the fewest changes within 0.5% of the lowest log loss.",
+   "Amendment, made after seeing the results (November 10, 2026). Rule 1 selected R2 + P (time decay with a half-life of 3 years, one correction for all sectors). R2 + S (the same model with the correction by sector) is shipped instead. This choice was made after the results were known, so it overrides the rule written down before fitting.",
+   "Reason: the revision was made because the forecasts were miscalibrated by sector. Rule 1 measured only pooled log loss, where the correction by sector falls 0.01 points short of the 0.5% margin (0.49%), but it largely removes the problem the revision was for.",
+   "Calibration slopes in test years 2024 to 2026 (1.00 is ideal): civilian except GSA 0.74 to 0.86 with R2 + P, 0.96 to 1.09 with R2 + S; Defense 1.26 to 1.38 with R2 + P, 1.11 to 1.23 with R2 + S. The public scores are reported by sector, so a known miscalibration by sector should not be shipped.",
+   "Log loss of the shipped model, pooled over FY2022 to FY2026: 0.4837 (-1.7% against the model shipped until now).",
+   "The correction is fitted by sector group: Defense, and civilian (civilian agencies except GSA together with GSA, which has about 150 resolved solicitations a year). A solicitation whose sector is unknown on the posting day gets the one correction fitted on all sectors.",
+   "Gradient boosting against the shipped logistic regression, pooled over all test years: log loss 0.4876 against 0.4897 (+0.4%), better in 61% of the test years, calibration slope 1.00 against 0.98. That is not clearly better by the fixed rule (2% lower log loss, 80% of the years, slope no worse), so the readable logistic regression is shipped."
   ],
   "rows": 930423,
   "C": 0.03,
   "calibration": {
-   "a": 0.3867958192187236,
-   "b": 1.3719730973663187,
+   "probability": "expit(a + b * logit(raw probability))",
+   "a_pooled": 0.17777086715091917,
+   "b_pooled": 1.3197050974212723,
+   "n_pooled": 166781,
    "fitted_on": "held-out predictions for test years [2024, 2025, 2026]",
-   "n": 166781
+   "by_sector_group": [
+    {
+     "group": "Defense",
+     "sectors": [
+      "Department of Defense"
+     ],
+     "a": 0.3335407038097196,
+     "b": 1.4485107160419397,
+     "n": 119434
+    },
+    {
+     "group": "civilian",
+     "sectors": [
+      "GSA",
+      "civilian except GSA"
+     ],
+     "a": -0.5870231912985747,
+     "b": 0.8734518850549615,
+     "n": 47346
+    }
+   ],
+   "other_sectors": "a solicitation whose sector is unknown on the posting day uses a_pooled and b_pooled"
   },
-  "probability": "expit(a + b * logit(raw probability))"
+  "probability": "expit(a + b * logit(raw probability)); a and b by sector group when calibration.by_sector_group is given"
+ },
+ "selection": {
+  "rule_pick": "logistic v2, half-life 3 years",
+  "shipped": "logistic v2, half-life 3 years, correction by sector",
+  "amendment": "Amendment, made after seeing the results (November 10, 2026). Rule 1 selected R2 + P (time decay with a half-life of 3 years, one correction for all sectors). R2 + S (the same model with the correction by sector) is shipped instead. This choice was made after the results were known, so it overrides the rule written down before fitting. Reason: the revision was made because the forecasts were miscalibrated by sector. Rule 1 measured only pooled log loss, where the correction by sector falls 0.01 points short of the 0.5% margin (0.49%), but it largely removes the problem the revision was for. Calibration slopes in test years 2024 to 2026 (1.00 is ideal): civilian except GSA 0.74 to 0.86 with R2 + P, 0.96 to 1.09 with R2 + S; Defense 1.26 to 1.38 with R2 + P, 1.11 to 1.23 with R2 + S. The public scores are reported by sector, so a known miscalibration by sector should not be shipped.",
+  "rule": "Rule 1 in the docstring of scripts/30_model_v2.py, written down before the candidates were fitted. Score: log loss pooled over the last five test years. Changes: a shorter window or time decay 1, the correction by sector 1, each interaction block 1. Among the candidates within 0.5% of the lowest score, the one with the fewest changes is shipped (equal changes: the lower score).",
+  "score_years": [
+   2022,
+   2023,
+   2024,
+   2025,
+   2026
+  ],
+  "candidates": [
+   {
+    "candidate": "logistic v2, half-life 3 years, correction by sector",
+    "raw_model": "R2: all earlier years, time-decay weights with a half-life of 3 years",
+    "correction": "by sector",
+    "changes": 2,
+    "logloss": 0.48374,
+    "auc": 0.76023,
+    "brier": 0.15813,
+    "cal_slope": 1.09568,
+    "years_better_than_current": 5,
+    "change_vs_current_pct": -1.67486,
+    "within_margin_of_best": true,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": true
+   },
+   {
+    "candidate": "logistic v2, half-life 5 years, correction by sector",
+    "raw_model": "R3: all earlier years, time-decay weights with a half-life of 5 years",
+    "correction": "by sector",
+    "changes": 2,
+    "logloss": 0.48498,
+    "auc": 0.75855,
+    "brier": 0.15864,
+    "cal_slope": 1.11038,
+    "years_better_than_current": 5,
+    "change_vs_current_pct": -1.42252,
+    "within_margin_of_best": true,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   },
+   {
+    "candidate": "logistic v2 + sector x (set-aside, notice type, product group), correction by sector",
+    "raw_model": "R5: all earlier years, plus sector x set-aside, sector x notice type and number letter, sector x product group",
+    "correction": "by sector",
+    "changes": 4,
+    "logloss": 0.4855,
+    "auc": 0.75793,
+    "brier": 0.15904,
+    "cal_slope": 1.13903,
+    "years_better_than_current": 5,
+    "change_vs_current_pct": -1.31789,
+    "within_margin_of_best": true,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   },
+   {
+    "candidate": "logistic v2, last 6 years, correction by sector",
+    "raw_model": "R1: the last 6 years only",
+    "correction": "by sector",
+    "changes": 2,
+    "logloss": 0.48571,
+    "auc": 0.75803,
+    "brier": 0.15886,
+    "cal_slope": 1.09377,
+    "years_better_than_current": 5,
+    "change_vs_current_pct": -1.27499,
+    "within_margin_of_best": true,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   },
+   {
+    "candidate": "logistic v2 + sector x set-aside, correction by sector",
+    "raw_model": "R4: all earlier years, plus sector x set-aside",
+    "correction": "by sector",
+    "changes": 2,
+    "logloss": 0.48577,
+    "auc": 0.75755,
+    "brier": 0.15911,
+    "cal_slope": 1.13999,
+    "years_better_than_current": 5,
+    "change_vs_current_pct": -1.26246,
+    "within_margin_of_best": true,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   },
+   {
+    "candidate": "logistic v2, half-life 3 years",
+    "raw_model": "R2: all earlier years, time-decay weights with a half-life of 3 years",
+    "correction": "one for all sectors",
+    "changes": 1,
+    "logloss": 0.48611,
+    "auc": 0.75796,
+    "brier": 0.15928,
+    "cal_slope": 1.13881,
+    "years_better_than_current": 5,
+    "change_vs_current_pct": -1.19354,
+    "within_margin_of_best": true,
+    "chosen_by_rule": true,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   },
+   {
+    "candidate": "logistic v2, correction by sector",
+    "raw_model": "R0: all earlier years",
+    "correction": "by sector",
+    "changes": 1,
+    "logloss": 0.48765,
+    "auc": 0.75511,
+    "brier": 0.15973,
+    "cal_slope": 1.14257,
+    "years_better_than_current": 5,
+    "change_vs_current_pct": -0.87974,
+    "within_margin_of_best": false,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   },
+   {
+    "candidate": "logistic v2, last 6 years",
+    "raw_model": "R1: the last 6 years only",
+    "correction": "one for all sectors",
+    "changes": 1,
+    "logloss": 0.48782,
+    "auc": 0.75569,
+    "brier": 0.15985,
+    "cal_slope": 1.14657,
+    "years_better_than_current": 4,
+    "change_vs_current_pct": -0.84565,
+    "within_margin_of_best": false,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   },
+   {
+    "candidate": "logistic v2, half-life 5 years",
+    "raw_model": "R3: all earlier years, time-decay weights with a half-life of 5 years",
+    "correction": "one for all sectors",
+    "changes": 1,
+    "logloss": 0.48803,
+    "auc": 0.75556,
+    "brier": 0.1601,
+    "cal_slope": 1.15464,
+    "years_better_than_current": 5,
+    "change_vs_current_pct": -0.80273,
+    "within_margin_of_best": false,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   },
+   {
+    "candidate": "logistic v2 + sector x (set-aside, notice type, product group)",
+    "raw_model": "R5: all earlier years, plus sector x set-aside, sector x notice type and number letter, sector x product group",
+    "correction": "one for all sectors",
+    "changes": 3,
+    "logloss": 0.48853,
+    "auc": 0.75486,
+    "brier": 0.16044,
+    "cal_slope": 1.17675,
+    "years_better_than_current": 5,
+    "change_vs_current_pct": -0.70171,
+    "within_margin_of_best": false,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   },
+   {
+    "candidate": "logistic v2 + sector x set-aside",
+    "raw_model": "R4: all earlier years, plus sector x set-aside",
+    "correction": "one for all sectors",
+    "changes": 1,
+    "logloss": 0.48896,
+    "auc": 0.75437,
+    "brier": 0.16059,
+    "cal_slope": 1.17662,
+    "years_better_than_current": 5,
+    "change_vs_current_pct": -0.61434,
+    "within_margin_of_best": false,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   },
+   {
+    "candidate": "logistic v2",
+    "raw_model": "R0: all earlier years",
+    "correction": "one for all sectors",
+    "changes": 0,
+    "logloss": 0.49198,
+    "auc": 0.75052,
+    "brier": 0.16177,
+    "cal_slope": 1.18085,
+    "years_better_than_current": 0,
+    "change_vs_current_pct": 0.0,
+    "within_margin_of_best": false,
+    "chosen_by_rule": false,
+    "score_years": "FY2022-FY2026",
+    "shipped": false
+   }
+  ],
+  "limits": [
+   "The rule is applied to the same five years that are reported, so the chosen model's numbers there are a little optimistic.",
+   "Outcomes exist only for solicitations that ended in a competed award with a usable offer count.",
+   "The newest test year (FY2026) is incomplete: Defense awards are published 90 days late, and slow awards are still missing.",
+   "The corrections are fitted on the held-out predictions of three test years."
+  ]
  },
  "features": {
   "categories": [
@@ -717,6 +960,7 @@
    "depth_missing",
    "naics_missing"
   ],
+  "interactions_shipped": {},
   "blocks": {
    "agency": {
     "features": [
@@ -856,10 +1100,16 @@
   "prior_rate": 0.2,
   "C": 0.03,
   "min_level": 100,
-  "seed": 20261110
+  "seed": 20261110,
+  "candidate": "logistic v2, half-life 3 years, correction by sector",
+  "training_window": "all earlier years, time-decay weights with a half-life of 3 years",
+  "half_life_years": 3,
+  "window_years": null,
+  "interactions": [],
+  "correction": "by sector"
  },
  "evaluation": {
-  "design": "Rolling origin. Train: posted before fiscal year t and awarded before fiscal year t. Test: posted in fiscal year t. Calibrated rows use a correction fitted on earlier held-out years only. Each evaluation fit uses a seeded random sample of at most 200,000 training rows; the final model uses every row.",
+  "design": "Rolling origin. Train: posted before fiscal year t and awarded before fiscal year t. Test: posted in fiscal year t. Calibrated rows use a correction fitted on earlier held-out years only (one for all sectors, or by sector group for the rows named 'correction by sector'). Each evaluation fit uses a seeded random sample of at most 200,000 training rows; the final model uses every row.",
   "test_years": [
    2009,
    2010,
@@ -955,6 +1205,18 @@
    },
    {
     "sector": "all",
+    "model": "logistic v2, correction by sector",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23338,
+    "auc": 0.71235,
+    "brier": 0.16005,
+    "logloss": 0.49098,
+    "cal_intercept": 0.00677,
+    "cal_slope": 1.00513
+   },
+   {
+    "sector": "all",
     "model": "logistic v2, last 6 years (raw)",
     "n": 918594,
     "single_share": 0.2336,
@@ -976,6 +1238,162 @@
     "logloss": 0.49086,
     "cal_intercept": -0.00738,
     "cal_slope": 1.00128
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2, last 6 years, correction by sector",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23667,
+    "auc": 0.7126,
+    "brier": 0.15978,
+    "logloss": 0.49044,
+    "cal_intercept": -0.0437,
+    "cal_slope": 0.97626
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2, half-life 3 years (raw)",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23633,
+    "auc": 0.71585,
+    "brier": 0.15973,
+    "logloss": 0.4897,
+    "cal_intercept": -0.02796,
+    "cal_slope": 0.98938
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2, half-life 3 years",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23436,
+    "auc": 0.71414,
+    "brier": 0.15972,
+    "logloss": 0.49002,
+    "cal_intercept": 0.00177,
+    "cal_slope": 1.00626
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23581,
+    "auc": 0.71398,
+    "brier": 0.15948,
+    "logloss": 0.48973,
+    "cal_intercept": -0.03306,
+    "cal_slope": 0.98142
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2, half-life 5 years (raw)",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23505,
+    "auc": 0.71497,
+    "brier": 0.16008,
+    "logloss": 0.49045,
+    "cal_intercept": -0.01742,
+    "cal_slope": 0.99192
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2, half-life 5 years",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23349,
+    "auc": 0.71353,
+    "brier": 0.15998,
+    "logloss": 0.49057,
+    "cal_intercept": 0.01627,
+    "cal_slope": 1.01492
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2, half-life 5 years, correction by sector",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23499,
+    "auc": 0.71359,
+    "brier": 0.15964,
+    "logloss": 0.49006,
+    "cal_intercept": -0.01866,
+    "cal_slope": 0.99042
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2 + sector x set-aside (raw)",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23255,
+    "auc": 0.71466,
+    "brier": 0.16036,
+    "logloss": 0.49079,
+    "cal_intercept": -0.00369,
+    "cal_slope": 0.99021
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2 + sector x set-aside",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23187,
+    "auc": 0.71389,
+    "brier": 0.16007,
+    "logloss": 0.49048,
+    "cal_intercept": 0.03923,
+    "cal_slope": 1.02703
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2 + sector x set-aside, correction by sector",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23305,
+    "auc": 0.71408,
+    "brier": 0.15976,
+    "logloss": 0.48997,
+    "cal_intercept": 0.00904,
+    "cal_slope": 1.00536
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group) (raw)",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23291,
+    "auc": 0.71549,
+    "brier": 0.16018,
+    "logloss": 0.49032,
+    "cal_intercept": -0.00733,
+    "cal_slope": 0.98882
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group)",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23182,
+    "auc": 0.71481,
+    "brier": 0.1599,
+    "logloss": 0.48998,
+    "cal_intercept": 0.0429,
+    "cal_slope": 1.03022
+   },
+   {
+    "sector": "all",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group), correction by sector",
+    "n": 918594,
+    "single_share": 0.2336,
+    "mean_forecast": 0.23305,
+    "auc": 0.71497,
+    "brier": 0.15959,
+    "logloss": 0.4895,
+    "cal_intercept": 0.01196,
+    "cal_slope": 1.00817
    },
    {
     "sector": "all",
@@ -1075,6 +1493,18 @@
    },
    {
     "sector": "civilian except GSA",
+    "model": "logistic v2, correction by sector",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.21932,
+    "auc": 0.72132,
+    "brier": 0.14881,
+    "logloss": 0.46205,
+    "cal_intercept": -0.08892,
+    "cal_slope": 0.98047
+   },
+   {
+    "sector": "civilian except GSA",
     "model": "logistic v2, last 6 years (raw)",
     "n": 235830,
     "single_share": 0.20918,
@@ -1096,6 +1526,162 @@
     "logloss": 0.46435,
     "cal_intercept": -0.21234,
     "cal_slope": 0.88499
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2, last 6 years, correction by sector",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.21802,
+    "auc": 0.72228,
+    "brier": 0.14851,
+    "logloss": 0.46137,
+    "cal_intercept": -0.07814,
+    "cal_slope": 0.98267
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 3 years (raw)",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.22306,
+    "auc": 0.72308,
+    "brier": 0.14899,
+    "logloss": 0.4622,
+    "cal_intercept": -0.24126,
+    "cal_slope": 0.85983
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 3 years",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.22017,
+    "auc": 0.7194,
+    "brier": 0.14945,
+    "logloss": 0.46344,
+    "cal_intercept": -0.20147,
+    "cal_slope": 0.8812
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.21778,
+    "auc": 0.72354,
+    "brier": 0.14831,
+    "logloss": 0.46064,
+    "cal_intercept": -0.08251,
+    "cal_slope": 0.97732
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 5 years (raw)",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.22257,
+    "auc": 0.72218,
+    "brier": 0.14918,
+    "logloss": 0.46279,
+    "cal_intercept": -0.2439,
+    "cal_slope": 0.85483
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 5 years",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.22021,
+    "auc": 0.71813,
+    "brier": 0.14975,
+    "logloss": 0.4642,
+    "cal_intercept": -0.20651,
+    "cal_slope": 0.87698
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 5 years, correction by sector",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.21837,
+    "auc": 0.72296,
+    "brier": 0.14846,
+    "logloss": 0.46106,
+    "cal_intercept": -0.08382,
+    "cal_slope": 0.97963
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2 + sector x set-aside (raw)",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.22118,
+    "auc": 0.72137,
+    "brier": 0.14903,
+    "logloss": 0.46257,
+    "cal_intercept": -0.1882,
+    "cal_slope": 0.8996
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2 + sector x set-aside",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.22035,
+    "auc": 0.71602,
+    "brier": 0.14994,
+    "logloss": 0.46483,
+    "cal_intercept": -0.15693,
+    "cal_slope": 0.92387
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2 + sector x set-aside, correction by sector",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.21875,
+    "auc": 0.72232,
+    "brier": 0.14869,
+    "logloss": 0.46159,
+    "cal_intercept": -0.07982,
+    "cal_slope": 0.98536
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group) (raw)",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.22381,
+    "auc": 0.72432,
+    "brier": 0.14843,
+    "logloss": 0.46109,
+    "cal_intercept": -0.19163,
+    "cal_slope": 0.91071
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group)",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.22202,
+    "auc": 0.71972,
+    "brier": 0.14921,
+    "logloss": 0.46295,
+    "cal_intercept": -0.14339,
+    "cal_slope": 0.94554
+   },
+   {
+    "sector": "civilian except GSA",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group), correction by sector",
+    "n": 235830,
+    "single_share": 0.20918,
+    "mean_forecast": 0.21777,
+    "auc": 0.72504,
+    "brier": 0.14806,
+    "logloss": 0.46001,
+    "cal_intercept": -0.06478,
+    "cal_slope": 0.99324
    },
    {
     "sector": "civilian except GSA",
@@ -1195,6 +1781,18 @@
    },
    {
     "sector": "GSA",
+    "model": "logistic v2, correction by sector",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.14329,
+    "auc": 0.68012,
+    "brier": 0.11862,
+    "logloss": 0.39378,
+    "cal_intercept": -0.25883,
+    "cal_slope": 0.81172
+   },
+   {
+    "sector": "GSA",
     "model": "logistic v2, last 6 years (raw)",
     "n": 3023,
     "single_share": 0.14853,
@@ -1216,6 +1814,162 @@
     "logloss": 0.3964,
     "cal_intercept": -0.49486,
     "cal_slope": 0.71154
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2, last 6 years, correction by sector",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.15506,
+    "auc": 0.67949,
+    "brier": 0.11842,
+    "logloss": 0.3931,
+    "cal_intercept": -0.32986,
+    "cal_slope": 0.81934
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2, half-life 3 years (raw)",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.14509,
+    "auc": 0.6767,
+    "brier": 0.11922,
+    "logloss": 0.39787,
+    "cal_intercept": -0.47048,
+    "cal_slope": 0.6833
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2, half-life 3 years",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.14772,
+    "auc": 0.67764,
+    "brier": 0.11882,
+    "logloss": 0.39537,
+    "cal_intercept": -0.42791,
+    "cal_slope": 0.72315
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.15009,
+    "auc": 0.68043,
+    "brier": 0.11838,
+    "logloss": 0.3929,
+    "cal_intercept": -0.29135,
+    "cal_slope": 0.82199
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2, half-life 5 years (raw)",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.14053,
+    "auc": 0.67744,
+    "brier": 0.11909,
+    "logloss": 0.39828,
+    "cal_intercept": -0.44757,
+    "cal_slope": 0.6789
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2, half-life 5 years",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.14342,
+    "auc": 0.67834,
+    "brier": 0.11861,
+    "logloss": 0.39536,
+    "cal_intercept": -0.39906,
+    "cal_slope": 0.72297
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2, half-life 5 years, correction by sector",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.14723,
+    "auc": 0.68067,
+    "brier": 0.11838,
+    "logloss": 0.39301,
+    "cal_intercept": -0.27351,
+    "cal_slope": 0.82028
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2 + sector x set-aside (raw)",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.13223,
+    "auc": 0.67353,
+    "brier": 0.119,
+    "logloss": 0.39962,
+    "cal_intercept": -0.36886,
+    "cal_slope": 0.69569
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2 + sector x set-aside",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.13586,
+    "auc": 0.67476,
+    "brier": 0.11836,
+    "logloss": 0.3958,
+    "cal_intercept": -0.29411,
+    "cal_slope": 0.75691
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2 + sector x set-aside, correction by sector",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.1381,
+    "auc": 0.67609,
+    "brier": 0.11856,
+    "logloss": 0.39507,
+    "cal_intercept": -0.23091,
+    "cal_slope": 0.80599
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group) (raw)",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.13626,
+    "auc": 0.67465,
+    "brier": 0.11865,
+    "logloss": 0.39615,
+    "cal_intercept": -0.28645,
+    "cal_slope": 0.76374
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group)",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.14008,
+    "auc": 0.67597,
+    "brier": 0.11817,
+    "logloss": 0.39357,
+    "cal_intercept": -0.22237,
+    "cal_slope": 0.82057
+   },
+   {
+    "sector": "GSA",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group), correction by sector",
+    "n": 3023,
+    "single_share": 0.14853,
+    "mean_forecast": 0.14016,
+    "auc": 0.67677,
+    "brier": 0.11836,
+    "logloss": 0.39338,
+    "cal_intercept": -0.13892,
+    "cal_slope": 0.87212
    },
    {
     "sector": "GSA",
@@ -1315,6 +2069,18 @@
    },
    {
     "sector": "Department of Defense",
+    "model": "logistic v2, correction by sector",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.23865,
+    "auc": 0.7083,
+    "brier": 0.16414,
+    "logloss": 0.50145,
+    "cal_intercept": 0.03587,
+    "cal_slope": 1.01231
+   },
+   {
+    "sector": "Department of Defense",
     "model": "logistic v2, last 6 years (raw)",
     "n": 679741,
     "single_share": 0.24244,
@@ -1336,6 +2102,162 @@
     "logloss": 0.50048,
     "cal_intercept": 0.07084,
     "cal_slope": 1.05214
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2, last 6 years, correction by sector",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.2435,
+    "auc": 0.70815,
+    "brier": 0.16388,
+    "logloss": 0.50095,
+    "cal_intercept": -0.03443,
+    "cal_slope": 0.97221
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 3 years (raw)",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.24135,
+    "auc": 0.71277,
+    "brier": 0.16364,
+    "logloss": 0.49965,
+    "cal_intercept": 0.0599,
+    "cal_slope": 1.05258
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 3 years",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.23966,
+    "auc": 0.71159,
+    "brier": 0.16346,
+    "logloss": 0.49967,
+    "cal_intercept": 0.0804,
+    "cal_slope": 1.06184
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.24245,
+    "auc": 0.70965,
+    "brier": 0.16354,
+    "logloss": 0.50025,
+    "cal_intercept": -0.01924,
+    "cal_slope": 0.98098
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 5 years (raw)",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.2398,
+    "auc": 0.71201,
+    "brier": 0.16404,
+    "logloss": 0.50046,
+    "cal_intercept": 0.07904,
+    "cal_slope": 1.06154
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 5 years",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.2385,
+    "auc": 0.71133,
+    "brier": 0.16371,
+    "logloss": 0.50014,
+    "cal_intercept": 0.1057,
+    "cal_slope": 1.07898
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 5 years, correction by sector",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.24114,
+    "auc": 0.70935,
+    "brier": 0.16371,
+    "logloss": 0.50055,
+    "cal_intercept": 8e-05,
+    "cal_slope": 0.99226
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2 + sector x set-aside (raw)",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.23694,
+    "auc": 0.71161,
+    "brier": 0.16447,
+    "logloss": 0.50098,
+    "cal_intercept": 0.06474,
+    "cal_slope": 1.03011
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2 + sector x set-aside",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.2363,
+    "auc": 0.7124,
+    "brier": 0.16377,
+    "logloss": 0.4998,
+    "cal_intercept": 0.10925,
+    "cal_slope": 1.06886
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2 + sector x set-aside, correction by sector",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.23843,
+    "auc": 0.71029,
+    "brier": 0.16378,
+    "logloss": 0.50023,
+    "cal_intercept": 0.03552,
+    "cal_slope": 1.01066
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group) (raw)",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.23649,
+    "auc": 0.71183,
+    "brier": 0.16445,
+    "logloss": 0.50088,
+    "cal_intercept": 0.06059,
+    "cal_slope": 1.02333
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group)",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.23563,
+    "auc": 0.71243,
+    "brier": 0.16379,
+    "logloss": 0.49979,
+    "cal_intercept": 0.10865,
+    "cal_slope": 1.06405
+   },
+   {
+    "sector": "Department of Defense",
+    "model": "logistic v2 + sector x (set-aside, notice type, product group), correction by sector",
+    "n": 679741,
+    "single_share": 0.24244,
+    "mean_forecast": 0.23877,
+    "auc": 0.71048,
+    "brier": 0.16378,
+    "logloss": 0.50016,
+    "cal_intercept": 0.03442,
+    "cal_slope": 1.01161
    },
    {
     "sector": "Department of Defense",
@@ -1362,6 +2284,729 @@
     "cal_slope": 0.98347
    }
   ],
+  "last_five_years_by_sector": [
+   {
+    "test_fy": 2022,
+    "sector": "all",
+    "model": "logistic v2",
+    "n": 54103,
+    "single_share": 0.26542,
+    "mean_forecast": 0.24782,
+    "auc": 0.70965,
+    "brier": 0.17591,
+    "logloss": 0.52727,
+    "cal_slope": 1.10625
+   },
+   {
+    "test_fy": 2022,
+    "sector": "all",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 54103,
+    "single_share": 0.26542,
+    "mean_forecast": 0.2466,
+    "auc": 0.71456,
+    "brier": 0.17439,
+    "logloss": 0.5238,
+    "cal_slope": 1.11937
+   },
+   {
+    "test_fy": 2022,
+    "sector": "all",
+    "model": "gradient boosting",
+    "n": 54103,
+    "single_share": 0.26542,
+    "mean_forecast": 0.26061,
+    "auc": 0.71574,
+    "brier": 0.1734,
+    "logloss": 0.52131,
+    "cal_slope": 1.08109
+   },
+   {
+    "test_fy": 2022,
+    "sector": "civilian except GSA",
+    "model": "logistic v2",
+    "n": 17121,
+    "single_share": 0.24169,
+    "mean_forecast": 0.25256,
+    "auc": 0.69101,
+    "brier": 0.16895,
+    "logloss": 0.51332,
+    "cal_slope": 0.85138
+   },
+   {
+    "test_fy": 2022,
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 17121,
+    "single_share": 0.24169,
+    "mean_forecast": 0.2288,
+    "auc": 0.69389,
+    "brier": 0.16791,
+    "logloss": 0.51108,
+    "cal_slope": 0.94393
+   },
+   {
+    "test_fy": 2022,
+    "sector": "civilian except GSA",
+    "model": "gradient boosting",
+    "n": 17121,
+    "single_share": 0.24169,
+    "mean_forecast": 0.25991,
+    "auc": 0.69706,
+    "brier": 0.16751,
+    "logloss": 0.50995,
+    "cal_slope": 0.92167
+   },
+   {
+    "test_fy": 2022,
+    "sector": "GSA",
+    "model": "logistic v2",
+    "n": 177,
+    "single_share": 0.15819,
+    "mean_forecast": 0.11404,
+    "auc": 0.6407,
+    "brier": 0.13498,
+    "logloss": 0.44491,
+    "cal_slope": 0.5119
+   },
+   {
+    "test_fy": 2022,
+    "sector": "GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 177,
+    "single_share": 0.15819,
+    "mean_forecast": 0.11739,
+    "auc": 0.63686,
+    "brier": 0.13529,
+    "logloss": 0.44487,
+    "cal_slope": 0.49573
+   },
+   {
+    "test_fy": 2022,
+    "sector": "GSA",
+    "model": "gradient boosting",
+    "n": 177,
+    "single_share": 0.15819,
+    "mean_forecast": 0.13994,
+    "auc": 0.62512,
+    "brier": 0.13096,
+    "logloss": 0.43081,
+    "cal_slope": 0.63005
+   },
+   {
+    "test_fy": 2022,
+    "sector": "Department of Defense",
+    "model": "logistic v2",
+    "n": 36805,
+    "single_share": 0.27697,
+    "mean_forecast": 0.24626,
+    "auc": 0.72077,
+    "brier": 0.17935,
+    "logloss": 0.53416,
+    "cal_slope": 1.31951
+   },
+   {
+    "test_fy": 2022,
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 36805,
+    "single_share": 0.27697,
+    "mean_forecast": 0.25549,
+    "auc": 0.72238,
+    "brier": 0.1776,
+    "logloss": 0.5301,
+    "cal_slope": 1.2171
+   },
+   {
+    "test_fy": 2022,
+    "sector": "Department of Defense",
+    "model": "gradient boosting",
+    "n": 36805,
+    "single_share": 0.27697,
+    "mean_forecast": 0.26151,
+    "auc": 0.72423,
+    "brier": 0.17634,
+    "logloss": 0.52702,
+    "cal_slope": 1.16888
+   },
+   {
+    "test_fy": 2023,
+    "sector": "all",
+    "model": "logistic v2",
+    "n": 57829,
+    "single_share": 0.26423,
+    "mean_forecast": 0.24239,
+    "auc": 0.72744,
+    "brier": 0.17169,
+    "logloss": 0.5174,
+    "cal_slope": 1.14279
+   },
+   {
+    "test_fy": 2023,
+    "sector": "all",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 57829,
+    "single_share": 0.26423,
+    "mean_forecast": 0.2516,
+    "auc": 0.73569,
+    "brier": 0.16838,
+    "logloss": 0.51007,
+    "cal_slope": 1.15884
+   },
+   {
+    "test_fy": 2023,
+    "sector": "all",
+    "model": "gradient boosting",
+    "n": 57829,
+    "single_share": 0.26423,
+    "mean_forecast": 0.27072,
+    "auc": 0.74233,
+    "brier": 0.16575,
+    "logloss": 0.50417,
+    "cal_slope": 1.19313
+   },
+   {
+    "test_fy": 2023,
+    "sector": "civilian except GSA",
+    "model": "logistic v2",
+    "n": 19245,
+    "single_share": 0.21164,
+    "mean_forecast": 0.23899,
+    "auc": 0.70979,
+    "brier": 0.15251,
+    "logloss": 0.47248,
+    "cal_slope": 0.91828
+   },
+   {
+    "test_fy": 2023,
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 19245,
+    "single_share": 0.21164,
+    "mean_forecast": 0.22788,
+    "auc": 0.71347,
+    "brier": 0.15098,
+    "logloss": 0.46906,
+    "cal_slope": 1.10292
+   },
+   {
+    "test_fy": 2023,
+    "sector": "civilian except GSA",
+    "model": "gradient boosting",
+    "n": 19245,
+    "single_share": 0.21164,
+    "mean_forecast": 0.24748,
+    "auc": 0.71199,
+    "brier": 0.15238,
+    "logloss": 0.47212,
+    "cal_slope": 1.06308
+   },
+   {
+    "test_fy": 2023,
+    "sector": "GSA",
+    "model": "logistic v2",
+    "n": 202,
+    "single_share": 0.20297,
+    "mean_forecast": 0.14489,
+    "auc": 0.52083,
+    "brier": 0.16673,
+    "logloss": 0.5584,
+    "cal_slope": 0.19887
+   },
+   {
+    "test_fy": 2023,
+    "sector": "GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 202,
+    "single_share": 0.20297,
+    "mean_forecast": 0.17172,
+    "auc": 0.53416,
+    "brier": 0.16459,
+    "logloss": 0.52946,
+    "cal_slope": 0.26483
+   },
+   {
+    "test_fy": 2023,
+    "sector": "GSA",
+    "model": "gradient boosting",
+    "n": 202,
+    "single_share": 0.20297,
+    "mean_forecast": 0.18883,
+    "auc": 0.58681,
+    "brier": 0.16489,
+    "logloss": 0.51495,
+    "cal_slope": 0.39198
+   },
+   {
+    "test_fy": 2023,
+    "sector": "Department of Defense",
+    "model": "logistic v2",
+    "n": 38382,
+    "single_share": 0.29092,
+    "mean_forecast": 0.24461,
+    "auc": 0.73799,
+    "brier": 0.18134,
+    "logloss": 0.5397,
+    "cal_slope": 1.31804
+   },
+   {
+    "test_fy": 2023,
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 38382,
+    "single_share": 0.29092,
+    "mean_forecast": 0.26391,
+    "auc": 0.74071,
+    "brier": 0.17713,
+    "logloss": 0.53053,
+    "cal_slope": 1.16156
+   },
+   {
+    "test_fy": 2023,
+    "sector": "Department of Defense",
+    "model": "gradient boosting",
+    "n": 38382,
+    "single_share": 0.29092,
+    "mean_forecast": 0.2828,
+    "auc": 0.75104,
+    "brier": 0.17246,
+    "logloss": 0.52018,
+    "cal_slope": 1.22792
+   },
+   {
+    "test_fy": 2024,
+    "sector": "all",
+    "model": "logistic v2",
+    "n": 60717,
+    "single_share": 0.25059,
+    "mean_forecast": 0.26192,
+    "auc": 0.74978,
+    "brier": 0.1615,
+    "logloss": 0.49131,
+    "cal_slope": 1.18276
+   },
+   {
+    "test_fy": 2024,
+    "sector": "all",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 60717,
+    "single_share": 0.25059,
+    "mean_forecast": 0.28984,
+    "auc": 0.76436,
+    "brier": 0.15762,
+    "logloss": 0.48338,
+    "cal_slope": 1.13497
+   },
+   {
+    "test_fy": 2024,
+    "sector": "all",
+    "model": "gradient boosting",
+    "n": 60717,
+    "single_share": 0.25059,
+    "mean_forecast": 0.26702,
+    "auc": 0.77115,
+    "brier": 0.15216,
+    "logloss": 0.47013,
+    "cal_slope": 1.07462
+   },
+   {
+    "test_fy": 2024,
+    "sector": "civilian except GSA",
+    "model": "logistic v2",
+    "n": 17952,
+    "single_share": 0.15753,
+    "mean_forecast": 0.23461,
+    "auc": 0.71641,
+    "brier": 0.131,
+    "logloss": 0.41862,
+    "cal_slope": 0.84917
+   },
+   {
+    "test_fy": 2024,
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 17952,
+    "single_share": 0.15753,
+    "mean_forecast": 0.21811,
+    "auc": 0.72092,
+    "brier": 0.12579,
+    "logloss": 0.40786,
+    "cal_slope": 1.08673
+   },
+   {
+    "test_fy": 2024,
+    "sector": "civilian except GSA",
+    "model": "gradient boosting",
+    "n": 17952,
+    "single_share": 0.15753,
+    "mean_forecast": 0.20787,
+    "auc": 0.71757,
+    "brier": 0.12511,
+    "logloss": 0.40418,
+    "cal_slope": 0.94445
+   },
+   {
+    "test_fy": 2024,
+    "sector": "GSA",
+    "model": "logistic v2",
+    "n": 186,
+    "single_share": 0.19355,
+    "mean_forecast": 0.18006,
+    "auc": 0.87481,
+    "brier": 0.09791,
+    "logloss": 0.3295,
+    "cal_slope": 1.45763
+   },
+   {
+    "test_fy": 2024,
+    "sector": "GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 186,
+    "single_share": 0.19355,
+    "mean_forecast": 0.19169,
+    "auc": 0.88222,
+    "brier": 0.10415,
+    "logloss": 0.34616,
+    "cal_slope": 1.98726
+   },
+   {
+    "test_fy": 2024,
+    "sector": "GSA",
+    "model": "gradient boosting",
+    "n": 186,
+    "single_share": 0.19355,
+    "mean_forecast": 0.18021,
+    "auc": 0.81509,
+    "brier": 0.12068,
+    "logloss": 0.38441,
+    "cal_slope": 1.42201
+   },
+   {
+    "test_fy": 2024,
+    "sector": "Department of Defense",
+    "model": "logistic v2",
+    "n": 42579,
+    "single_share": 0.29007,
+    "mean_forecast": 0.27379,
+    "auc": 0.75388,
+    "brier": 0.17464,
+    "logloss": 0.52266,
+    "cal_slope": 1.31723
+   },
+   {
+    "test_fy": 2024,
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 42579,
+    "single_share": 0.29007,
+    "mean_forecast": 0.32052,
+    "auc": 0.76059,
+    "brier": 0.17128,
+    "logloss": 0.51581,
+    "cal_slope": 1.10467
+   },
+   {
+    "test_fy": 2024,
+    "sector": "Department of Defense",
+    "model": "gradient boosting",
+    "n": 42579,
+    "single_share": 0.29007,
+    "mean_forecast": 0.29234,
+    "auc": 0.77425,
+    "brier": 0.16371,
+    "logloss": 0.49831,
+    "cal_slope": 1.06408
+   },
+   {
+    "test_fy": 2025,
+    "sector": "all",
+    "model": "logistic v2",
+    "n": 61124,
+    "single_share": 0.25126,
+    "mean_forecast": 0.26511,
+    "auc": 0.78027,
+    "brier": 0.15519,
+    "logloss": 0.47553,
+    "cal_slope": 1.32113
+   },
+   {
+    "test_fy": 2025,
+    "sector": "all",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 61124,
+    "single_share": 0.25126,
+    "mean_forecast": 0.28817,
+    "auc": 0.79125,
+    "brier": 0.15048,
+    "logloss": 0.46493,
+    "cal_slope": 1.16592
+   },
+   {
+    "test_fy": 2025,
+    "sector": "all",
+    "model": "gradient boosting",
+    "n": 61124,
+    "single_share": 0.25126,
+    "mean_forecast": 0.24851,
+    "auc": 0.79501,
+    "brier": 0.14661,
+    "logloss": 0.45333,
+    "cal_slope": 1.04642
+   },
+   {
+    "test_fy": 2025,
+    "sector": "civilian except GSA",
+    "model": "logistic v2",
+    "n": 14859,
+    "single_share": 0.12989,
+    "mean_forecast": 0.19957,
+    "auc": 0.71473,
+    "brier": 0.11342,
+    "logloss": 0.37494,
+    "cal_slope": 0.77191
+   },
+   {
+    "test_fy": 2025,
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 14859,
+    "single_share": 0.12989,
+    "mean_forecast": 0.15931,
+    "auc": 0.71601,
+    "brier": 0.10595,
+    "logloss": 0.35613,
+    "cal_slope": 0.96007
+   },
+   {
+    "test_fy": 2025,
+    "sector": "civilian except GSA",
+    "model": "gradient boosting",
+    "n": 14859,
+    "single_share": 0.12989,
+    "mean_forecast": 0.14974,
+    "auc": 0.72276,
+    "brier": 0.10589,
+    "logloss": 0.35352,
+    "cal_slope": 0.82557
+   },
+   {
+    "test_fy": 2025,
+    "sector": "GSA",
+    "model": "logistic v2",
+    "n": 107,
+    "single_share": 0.21495,
+    "mean_forecast": 0.22192,
+    "auc": 0.80797,
+    "brier": 0.13891,
+    "logloss": 0.41713,
+    "cal_slope": 0.88988
+   },
+   {
+    "test_fy": 2025,
+    "sector": "GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 107,
+    "single_share": 0.21495,
+    "mean_forecast": 0.21259,
+    "auc": 0.80849,
+    "brier": 0.13529,
+    "logloss": 0.41292,
+    "cal_slope": 1.21288
+   },
+   {
+    "test_fy": 2025,
+    "sector": "GSA",
+    "model": "gradient boosting",
+    "n": 107,
+    "single_share": 0.21495,
+    "mean_forecast": 0.17854,
+    "auc": 0.79089,
+    "brier": 0.15714,
+    "logloss": 0.45912,
+    "cal_slope": 0.76405
+   },
+   {
+    "test_fy": 2025,
+    "sector": "Department of Defense",
+    "model": "logistic v2",
+    "n": 46158,
+    "single_share": 0.29042,
+    "mean_forecast": 0.28631,
+    "auc": 0.78079,
+    "brier": 0.16868,
+    "logloss": 0.50805,
+    "cal_slope": 1.47508
+   },
+   {
+    "test_fy": 2025,
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 46158,
+    "single_share": 0.29042,
+    "mean_forecast": 0.32982,
+    "auc": 0.78736,
+    "brier": 0.16485,
+    "logloss": 0.50008,
+    "cal_slope": 1.23222
+   },
+   {
+    "test_fy": 2025,
+    "sector": "Department of Defense",
+    "model": "gradient boosting",
+    "n": 46158,
+    "single_share": 0.29042,
+    "mean_forecast": 0.28047,
+    "auc": 0.79212,
+    "brier": 0.1597,
+    "logloss": 0.48545,
+    "cal_slope": 1.05742
+   },
+   {
+    "test_fy": 2026,
+    "sector": "all",
+    "model": "logistic v2",
+    "n": 44940,
+    "single_share": 0.2269,
+    "mean_forecast": 0.25743,
+    "auc": 0.79856,
+    "brier": 0.14128,
+    "logloss": 0.44007,
+    "cal_slope": 1.25752
+   },
+   {
+    "test_fy": 2026,
+    "sector": "all",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 44940,
+    "single_share": 0.2269,
+    "mean_forecast": 0.26085,
+    "auc": 0.80771,
+    "brier": 0.13646,
+    "logloss": 0.42771,
+    "cal_slope": 1.09057
+   },
+   {
+    "test_fy": 2026,
+    "sector": "all",
+    "model": "gradient boosting",
+    "n": 44940,
+    "single_share": 0.2269,
+    "mean_forecast": 0.23816,
+    "auc": 0.81505,
+    "brier": 0.13193,
+    "logloss": 0.41445,
+    "cal_slope": 1.0186
+   },
+   {
+    "test_fy": 2026,
+    "sector": "civilian except GSA",
+    "model": "logistic v2",
+    "n": 14161,
+    "single_share": 0.10028,
+    "mean_forecast": 0.156,
+    "auc": 0.7345,
+    "brier": 0.09092,
+    "logloss": 0.31163,
+    "cal_slope": 0.73986
+   },
+   {
+    "test_fy": 2026,
+    "sector": "civilian except GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 14161,
+    "single_share": 0.10028,
+    "mean_forecast": 0.10969,
+    "auc": 0.74053,
+    "brier": 0.08351,
+    "logloss": 0.29163,
+    "cal_slope": 1.01131
+   },
+   {
+    "test_fy": 2026,
+    "sector": "civilian except GSA",
+    "model": "gradient boosting",
+    "n": 14161,
+    "single_share": 0.10028,
+    "mean_forecast": 0.11466,
+    "auc": 0.74147,
+    "brier": 0.08479,
+    "logloss": 0.29337,
+    "cal_slope": 0.87351
+   },
+   {
+    "test_fy": 2026,
+    "sector": "GSA",
+    "model": "logistic v2",
+    "n": 82,
+    "single_share": 0.09756,
+    "mean_forecast": 0.15399,
+    "auc": 0.73818,
+    "brier": 0.09197,
+    "logloss": 0.31155,
+    "cal_slope": 0.61927
+   },
+   {
+    "test_fy": 2026,
+    "sector": "GSA",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 82,
+    "single_share": 0.09756,
+    "mean_forecast": 0.15422,
+    "auc": 0.73649,
+    "brier": 0.08874,
+    "logloss": 0.30684,
+    "cal_slope": 0.77496
+   },
+   {
+    "test_fy": 2026,
+    "sector": "GSA",
+    "model": "gradient boosting",
+    "n": 82,
+    "single_share": 0.09756,
+    "mean_forecast": 0.14552,
+    "auc": 0.73986,
+    "brier": 0.09349,
+    "logloss": 0.31127,
+    "cal_slope": 0.69471
+   },
+   {
+    "test_fy": 2026,
+    "sector": "Department of Defense",
+    "model": "logistic v2",
+    "n": 30697,
+    "single_share": 0.28566,
+    "mean_forecast": 0.30449,
+    "auc": 0.786,
+    "brier": 0.16464,
+    "logloss": 0.49967,
+    "cal_slope": 1.43802
+   },
+   {
+    "test_fy": 2026,
+    "sector": "Department of Defense",
+    "model": "logistic v2, half-life 3 years, correction by sector",
+    "n": 30697,
+    "single_share": 0.28566,
+    "mean_forecast": 0.33087,
+    "auc": 0.79467,
+    "brier": 0.16101,
+    "logloss": 0.49081,
+    "cal_slope": 1.19389
+   },
+   {
+    "test_fy": 2026,
+    "sector": "Department of Defense",
+    "model": "gradient boosting",
+    "n": 30697,
+    "single_share": 0.28566,
+    "mean_forecast": 0.29539,
+    "auc": 0.80364,
+    "brier": 0.15377,
+    "logloss": 0.47058,
+    "cal_slope": 1.02869
+   }
+  ],
+  "last_five_note": "Sector here is the sector of the award's agency, as in the evaluation table. The correction uses the sector known on the posting day; the two differ for very few recent solicitations.",
   "feature_blocks_logloss_change_when_dropped": [
    {
     "block": "set-aside",
@@ -1482,611 +3127,1892 @@
   ],
   "history_in_model_file": "the last 20 quarters; refresh with history_from_awards and merge_history"
  },
- "crosswalk_sam_to_usaspending": {
-  "subtier": {
-   "AGENCY FOR INTERNATIONAL DEVELOPMENT|AGENCY FOR INTERNATIONAL DEVELOPMENT": [
-    "Agency for International Development",
-    "Agency for International Development"
-   ],
-   "AGRICULTURE, DEPARTMENT OF|AGRICULTURAL MARKETING SERVICE": [
-    "Department of Agriculture",
-    "Agricultural Marketing Service"
-   ],
-   "AGRICULTURE, DEPARTMENT OF|AGRICULTURAL RESEARCH SERVICE": [
-    "Department of Agriculture",
-    "Agricultural Research Service"
-   ],
-   "AGRICULTURE, DEPARTMENT OF|ANIMAL AND PLANT HEALTH INSPECTION SERVICE": [
-    "Department of Agriculture",
-    "Animal and Plant Health Inspection Service"
-   ],
-   "AGRICULTURE, DEPARTMENT OF|FARM PRODUCTION AND CONSERVATION BUSINESS CENTER": [
-    "Department of Agriculture",
-    "Under Secretary for Farm and Foreign Agricultural Services"
-   ],
-   "AGRICULTURE, DEPARTMENT OF|FOOD AND NUTRITION SERVICE": [
-    "Department of Agriculture",
-    "Food and Nutrition Service"
-   ],
-   "AGRICULTURE, DEPARTMENT OF|FOOD SAFETY AND INSPECTION SERVICE": [
-    "Department of Agriculture",
-    "Food Safety and Inspection Service"
-   ],
-   "AGRICULTURE, DEPARTMENT OF|FOREST SERVICE": [
-    "Department of Agriculture",
-    "Forest Service"
-   ],
-   "AGRICULTURE, DEPARTMENT OF|RURAL HOUSING SERVICE": [
-    "Department of Agriculture",
-    "Rural Housing Service"
-   ],
-   "AGRICULTURE, DEPARTMENT OF|USDA, DEPARTMENTAL ADMINISTRATION": [
-    "Department of Agriculture",
-    "Office of the Chief Financial Officer"
-   ],
-   "AGRICULTURE, DEPARTMENT OF|USDA, OFFICE OF THE CHIEF INFORMATION OFFICER": [
-    "Department of Agriculture",
-    "Office of the Chief Financial Officer"
-   ],
-   "COMMERCE, DEPARTMENT OF|NATIONAL INSTITUTE OF STANDARDS AND TECHNOLOGY": [
-    "Department of Commerce",
-    "National Institute of Standards and Technology"
-   ],
-   "COMMERCE, DEPARTMENT OF|NATIONAL OCEANIC AND ATMOSPHERIC ADMINISTRATION": [
-    "Department of Commerce",
-    "National Oceanic and Atmospheric Administration"
-   ],
-   "COMMERCE, DEPARTMENT OF|OFFICE OF THE SECRETARY": [
-    "Department of Commerce",
-    "Office of the Secretary"
-   ],
-   "COMMERCE, DEPARTMENT OF|US CENSUS BUREAU": [
-    "Department of Commerce",
-    "U.S. Census Bureau"
-   ],
-   "COMMERCE, DEPARTMENT OF|US PATENT AND TRADEMARK OFFICE": [
-    "Department of Commerce",
-    "U.S. Patent and Trademark Office"
-   ],
-   "COMMODITY FUTURES TRADING COMMISSION|": [
-    "Commodity Futures Trading Commission",
-    "Commodity Futures Trading Commission"
-   ],
-   "COMMODITY FUTURES TRADING COMMISSION|COMMODITY FUTURES TRADING COMMISSION": [
-    "Commodity Futures Trading Commission",
-    "Commodity Futures Trading Commission"
-   ],
-   "CONSUMER FINANCIAL PROTECTION BUREAU|CONSUMER FINANCIAL PROTECTION BUREAU": [
-    "Consumer Financial Protection Bureau",
-    "Consumer Financial Protection Bureau"
-   ],
-   "CONSUMER PRODUCT SAFETY COMMISSION|CONSUMER PRODUCT SAFETY COMMISSION": [
-    "Consumer Product Safety Commission",
-    "Consumer Product Safety Commission"
-   ],
-   "COURT SERVICES AND OFFENDER SUPERVISION AGENCY|COURT SERVICES AND OFFENDER SUPERVISION AGENCY": [
-    "Court Services and Offender Supervision Agency",
-    "Court Services and Offender Supervision Agency"
-   ],
-   "DEPT OF DEFENSE|DEFENSE ADVANCED RESEARCH PROJECTS AGENCY  (DARPA)": [
-    "Department of Defense",
-    "Defense Advanced Research Projects Agency"
-   ],
-   "DEPT OF DEFENSE|DEFENSE COMMISSARY AGENCY  (DECA)": [
-    "Department of Defense",
-    "Defense Commissary Agency"
-   ],
-   "DEPT OF DEFENSE|DEFENSE CONTRACT MANAGEMENT AGENCY (DCMA)": [
-    "Department of Defense",
-    "Defense Contract Management Agency"
-   ],
-   "DEPT OF DEFENSE|DEFENSE COUNTERINTELLIGENCE AND SECURITY AGENCY (DCSA)": [
-    "Department of Defense",
-    "Defense Counterintelligence and Security Agency"
-   ],
-   "DEPT OF DEFENSE|DEFENSE FINANCE AND ACCOUNTING SERVICE (DFAS)": [
-    "Department of Defense",
-    "Defense Finance and Accounting Service"
-   ],
-   "DEPT OF DEFENSE|DEFENSE HEALTH AGENCY (DHA)": [
-    "Department of Defense",
-    "Defense Health Agency"
-   ],
-   "DEPT OF DEFENSE|DEFENSE HUMAN RESOURCES ACTIVITY": [
-    "Department of Defense",
-    "Defense Human Resources Activity"
-   ],
-   "DEPT OF DEFENSE|DEFENSE INFORMATION SYSTEMS AGENCY (DISA)": [
-    "Department of Defense",
-    "Defense Information Systems Agency"
-   ],
-   "DEPT OF DEFENSE|DEFENSE LOGISTICS AGENCY": [
-    "Department of Defense",
-    "Defense Logistics Agency"
-   ],
-   "DEPT OF DEFENSE|DEFENSE MEDIA ACTIVITY (DMA)": [
-    "Department of Defense",
-    "Defense Media Activity"
-   ],
-   "DEPT OF DEFENSE|DEFENSE MICROELECTRONICS ACTIVITY (DMEA)": [
-    "Department of Defense",
-    "Defense Microelectronics Activity"
-   ],
-   "DEPT OF DEFENSE|DEFENSE SECURITY COOPERATION AGENCY (DSCA)": [
-    "Department of Defense",
-    "Defense Security Cooperation Agency"
-   ],
-   "DEPT OF DEFENSE|DEFENSE THREAT REDUCTION AGENCY (DTRA)": [
-    "Department of Defense",
-    "Defense Threat Reduction Agency"
-   ],
-   "DEPT OF DEFENSE|DEPT OF DEFENSE EDUCATION ACTIVITY (DODEA)": [
-    "Department of Defense",
-    "Department of Defense Education Activity"
-   ],
-   "DEPT OF DEFENSE|DEPT OF THE AIR FORCE": [
-    "Department of Defense",
-    "Department of the Air Force"
-   ],
-   "DEPT OF DEFENSE|DEPT OF THE ARMY": [
-    "Department of Defense",
-    "Department of the Army"
-   ],
-   "DEPT OF DEFENSE|DEPT OF THE NAVY": [
-    "Department of Defense",
-    "Department of the Navy"
-   ],
-   "DEPT OF DEFENSE|JOINT IMPROVISED EXPLOSIVE DEVICE DEFEAT ORGANIZATION (JIEDDO)": [
-    "Department of Defense",
-    "Joint Improvised Explosive Device Defeat Organization"
-   ],
-   "DEPT OF DEFENSE|MISSILE DEFENSE AGENCY (MDA)": [
-    "Department of Defense",
-    "Missile Defense Agency"
-   ],
-   "DEPT OF DEFENSE|SPACE DEVELOPMENT AGENCY (SDA)": [
-    "Department of Defense",
-    "Immediate Office of the Secretary of Defense"
-   ],
-   "DEPT OF DEFENSE|UNIFORMED SERVICES UNIVERSITY OF THE HEALTH SCIENCES  (USUHS)": [
-    "Department of Defense",
-    "Uniformed Services University of the Health Sciences"
-   ],
-   "DEPT OF DEFENSE|US SPECIAL OPERATIONS COMMAND (USSOCOM)": [
-    "Department of Defense",
-    "U.S. Special Operations Command"
-   ],
-   "DEPT OF DEFENSE|US TRANSPORTATION COMMAND (USTRANSCOM)": [
-    "Department of Defense",
-    "USTRANSCOM"
-   ],
-   "DEPT OF DEFENSE|WASHINGTON HEADQUARTERS SERVICES (WHS)": [
-    "Department of Defense",
-    "Washington Headquarters Services"
-   ],
-   "EDUCATION, DEPARTMENT OF|EDUCATION, DEPARTMENT OF": [
-    "Department of Education",
-    "Department of Education"
-   ],
-   "ENERGY, DEPARTMENT OF|ENERGY, DEPARTMENT OF": [
-    "Department of Energy",
-    "Department of Energy"
-   ],
-   "ENERGY, DEPARTMENT OF|FEDERAL ENERGY REGULATORY COMMISSION": [
-    "Department of Energy",
-    "Federal Energy Regulatory Commission"
-   ],
-   "ENVIRONMENTAL PROTECTION AGENCY|ENVIRONMENTAL PROTECTION AGENCY": [
-    "Environmental Protection Agency",
-    "Environmental Protection Agency"
-   ],
-   "EQUAL EMPLOYMENT OPPORTUNITY COMMISSION|EQUAL EMPLOYMENT OPPORTUNITY COMMISSION": [
-    "Equal Employment Opportunity Commission",
-    "Equal Employment Opportunity Commission"
-   ],
-   "EXECUTIVE OFFICE OF THE PRESIDENT|EXECUTIVE OFFICE OF THE PRESIDENT": [
-    "Executive Office of the President",
-    "Executive Office of the President"
-   ],
-   "EXPORT-IMPORT BANK OF THE US|EXPORT-IMPORT BANK OF THE US": [
-    "Export-Import Bank of the United States",
-    "Export-Import Bank of the United States"
-   ],
-   "FEDERAL COMMUNICATIONS COMMISSION|FEDERAL COMMUNICATIONS COMMISSION": [
-    "Federal Communications Commission",
-    "Federal Communications Commission"
-   ],
-   "FEDERAL MEDIATION AND CONCILIATION SERVICE|FEDERAL MEDIATION AND CONCILIATION SERVICE": [
-    "Federal Mediation and Conciliation Service",
-    "Federal Mediation and Conciliation Service"
-   ],
-   "GENERAL SERVICES ADMINISTRATION|FEDERAL ACQUISITION SERVICE": [
-    "General Services Administration",
-    "Federal Acquisition Service"
-   ],
-   "GENERAL SERVICES ADMINISTRATION|OFFICE OF ADMINISTRATIVE SERVICES": [
-    "General Services Administration",
-    "Office of Administrative Services"
-   ],
-   "GENERAL SERVICES ADMINISTRATION|PUBLIC BUILDINGS SERVICE": [
-    "General Services Administration",
-    "Public Buildings Service"
-   ],
-   "GOVERNMENT ACCOUNTABILITY OFFICE|GAO, EXCEPT COMPTROLLER GENERAL": [
-    "Government Accountability Office",
-    "GAO, Except Comptroller General"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|ADMINISTRATION FOR CHILDREN AND FAMILIES": [
-    "Department of Health and Human Services",
-    "Administration for Children and Families"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|AGENCY FOR HEALTHCARE RESEARCH AND QUALITY": [
-    "Department of Health and Human Services",
-    "Agency for Healthcare Research and Quality"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|CENTERS FOR DISEASE CONTROL AND PREVENTION": [
-    "Department of Health and Human Services",
-    "Centers for Disease Control and Prevention"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|CENTERS FOR MEDICARE AND MEDICAID SERVICES": [
-    "Department of Health and Human Services",
-    "Centers for Medicare and Medicaid Services"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|FOOD AND DRUG ADMINISTRATION": [
-    "Department of Health and Human Services",
-    "Food and Drug Administration"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|HEALTH RESOURCES AND SERVICES ADMINISTRATION": [
-    "Department of Health and Human Services",
-    "Health Resources and Services Administration"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|INDIAN HEALTH SERVICE": [
-    "Department of Health and Human Services",
-    "Indian Health Service"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|NATIONAL INSTITUTES OF HEALTH": [
-    "Department of Health and Human Services",
-    "National Institutes of Health"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|OFFICE OF ASSISTANT SECRETARY FOR PREPAREDNESS AND RESPONSE": [
-    "Department of Health and Human Services",
-    "Office of Assistant Secretary for Preparedness and Response"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|OFFICE OF THE ASSISTANT SECRETARY FOR ADMINISTRATION (ASA)": [
-    "Department of Health and Human Services",
-    "Office of the Assistant Secretary for Administration"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|OFFICE OF THE ASSISTANT SECRETARY FOR FINANCIAL RESOURCES (ASFR)": [
-    "Department of Health and Human Services",
-    "Office of the Assistant Secretary for Financial Resources"
-   ],
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF|SUBSTANCE ABUSE AND MENTAL HEALTH SERVICES ADMINISTRATION": [
-    "Department of Health and Human Services",
-    "Substance Abuse and Mental Health Services Administration"
-   ],
-   "HOMELAND SECURITY, DEPARTMENT OF|FEDERAL EMERGENCY MANAGEMENT AGENCY": [
-    "Department of Homeland Security",
-    "Federal Emergency Management Agency"
-   ],
-   "HOMELAND SECURITY, DEPARTMENT OF|OFFICE OF PROCUREMENT OPERATIONS": [
-    "Department of Homeland Security",
-    "Office of Procurement Operations"
-   ],
-   "HOMELAND SECURITY, DEPARTMENT OF|OFFICE OF THE INSPECTOR GENERAL": [
-    "Department of Homeland Security",
-    "Office of the Inspector General"
-   ],
-   "HOMELAND SECURITY, DEPARTMENT OF|TRANSPORTATION SECURITY ADMINISTRATION": [
-    "Department of Homeland Security",
-    "Transportation Security Administration"
-   ],
-   "HOMELAND SECURITY, DEPARTMENT OF|US CITIZENSHIP AND IMMIGRATION SERVICES": [
-    "Department of Homeland Security",
-    "U.S. Citizenship and Immigration Services"
-   ],
-   "HOMELAND SECURITY, DEPARTMENT OF|US COAST GUARD": [
-    "Department of Homeland Security",
-    "U.S. Coast Guard"
-   ],
-   "HOMELAND SECURITY, DEPARTMENT OF|US CUSTOMS AND BORDER PROTECTION": [
-    "Department of Homeland Security",
-    "U.S. Customs and Border Protection"
-   ],
-   "HOMELAND SECURITY, DEPARTMENT OF|US IMMIGRATION AND CUSTOMS ENFORCEMENT": [
-    "Department of Homeland Security",
-    "U.S. Immigration and Customs Enforcement"
-   ],
-   "HOMELAND SECURITY, DEPARTMENT OF|US SECRET SERVICE": [
-    "Department of Homeland Security",
-    "U.S. Secret Service"
-   ],
-   "HOUSING AND URBAN DEVELOPMENT, DEPARTMENT OF|HOUSING AND URBAN DEVELOPMENT, DEPARTMENT OF": [
-    "Department of Housing and Urban Development",
-    "Department of Housing and Urban Development"
-   ],
-   "INTERIOR, DEPARTMENT OF THE|BUREAU OF INDIAN AFFAIRS": [
-    "Department of the Interior",
-    "Bureau of Indian Affairs and Bureau of Indian Education"
-   ],
-   "INTERIOR, DEPARTMENT OF THE|BUREAU OF LAND MANAGEMENT": [
-    "Department of the Interior",
-    "Bureau of Land Management"
-   ],
-   "INTERIOR, DEPARTMENT OF THE|BUREAU OF OCEAN ENERGY MANAGEMENT": [
-    "Department of the Interior",
-    "Bureau of Ocean Energy Management"
-   ],
-   "INTERIOR, DEPARTMENT OF THE|BUREAU OF RECLAMATION": [
-    "Department of the Interior",
-    "Bureau of Reclamation"
-   ],
-   "INTERIOR, DEPARTMENT OF THE|BUREAU OF SAFETY AND ENVIRONMENTAL ENFORCEMENT": [
-    "Department of the Interior",
-    "Bureau of Safety and Environmental Enforcement"
-   ],
-   "INTERIOR, DEPARTMENT OF THE|DEPARTMENTAL OFFICES": [
-    "Department of the Interior",
-    "Departmental Offices"
-   ],
-   "INTERIOR, DEPARTMENT OF THE|NATIONAL PARK SERVICE": [
-    "Department of the Interior",
-    "National Park Service"
-   ],
-   "INTERIOR, DEPARTMENT OF THE|OFFICE OF SURFACE MINING, RECLAMATION AND ENFORCEMENT": [
-    "Department of the Interior",
-    "Office of Surface Mining, Reclamation and Enforcement"
-   ],
-   "INTERIOR, DEPARTMENT OF THE|US FISH AND WILDLIFE SERVICE": [
-    "Department of the Interior",
-    "U.S. Fish and Wildlife Service"
-   ],
-   "INTERIOR, DEPARTMENT OF THE|US GEOLOGICAL SURVEY": [
-    "Department of the Interior",
-    "U.S. Geological Survey"
-   ],
-   "INTERNATIONAL BOUNDARY AND WATER COMMISSION: US-MEXICO|INTERNATIONAL BOUNDARY AND WATER COMMISSION: US-MEXICO": [
-    "Department of State",
-    "International Boundary and Water Commission: U.S.-Mexico"
-   ],
-   "INTERNATIONAL TRADE COMMISSION, UNITED STATES (DUNS # 02-1877998)|INTERNATIONAL TRADE COMMISSION": [
-    "International Trade Commission",
-    "International Trade Commission"
-   ],
-   "JUSTICE, DEPARTMENT OF|ATF ACQUISITION AND PROPERTY MGMT DIV": [
-    "Department of Justice",
-    "Bureau of Alcohol, Tobacco, Firearms and Explosives Acquisition and Property Management Division"
-   ],
-   "JUSTICE, DEPARTMENT OF|DRUG ENFORCEMENT ADMINISTRATION": [
-    "Department of Justice",
-    "Drug Enforcement Administration"
-   ],
-   "JUSTICE, DEPARTMENT OF|FEDERAL BUREAU OF INVESTIGATION": [
-    "Department of Justice",
-    "Federal Bureau of Investigation"
-   ],
-   "JUSTICE, DEPARTMENT OF|FEDERAL PRISON INDUSTRIES, INC": [
-    "Department of Justice",
-    "Federal Prison Industries / Unicor"
-   ],
-   "JUSTICE, DEPARTMENT OF|FEDERAL PRISON SYSTEM / BUREAU OF PRISONS": [
-    "Department of Justice",
-    "Federal Prison System / Bureau of Prisons"
-   ],
-   "JUSTICE, DEPARTMENT OF|OFFICE OF JUSTICE PROGRAMS": [
-    "Department of Justice",
-    "Office of Justice Programs"
-   ],
-   "JUSTICE, DEPARTMENT OF|OFFICES, BOARDS AND DIVISIONS": [
-    "Department of Justice",
-    "Offices, Boards and Divisions"
-   ],
-   "JUSTICE, DEPARTMENT OF|US MARSHALS SERVICE": [
-    "Department of Justice",
-    "U.S. Marshals Service"
-   ],
-   "LABOR, DEPARTMENT OF|EMPLOYMENT AND TRAINING ADMINISTRATION": [
-    "Department of Labor",
-    "Office of the Assistant Secretary for Administration and Management"
-   ],
-   "LABOR, DEPARTMENT OF|OFFICE OF THE ASSISTANT SECRETARY FOR ADMINISTRATION AND MANAGEMENT": [
-    "Department of Labor",
-    "Office of the Assistant Secretary for Administration and Management"
-   ],
-   "MILLENNIUM CHALLENGE CORPORATION|MILLENNIUM CHALLENGE CORPORATION": [
-    "Millennium Challenge Corporation",
-    "Millennium Challenge Corporation"
-   ],
-   "MORRIS K UDALL SCHOLARSHIP AND EXCELLENCE IN NATIONAL ENVIRONMENTAL POLICY FOUNDATION|MORRIS K UDALL SCHOLARSHIP AND EXCELLENCE IN NATIONAL ENVIRONMENTAL POLICY FOUNDATION": [
-    "Morris K. Udall and Stewart L. Udall Foundation",
-    "Morris K. Udall and Stewart L. Udall Foundation"
-   ],
-   "NATIONAL AERONAUTICS AND SPACE ADMINISTRATION|NATIONAL AERONAUTICS AND SPACE ADMINISTRATION": [
-    "National Aeronautics and Space Administration",
-    "National Aeronautics and Space Administration"
-   ],
-   "NATIONAL ARCHIVES AND RECORDS ADMINISTRATION|NATIONAL ARCHIVES AND RECORDS ADMINISTRATION": [
-    "National Archives and Records Administration",
-    "National Archives and Records Administration"
-   ],
-   "NATIONAL LABOR RELATIONS BOARD|NATIONAL LABOR RELATIONS BOARD": [
-    "National Labor Relations Board",
-    "National Labor Relations Board"
-   ],
-   "NATIONAL SCIENCE FOUNDATION|NATIONAL SCIENCE FOUNDATION": [
-    "National Science Foundation",
-    "National Science Foundation"
-   ],
-   "NATIONAL TRANSPORTATION SAFETY BOARD|NATIONAL TRANSPORTATION SAFETY BOARD": [
-    "National Transportation Safety Board",
-    "National Transportation Safety Board"
-   ],
-   "NUCLEAR REGULATORY COMMISSION|NUCLEAR REGULATORY COMMISSION": [
-    "Nuclear Regulatory Commission",
-    "Nuclear Regulatory Commission"
-   ],
-   "OFFICE OF PERSONNEL MANAGEMENT|OFFICE OF PERSONNEL MANAGEMENT": [
-    "Office of Personnel Management",
-    "Office of Personnel Management"
-   ],
-   "PEACE CORPS|PEACE CORPS": [
-    "Peace Corps",
-    "Peace Corps"
-   ],
-   "PENSION BENEFIT GUARANTY CORPORATION|PENSION BENEFIT GUARANTY CORPORATION": [
-    "Pension Benefit Guaranty Corporation",
-    "Pension Benefit Guaranty Corporation"
-   ],
-   "RAILROAD RETIREMENT BOARD|RAILROAD RETIREMENT BOARD": [
-    "Railroad Retirement Board",
-    "Railroad Retirement Board"
-   ],
-   "SECURITIES AND EXCHANGE COMMISSION|SECURITIES AND EXCHANGE COMMISSION": [
-    "Securities and Exchange Commission",
-    "Securities and Exchange Commission"
-   ],
-   "SMALL BUSINESS ADMINISTRATION|SMALL BUSINESS ADMINISTRATION": [
-    "Small Business Administration",
-    "Small Business Administration"
-   ],
-   "SOCIAL SECURITY ADMINISTRATION|SOCIAL SECURITY ADMINISTRATION": [
-    "Social Security Administration",
-    "Social Security Administration"
-   ],
-   "STATE, DEPARTMENT OF|STATE, DEPARTMENT OF": [
-    "Department of State",
-    "Department of State"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|FEDERAL AVIATION ADMINISTRATION": [
-    "Department of Transportation",
-    "Federal Aviation Administration"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|FEDERAL HIGHWAY ADMINISTRATION": [
-    "Department of Transportation",
-    "Federal Highway Administration"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|FEDERAL MOTOR CARRIER SAFETY ADMINISTRATION": [
-    "Department of Transportation",
-    "Federal Motor Carrier Safety Administration"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|FEDERAL RAILROAD ADMINISTRATION": [
-    "Department of Transportation",
-    "Federal Railroad Administration"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|FEDERAL TRANSIT ADMINISTRATION": [
-    "Department of Transportation",
-    "Federal Transit Administration"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|GREAT LAKES ST LAWRENCE SEAWAY DEVELOPMENT CORPORATION": [
-    "Department of Transportation",
-    "Saint Lawrence Seaway Development Corporation"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|MARITIME ADMINISTRATION": [
-    "Department of Transportation",
-    "Maritime Administration"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|NATIONAL HIGHWAY TRAFFIC SAFETY ADMINISTRATION": [
-    "Department of Transportation",
-    "National Highway Traffic Safety Administration"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|OFFICE OF THE SECRETARY": [
-    "Department of Transportation",
-    "Immediate Office of the Secretary of Transportation"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|PIPELINE AND HAZARDOUS MATERIALS SAFETY ADMINISTRATION": [
-    "Department of Transportation",
-    "Pipeline and Hazardous Materials Safety Administration"
-   ],
-   "TRANSPORTATION, DEPARTMENT OF|TRANSPORTATION, DEPARTMENT OF": [
-    "Department of Transportation",
-    "Maritime Administration"
-   ],
-   "TREASURY, DEPARTMENT OF THE|BUREAU OF ENGRAVING AND PRINTING": [
-    "Department of the Treasury",
-    "Bureau of Engraving and Printing"
-   ],
-   "TREASURY, DEPARTMENT OF THE|BUREAU OF THE FISCAL SERVICE": [
-    "Department of the Treasury",
-    "Bureau of the Fiscal Service"
-   ],
-   "TREASURY, DEPARTMENT OF THE|DEPARTMENTAL OFFICES": [
-    "Department of the Treasury",
-    "Departmental Offices"
-   ],
-   "TREASURY, DEPARTMENT OF THE|INTERNAL REVENUE SERVICE": [
-    "Department of the Treasury",
-    "Internal Revenue Service"
-   ],
-   "TREASURY, DEPARTMENT OF THE|OFFICE OF THE COMPTROLLER OF THE CURRENCY": [
-    "Department of the Treasury",
-    "Office of the Comptroller of the Currency"
-   ],
-   "UNITED STATES AGENCY FOR GLOBAL MEDIA, BBG|UNITED STATES AGENCY FOR GLOBAL MEDIA, BBG": [
-    "U.S. Agency for Global Media",
-    "U.S. Agency for Global Media"
-   ],
-   "UNITED STATES INTERNATIONAL DEVELOPMENT FINANCE CORPORATION|UNITED STATES INTERNATIONAL DEVELOPMENT FINANCE CORPORATION": [
-    "U.S. International Development Finance Corporation",
-    "U.S. International Development Finance Corporation"
-   ],
-   "UNITED STATES TRADE AND DEVELOPMENT AGENCY|UNITED STATES TRADE AND DEVELOPMENT AGENCY": [
-    "United States Trade and Development Agency",
-    "United States Trade and Development Agency"
-   ],
-   "VETERANS AFFAIRS, DEPARTMENT OF|VETERANS AFFAIRS, DEPARTMENT OF": [
-    "Department of Veterans Affairs",
-    "Department of Veterans Affairs"
-   ]
+ "calculator": {
+  "what": "Aggregates for the explorer's what-if calculator: the model's full-precision coefficients, and typical values (medians of the training rows) for the inputs that come from history. Office history is replaced by the median of the sector, so the calculator shows a typical buying office of the sector, not any real one.",
+  "years": [
+   2024,
+   2026
+  ],
+  "rows_recent": 166781,
+  "component_note": "Component name withheld: published results name nothing below agency level (the top-tier agency).",
+  "logit": {
+   "intercept": -2.425644448236704,
+   "cat": {
+    "sector": {
+     "Department of Defense": 0.08388827106264399,
+     "GSA": 0.040719521924082604,
+     "civilian except GSA": -0.23064229141116765,
+     "unknown": 0.10603449842433607
+    },
+    "agency": {
+     "Agency for International Development": -0.2064843499438123,
+     "Court Services and Offender Supervision Agency": -0.15489453915179607,
+     "Department of Agriculture": 0.3918689013345331,
+     "Department of Commerce": 0.19618222731160817,
+     "Department of Defense": 0.08388827106264399,
+     "Department of Education": -0.20279718438146485,
+     "Department of Energy": 0.36525863630752653,
+     "Department of Health and Human Services": -0.062406811040245244,
+     "Department of Homeland Security": -0.06650578173662622,
+     "Department of Housing and Urban Development": 0.07959597087066926,
+     "Department of Justice": -0.015886511705059482,
+     "Department of Labor": 0.06055363546186807,
+     "Department of State": 0.020865935320954324,
+     "Department of Transportation": 0.1803494270403148,
+     "Department of Veterans Affairs": 0.0710847762871363,
+     "Department of the Interior": 0.5680303172848198,
+     "Department of the Treasury": 0.08502135764286142,
+     "Environmental Protection Agency": 0.06527340167841351,
+     "General Services Administration": 0.040719521924082604,
+     "Millennium Challenge Corporation": -0.032751462474443244,
+     "National Aeronautics and Space Administration": 0.10478904133635081,
+     "National Archives and Records Administration": 0.0012793787639301234,
+     "Nuclear Regulatory Commission": -0.04539376629521882,
+     "Pension Benefit Guaranty Corporation": 0.16235978121196692,
+     "Securities and Exchange Commission": 0.03614503223782702,
+     "Small Business Administration": 0.004750448917631276,
+     "Social Security Administration": -0.039306241372170654,
+     "U.S. Agency for Global Media": -0.35034124223477625,
+     "United States Trade and Development Agency": -0.16938242744614895,
+     "unknown": 0.10603449842433607
+    },
+    "subagency": {
+     "Agency for International Development | Agency for International Development": -0.2064843499438123,
+     "Department of Agriculture | component 9 (name withheld)": 0.5123758933209104,
+     "Department of Agriculture | component 5 (name withheld)": 0.06641115765514931,
+     "Department of Agriculture | component 6 (name withheld)": 0.21003876441739414,
+     "Department of Agriculture | component 2 (name withheld)": 0.021854534675102955,
+     "Department of Agriculture | component 4 (name withheld)": -0.2270331823029409,
+     "Department of Agriculture | component 1 (name withheld)": 0.202576825905273,
+     "Department of Agriculture | component 3 (name withheld)": -0.20632650509388345,
+     "Department of Agriculture | component 7 (name withheld)": 0.03116399635549732,
+     "Department of Agriculture | component 8 (name withheld)": -0.05308375148532755,
+     "Department of Commerce | component 2 (name withheld)": -0.1200772240193151,
+     "Department of Commerce | component 3 (name withheld)": 0.35297575828654965,
+     "Department of Commerce | component 1 (name withheld)": 0.03272607445274557,
+     "Department of Defense | component 5 (name withheld)": 0.05231797242662013,
+     "Department of Defense | component 10 (name withheld)": -0.0397743622898475,
+     "Department of Defense | component 11 (name withheld)": 0.054013214873306216,
+     "Department of Defense | component 3 (name withheld)": -0.14857516978764324,
+     "Department of Defense | component 18 (name withheld)": -0.13424425903303333,
+     "Department of Defense | component 17 (name withheld)": -0.8253905569129392,
+     "Department of Defense | component 16 (name withheld)": 0.49775782300792604,
+     "Department of Defense | component 1 (name withheld)": 0.07132669610616345,
+     "Department of Defense | component 7 (name withheld)": 0.16088465146733227,
+     "Department of Defense | component 2 (name withheld)": -0.01914577042489771,
+     "Department of Defense | component 6 (name withheld)": -0.24692327898595642,
+     "Department of Defense | component 8 (name withheld)": -0.26743693105610494,
+     "Department of Defense | component 12 (name withheld)": 0.06123384055822699,
+     "Department of Defense | component 13 (name withheld)": 0.22149120631770958,
+     "Department of Defense | component 14 (name withheld)": -0.018451875282877662,
+     "Department of Defense | component 15 (name withheld)": 0.12834344746249765,
+     "Department of Defense | component 4 (name withheld)": 0.28512833872125964,
+     "Department of Defense | component 19 (name withheld)": -0.13068366736714607,
+     "Department of Defense | component 9 (name withheld)": 0.41741224991901665,
+     "Department of Education | Department of Education": -0.20279718438146485,
+     "Department of Energy | Department of Energy": 0.26053520920220263,
+     "Department of Energy | component 1 (name withheld)": 0.1047234271053241,
+     "Department of Health and Human Services | component 4 (name withheld)": 0.01662666260887998,
+     "Department of Health and Human Services | component 3 (name withheld)": -0.11177661424795703,
+     "Department of Health and Human Services | component 1 (name withheld)": 0.3036744461146764,
+     "Department of Health and Human Services | component 2 (name withheld)": -0.23406208187291314,
+     "Department of Homeland Security | component 7 (name withheld)": -0.261470993707931,
+     "Department of Homeland Security | component 4 (name withheld)": -0.012447506693548879,
+     "Department of Homeland Security | component 5 (name withheld)": 0.04015334794459457,
+     "Department of Homeland Security | component 3 (name withheld)": -0.12319943384563198,
+     "Department of Homeland Security | component 6 (name withheld)": 0.028469842692412442,
+     "Department of Homeland Security | component 2 (name withheld)": 0.07231338672482775,
+     "Department of Homeland Security | component 9 (name withheld)": 0.1599279105560945,
+     "Department of Homeland Security | component 1 (name withheld)": -0.02174956593480477,
+     "Department of Homeland Security | component 8 (name withheld)": 0.08776108857720565,
+     "Department of Housing and Urban Development | Department of Housing and Urban Development": 0.08007946039909766,
+     "Department of Justice | component 4 (name withheld)": 0.6548212455276244,
+     "Department of Justice | component 3 (name withheld)": -0.39232085312035764,
+     "Department of Justice | component 5 (name withheld)": 0.07502565918200993,
+     "Department of Justice | component 7 (name withheld)": 0.5767113843403204,
+     "Department of Justice | component 1 (name withheld)": 0.3686216876211674,
+     "Department of Justice | component 2 (name withheld)": 0.04347650716357187,
+     "Department of Justice | component 6 (name withheld)": -1.3735686777516514,
+     "Department of Labor | component 3 (name withheld)": 0.09172462412961208,
+     "Department of Labor | component 2 (name withheld)": -0.07624682030234978,
+     "Department of Labor | component 1 (name withheld)": 0.07004219559190071,
+     "Department of State | Department of State": -0.15184782772897282,
+     "Department of State | component 1 (name withheld)": 0.1727137630499272,
+     "Department of Transportation | component 2 (name withheld)": -0.16764394124054136,
+     "Department of Transportation | component 4 (name withheld)": 0.34187069719577917,
+     "Department of Transportation | component 5 (name withheld)": -0.1521506905216086,
+     "Department of Transportation | component 3 (name withheld)": 0.1824227016672156,
+     "Department of Transportation | component 1 (name withheld)": 0.010071102597108356,
+     "Department of Veterans Affairs | Department of Veterans Affairs": 0.0710847762871363,
+     "Department of the Interior | component 4 (name withheld)": 0.33225983462838266,
+     "Department of the Interior | component 6 (name withheld)": 0.23179369289700968,
+     "Department of the Interior | component 3 (name withheld)": -0.37846782555795877,
+     "Department of the Interior | component 9 (name withheld)": 0.09197827977426645,
+     "Department of the Interior | component 8 (name withheld)": 0.00286909375509911,
+     "Department of the Interior | component 2 (name withheld)": 0.2367199907718896,
+     "Department of the Interior | component 7 (name withheld)": 0.04249389285442463,
+     "Department of the Interior | component 1 (name withheld)": 0.04249649050308458,
+     "Department of the Interior | component 5 (name withheld)": 0.25736220430428586,
+     "Department of the Treasury | component 3 (name withheld)": 0.42271637833765435,
+     "Department of the Treasury | component 1 (name withheld)": 0.13982045777227434,
+     "Department of the Treasury | component 2 (name withheld)": -0.2537183866650943,
+     "Environmental Protection Agency | Environmental Protection Agency": 0.06527340167841351,
+     "General Services Administration | component 1 (name withheld)": -0.00977135714206431,
+     "General Services Administration | component 2 (name withheld)": 0.08933639894116473,
+     "Millennium Challenge Corporation | Millennium Challenge Corporation": -0.032751462474443244,
+     "National Aeronautics and Space Administration | National Aeronautics and Space Administration": 0.10478904133635081,
+     "National Archives and Records Administration | National Archives and Records Administration": 0.0012793787639301234,
+     "Nuclear Regulatory Commission | Nuclear Regulatory Commission": -0.04539376629521881,
+     "Pension Benefit Guaranty Corporation | Pension Benefit Guaranty Corporation": 0.16235978121196692,
+     "Securities and Exchange Commission | Securities and Exchange Commission": 0.03614503223782702,
+     "Small Business Administration | Small Business Administration": 0.004750448917631276,
+     "Social Security Administration | Social Security Administration": -0.039306241372170654,
+     "U.S. Agency for Global Media | U.S. Agency for Global Media": -0.35034124223477625,
+     "United States Trade and Development Agency | United States Trade and Development Agency": -0.16938242744614895,
+     "unknown": 0.1335787502281172
+    },
+    "setaside": {
+     "8(a)": 0.4999167378638496,
+     "HUBZone": -0.7267807239161657,
+     "SDVOSB": -0.8036194413136326,
+     "VOSB": 0.28605038375784525,
+     "WOSB": -0.9290826129444368,
+     "none": 1.2379205759714147,
+     "other": 0.3093693172960434,
+     "small business": 0.12622576328516583
+    },
+    "notice_type": {
+     "Combined Synopsis/Solicitation": 0.11156601316054521,
+     "Solicitation": -0.11156601316056604
+    },
+    "sol_letter": {
+     "B": 0.15027461727528113,
+     "Q": 0.01716097736540299,
+     "R": 0.023683008748926794,
+     "T": -0.047966892519756194,
+     "other": -0.18797122655592946,
+     "unknown": 0.044819515686106905
+    },
+    "pscg": {
+     "10": 0.2624542410995233,
+     "12": 0.4721286623018281,
+     "13": 0.5668406445267355,
+     "14": 0.4151267455059639,
+     "15": -0.05991063290827325,
+     "16": 0.5200270132999727,
+     "17": 0.2896013415347559,
+     "19": 0.31573084062065676,
+     "20": 0.38395038376676066,
+     "22": -0.024396494189376144,
+     "23": -0.5405549426964533,
+     "24": -0.24749914065042103,
+     "25": -0.04657981913934943,
+     "26": -0.06333723173884484,
+     "28": -0.14766028126176828,
+     "29": -0.26032052203189626,
+     "30": 0.01985060601054698,
+     "31": 0.19238478149982322,
+     "32": 0.0776727296187729,
+     "34": -0.09820564863041926,
+     "35": -0.12420907734821114,
+     "36": 0.15201905221606585,
+     "37": 0.11345850855608851,
+     "38": -0.33832161145381845,
+     "39": 0.1565478076547712,
+     "40": -0.24192458075897202,
+     "41": 0.2230958661936281,
+     "42": 0.12656652812692387,
+     "43": 0.15390257043992503,
+     "44": 0.05221231796793255,
+     "45": -0.1811856812032535,
+     "46": 0.14056489218408644,
+     "47": 0.11662294130585868,
+     "48": 0.1877373499335027,
+     "49": 0.09005808641330575,
+     "51": 0.05794627717689322,
+     "52": 0.338163271205555,
+     "53": -0.11945951001425494,
+     "54": -0.035459591079263046,
+     "55": -0.2243080276552445,
+     "56": -0.2427411855787279,
+     "58": 0.143657190660809,
+     "59": 0.10799262258001269,
+     "60": -0.1433296683143263,
+     "61": 0.05313548898058824,
+     "62": 0.05849169255838365,
+     "63": 0.30894229106672283,
+     "65": 0.178678364195767,
+     "66": -0.03387435805292292,
+     "67": -0.24013772662494465,
+     "68": 0.007416573096878267,
+     "69": 0.12023672805236459,
+     "70": -0.3421966363802838,
+     "71": -0.05947645511249068,
+     "72": -0.4470071738760717,
+     "73": -0.21591581978519833,
+     "74": -0.12236000247982451,
+     "75": -0.7510465393913328,
+     "76": 0.12321691489624575,
+     "77": -0.4192430747937039,
+     "78": -0.42359836372815385,
+     "79": -0.6293722278931013,
+     "7A": -0.12514687453057413,
+     "7B": -0.7469625301492917,
+     "7C": -0.28070589830188736,
+     "7E": -0.5156297245466955,
+     "7F": -0.09271422634837787,
+     "7G": -0.06466933068311968,
+     "7H": 0.0019595664013895646,
+     "7J": -0.17905720107079467,
+     "7K": -0.3326910365459354,
+     "80": -0.8788226874752879,
+     "81": 0.11200996999649013,
+     "83": -0.4831406880029997,
+     "84": -0.37515248767362686,
+     "85": -0.17660718236483927,
+     "87": 0.303236325230219,
+     "88": 0.40207572980728823,
+     "89": 0.23538800934912307,
+     "91": -0.13317866566286146,
+     "93": -0.25090523515537094,
+     "95": 0.02149585837672672,
+     "96": -0.09817006206529502,
+     "99": -0.0008727235761086196,
+     "A": 0.38335716243379586,
+     "B": 0.39255607838341716,
+     "C": 0.05443658376568432,
+     "D": 0.14558393630886196,
+     "E": 0.15759616697006978,
+     "F": 0.22292343703009038,
+     "G": 0.3271190783445839,
+     "H": 0.24197493942053014,
+     "J": 0.42885485914322885,
+     "K": 0.7620201728268333,
+     "L": 0.460946149822988,
+     "M": 0.3999713436852427,
+     "N": 0.281027178214803,
+     "P": -0.42733358583675135,
+     "Q": 0.022224374852408947,
+     "R": 0.13465935323948075,
+     "S": 0.05683395681175225,
+     "T": -0.0968047017451113,
+     "U": 0.49159810709304685,
+     "V": -0.06114220582370512,
+     "W": -0.1504931119199768,
+     "X": -0.043215340389540176,
+     "Y": -0.028006489600542098,
+     "Z": 0.01703582715731103
+    },
+    "naics3": {
+     "111": 0.24981609537023877,
+     "112": 0.8356914031053969,
+     "113": 0.35823859883910036,
+     "114": 0.3437723853191405,
+     "115": 0.23111311459425515,
+     "212": -0.34678707174465107,
+     "213": 0.1190484267612802,
+     "221": 0.13045152412699357,
+     "236": -0.1336062996755298,
+     "237": -0.0041693530613740315,
+     "238": -0.4822779058487152,
+     "311": 0.46313425265147684,
+     "312": -0.5585267625616108,
+     "313": -0.08799840026441046,
+     "314": 0.061512106967628204,
+     "315": -0.14665112592702484,
+     "316": -0.10281598140702883,
+     "321": -0.20447090749896132,
+     "322": -0.40015044309807807,
+     "323": -0.09512788524187346,
+     "324": -0.0682254887536224,
+     "325": -0.21545430138454716,
+     "326": -0.055020024332313684,
+     "327": -0.13745993958403074,
+     "331": -0.23299713031340052,
+     "332": 0.13883900383135803,
+     "333": 0.02375842572954619,
+     "334": 0.11750820747184983,
+     "335": -0.0007572202319186624,
+     "336": 0.05408318652669301,
+     "337": -0.10666557885806657,
+     "339": 0.0006859577139292415,
+     "423": -0.09992529768308413,
+     "424": 0.17526119592732045,
+     "441": -0.04530481491394415,
+     "442": -0.0009103172725023483,
+     "443": -0.020866495341383996,
+     "444": 0.46256487252629264,
+     "446": -0.008778935378039485,
+     "451": -0.017587735497765218,
+     "453": 0.055222561378450066,
+     "454": 0.08690396373535714,
+     "481": 0.7470320262867305,
+     "483": 0.13741534228706556,
+     "484": -0.2566507247111096,
+     "485": -0.2866300499211522,
+     "488": 0.16739312493212108,
+     "492": -0.8616911771692899,
+     "493": 0.1843367622525227,
+     "511": 0.3406400087543641,
+     "512": -0.20430811789710646,
+     "513": -0.022053301530742815,
+     "515": 0.3098708697786351,
+     "517": 0.08428064144615632,
+     "518": -0.0661772808497114,
+     "519": -0.06299647589886431,
+     "524": 0.3367126534571287,
+     "531": 0.11838081373890892,
+     "532": -0.15730782159283285,
+     "541": 0.1044474744392426,
+     "561": -0.4499210815264502,
+     "562": -0.04125299429328133,
+     "611": -0.021388375479098387,
+     "621": 0.1893054881028531,
+     "622": -0.19156034034228586,
+     "623": 0.3528530902929729,
+     "624": 0.06435021615265987,
+     "711": -0.050196072995342705,
+     "712": -0.03648174084896871,
+     "713": 0.45007822719054086,
+     "721": -0.013327594413030552,
+     "722": -0.37930208235042534,
+     "811": -0.013487898038929576,
+     "812": -0.0561968681698092,
+     "813": 0.2425260053576476,
+     "921": -0.2085415785565134,
+     "922": 0.15591897519853204,
+     "unknown": -0.48542655399071843
+    },
+    "month": {
+     "1": -0.09661574077842257,
+     "10": -0.05615215305369634,
+     "11": 0.0007602335128976427,
+     "12": -0.03222933233169005,
+     "2": -0.07773195657737393,
+     "3": 0.013739164402813081,
+     "4": -0.0064553026965374315,
+     "5": 0.05152365981247348,
+     "6": 0.004967313329685708,
+     "7": 0.01820239613129116,
+     "8": 0.11247315218883275,
+     "9": 0.0675185660597055
+    }
+   },
+   "cont": {
+    "lo_all": [
+     -0.08257647135259212,
+     -0.9746284204568221,
+     0.19264060488491966
+    ],
+    "lo_agency": [
+     0.07468892744009101,
+     -0.9968438655349798,
+     0.36629966036230927
+    ],
+    "lo_subagency": [
+     0.0965759975225111,
+     -1.0158610357319966,
+     0.45276942733008496
+    ],
+    "mo_subagency": [
+     0.08460902181954358,
+     -0.023241727863265543,
+     0.13986135601046157
+    ],
+    "lo_office": [
+     0.07294292531631233,
+     -1.0403828341981396,
+     0.6082971382331556
+    ],
+    "mo_office": [
+     0.015061580000665802,
+     -0.025669017741483034,
+     0.21951304642672623
+    ],
+    "log_office_n": [
+     0.02636048096944675,
+     7.249642848276381,
+     3.154614465902612
+    ],
+    "lo_prefix": [
+     0.2748131150526907,
+     -1.1779962227560896,
+     0.5983621794893332
+    ],
+    "mo_prefix": [
+     0.08249291240325739,
+     -0.039360824435342875,
+     0.23271912061519825
+    ],
+    "log_prefix_n": [
+     0.05586332341336653,
+     7.076011901300526,
+     3.0483579500649496
+    ],
+    "lo_pscg": [
+     -0.066639862527156,
+     -1.010381492158792,
+     0.5375276820969018
+    ],
+    "lo_psc4": [
+     0.1291702963958988,
+     -1.0260937228797573,
+     0.5696571297956017
+    ],
+    "lo_naics": [
+     0.21092929401271834,
+     -1.0326904380837936,
+     0.5907964498772634
+    ],
+    "log_window": [
+     -0.033061279599959546,
+     2.4913026383241657,
+     0.5674502238055925
+    ],
+    "log_depth": [
+     -0.003831146962062582,
+     7.72086452852049,
+     1.8203910488436015
+    ]
+   },
+   "bin": {
+    "office_known": -0.17804524452000484,
+    "prefix_known": 0.12189673993011464,
+    "short7": 0.07930542188466545,
+    "short14": 0.05449102159645808,
+    "window_missing": 0.23811546883753448,
+    "late_sept": -0.0660406373001201,
+    "kw_brand": -0.18719901313793494,
+    "kw_sole": 0.6964432584743934,
+    "has_presol": -0.060255875550529955,
+    "has_ss": 0.00028397498204625024,
+    "depth_missing": -0.10850851278373677,
+    "naics_missing": 0.18094659994816198
+   }
   },
-  "department": {
-   "AGENCY FOR INTERNATIONAL DEVELOPMENT": "Agency for International Development",
-   "AGRICULTURE, DEPARTMENT OF": "Department of Agriculture",
-   "COMMERCE, DEPARTMENT OF": "Department of Commerce",
-   "COMMODITY FUTURES TRADING COMMISSION": "Commodity Futures Trading Commission",
-   "CONSUMER FINANCIAL PROTECTION BUREAU": "Consumer Financial Protection Bureau",
-   "CONSUMER PRODUCT SAFETY COMMISSION": "Consumer Product Safety Commission",
-   "COURT SERVICES AND OFFENDER SUPERVISION AGENCY": "Court Services and Offender Supervision Agency",
-   "DEPT OF DEFENSE": "Department of Defense",
-   "EDUCATION, DEPARTMENT OF": "Department of Education",
-   "ENERGY, DEPARTMENT OF": "Department of Energy",
-   "ENVIRONMENTAL PROTECTION AGENCY": "Environmental Protection Agency",
-   "EQUAL EMPLOYMENT OPPORTUNITY COMMISSION": "Equal Employment Opportunity Commission",
-   "EXECUTIVE OFFICE OF THE PRESIDENT": "Executive Office of the President",
-   "EXPORT-IMPORT BANK OF THE US": "Export-Import Bank of the United States",
-   "FEDERAL COMMUNICATIONS COMMISSION": "Federal Communications Commission",
-   "FEDERAL MEDIATION AND CONCILIATION SERVICE": "Federal Mediation and Conciliation Service",
-   "GENERAL SERVICES ADMINISTRATION": "General Services Administration",
-   "GOVERNMENT ACCOUNTABILITY OFFICE": "Government Accountability Office",
-   "HEALTH AND HUMAN SERVICES, DEPARTMENT OF": "Department of Health and Human Services",
-   "HOMELAND SECURITY, DEPARTMENT OF": "Department of Homeland Security",
-   "HOUSING AND URBAN DEVELOPMENT, DEPARTMENT OF": "Department of Housing and Urban Development",
-   "INTERIOR, DEPARTMENT OF THE": "Department of the Interior",
-   "INTERNATIONAL BOUNDARY AND WATER COMMISSION: US-MEXICO": "Department of State",
-   "INTERNATIONAL TRADE COMMISSION, UNITED STATES (DUNS # 02-1877998)": "International Trade Commission",
-   "JUSTICE, DEPARTMENT OF": "Department of Justice",
-   "LABOR, DEPARTMENT OF": "Department of Labor",
-   "MILLENNIUM CHALLENGE CORPORATION": "Millennium Challenge Corporation",
-   "MORRIS K UDALL SCHOLARSHIP AND EXCELLENCE IN NATIONAL ENVIRONMENTAL POLICY FOUNDATION": "Morris K. Udall and Stewart L. Udall Foundation",
-   "NATIONAL AERONAUTICS AND SPACE ADMINISTRATION": "National Aeronautics and Space Administration",
-   "NATIONAL ARCHIVES AND RECORDS ADMINISTRATION": "National Archives and Records Administration",
-   "NATIONAL LABOR RELATIONS BOARD": "National Labor Relations Board",
-   "NATIONAL SCIENCE FOUNDATION": "National Science Foundation",
-   "NATIONAL TRANSPORTATION SAFETY BOARD": "National Transportation Safety Board",
-   "NUCLEAR REGULATORY COMMISSION": "Nuclear Regulatory Commission",
-   "OFFICE OF PERSONNEL MANAGEMENT": "Office of Personnel Management",
-   "PEACE CORPS": "Peace Corps",
-   "PENSION BENEFIT GUARANTY CORPORATION": "Pension Benefit Guaranty Corporation",
-   "RAILROAD RETIREMENT BOARD": "Railroad Retirement Board",
-   "SECURITIES AND EXCHANGE COMMISSION": "Securities and Exchange Commission",
-   "SMALL BUSINESS ADMINISTRATION": "Small Business Administration",
-   "SOCIAL SECURITY ADMINISTRATION": "Social Security Administration",
-   "STATE, DEPARTMENT OF": "Department of State",
-   "TRANSPORTATION, DEPARTMENT OF": "Department of Transportation",
-   "TREASURY, DEPARTMENT OF THE": "Department of the Treasury",
-   "UNITED STATES AGENCY FOR GLOBAL MEDIA, BBG": "U.S. Agency for Global Media",
-   "UNITED STATES INTERNATIONAL DEVELOPMENT FINANCE CORPORATION": "U.S. International Development Finance Corporation",
-   "UNITED STATES TRADE AND DEVELOPMENT AGENCY": "United States Trade and Development Agency",
-   "VETERANS AFFAIRS, DEPARTMENT OF": "Department of Veterans Affairs"
+  "typical": {
+   "overall": {
+    "lo_all": -0.7877,
+    "lo_office": -0.9328,
+    "mo_office": 0.0024,
+    "log_office_n": 8.253,
+    "office_known": 1.0,
+    "lo_prefix": -0.9946,
+    "mo_prefix": 0.0013,
+    "log_prefix_n": 8.2085,
+    "prefix_known": 1.0
+   },
+   "office_by_sector": {
+    "civilian except GSA": {
+     "lo_office": -0.9896,
+     "mo_office": -0.0973,
+     "log_office_n": 6.5439,
+     "office_known": 1.0,
+     "lo_prefix": -1.1596,
+     "mo_prefix": -0.1488,
+     "log_prefix_n": 5.8579,
+     "prefix_known": 1.0,
+     "n_recent": 46970
+    },
+    "GSA": {
+     "lo_office": -0.6834,
+     "mo_office": -0.0673,
+     "log_office_n": 4.3373,
+     "office_known": 1.0,
+     "lo_prefix": -0.6954,
+     "mo_prefix": -0.0625,
+     "log_prefix_n": 3.6109,
+     "prefix_known": 1.0,
+     "n_recent": 376
+    },
+    "Department of Defense": {
+     "lo_office": -0.9301,
+     "mo_office": 0.0297,
+     "log_office_n": 9.7828,
+     "office_known": 1.0,
+     "lo_prefix": -0.9511,
+     "mo_prefix": 0.0214,
+     "log_prefix_n": 9.7412,
+     "prefix_known": 1.0,
+     "n_recent": 119434
+    }
+   },
+   "agency": {
+    "Agency for International Development": {
+     "lo_agency": -1.3655,
+     "n_recent": 74
+    },
+    "Court Services and Offender Supervision Agency": {
+     "lo_agency": -0.9942,
+     "n_recent": 32
+    },
+    "Department of Agriculture": {
+     "lo_agency": -1.8842,
+     "n_recent": 6831
+    },
+    "Department of Commerce": {
+     "lo_agency": -0.9539,
+     "n_recent": 2158
+    },
+    "Department of Defense": {
+     "lo_agency": -1.034,
+     "n_recent": 119434
+    },
+    "Department of Education": {
+     "lo_agency": 0.6339,
+     "n_recent": 25
+    },
+    "Department of Energy": {
+     "lo_agency": -1.4318,
+     "n_recent": 435
+    },
+    "Department of Health and Human Services": {
+     "lo_agency": -0.143,
+     "n_recent": 2335
+    },
+    "Department of Homeland Security": {
+     "lo_agency": -0.7473,
+     "n_recent": 5713
+    },
+    "Department of Housing and Urban Development": {
+     "lo_agency": -1.7361,
+     "n_recent": 22
+    },
+    "Department of Justice": {
+     "lo_agency": -0.4655,
+     "n_recent": 2756
+    },
+    "Department of Labor": {
+     "lo_agency": -1.1017,
+     "n_recent": 71
+    },
+    "Department of State": {
+     "lo_agency": -1.419,
+     "n_recent": 1350
+    },
+    "Department of Transportation": {
+     "lo_agency": -0.9127,
+     "n_recent": 882
+    },
+    "Department of Veterans Affairs": {
+     "lo_agency": -0.5503,
+     "n_recent": 12246
+    },
+    "Department of the Interior": {
+     "lo_agency": -1.2098,
+     "n_recent": 10317
+    },
+    "Department of the Treasury": {
+     "lo_agency": -0.433,
+     "n_recent": 148
+    },
+    "Environmental Protection Agency": {
+     "lo_agency": -0.7016,
+     "n_recent": 277
+    },
+    "General Services Administration": {
+     "lo_agency": -0.0487,
+     "n_recent": 376
+    },
+    "Millennium Challenge Corporation": {
+     "lo_agency": -1.621,
+     "n_recent": 10
+    },
+    "National Aeronautics and Space Administration": {
+     "lo_agency": -0.9812,
+     "n_recent": 942
+    },
+    "National Archives and Records Administration": {
+     "lo_agency": -0.9616,
+     "n_recent": 13
+    },
+    "Nuclear Regulatory Commission": {
+     "lo_agency": -0.1816,
+     "n_recent": 34
+    },
+    "Pension Benefit Guaranty Corporation": {
+     "lo_agency": -1.2712,
+     "n_recent": 14
+    },
+    "Securities and Exchange Commission": {
+     "lo_agency": -1.1749,
+     "n_recent": 14
+    },
+    "Small Business Administration": {
+     "lo_agency": -1.2796,
+     "n_recent": 5
+    },
+    "Social Security Administration": {
+     "lo_agency": -0.6323,
+     "n_recent": 105
+    },
+    "U.S. Agency for Global Media": {
+     "lo_agency": 0.4588,
+     "n_recent": 26
+    },
+    "United States Trade and Development Agency": {
+     "lo_agency": -1.0968,
+     "n_recent": 22
+    }
+   },
+   "component_by_agency": {
+    "Agency for International Development": {
+     "subagency": "Agency for International Development | Agency for International Development",
+     "lo_subagency": -1.3568,
+     "mo_subagency": 0.154
+    },
+    "Court Services and Offender Supervision Agency": {
+     "subagency": "Court Services and Offender Supervision Agency | component without its own coefficient",
+     "lo_subagency": -0.8769,
+     "mo_subagency": -0.2763
+    },
+    "Department of Agriculture": {
+     "subagency": "Department of Agriculture | component 5 (name withheld)",
+     "lo_subagency": -1.1606,
+     "mo_subagency": -0.2483
+    },
+    "Department of Commerce": {
+     "subagency": "Department of Commerce | component 3 (name withheld)",
+     "lo_subagency": -1.1801,
+     "mo_subagency": -0.2932
+    },
+    "Department of Defense": {
+     "subagency": "Department of Defense | component 16 (name withheld)",
+     "lo_subagency": -1.0917,
+     "mo_subagency": 0.0633
+    },
+    "Department of Education": {
+     "subagency": "Department of Education | Department of Education",
+     "lo_subagency": 0.6981,
+     "mo_subagency": -0.4336
+    },
+    "Department of Energy": {
+     "subagency": "Department of Energy | Department of Energy",
+     "lo_subagency": -1.7088,
+     "mo_subagency": -0.0347
+    },
+    "Department of Health and Human Services": {
+     "subagency": "Department of Health and Human Services | component 3 (name withheld)",
+     "lo_subagency": 0.0415,
+     "mo_subagency": 0.0251
+    },
+    "Department of Homeland Security": {
+     "subagency": "Department of Homeland Security | component 9 (name withheld)",
+     "lo_subagency": -1.4011,
+     "mo_subagency": 0.0543
+    },
+    "Department of Housing and Urban Development": {
+     "subagency": "Department of Housing and Urban Development | Department of Housing and Urban Development",
+     "lo_subagency": -1.9915,
+     "mo_subagency": -0.2495
+    },
+    "Department of Justice": {
+     "subagency": "Department of Justice | component 1 (name withheld)",
+     "lo_subagency": -1.3814,
+     "mo_subagency": -0.0275
+    },
+    "Department of Labor": {
+     "subagency": "Department of Labor | component 1 (name withheld)",
+     "lo_subagency": -1.138,
+     "mo_subagency": 0.1307
+    },
+    "Department of State": {
+     "subagency": "Department of State | Department of State",
+     "lo_subagency": -1.3972,
+     "mo_subagency": 0.0419
+    },
+    "Department of Transportation": {
+     "subagency": "Department of Transportation | component 1 (name withheld)",
+     "lo_subagency": -1.8394,
+     "mo_subagency": 0.1851
+    },
+    "Department of Veterans Affairs": {
+     "subagency": "Department of Veterans Affairs | Department of Veterans Affairs",
+     "lo_subagency": -0.573,
+     "mo_subagency": 0.0337
+    },
+    "Department of the Interior": {
+     "subagency": "Department of the Interior | component 2 (name withheld)",
+     "lo_subagency": -1.2555,
+     "mo_subagency": -0.1741
+    },
+    "Department of the Treasury": {
+     "subagency": "Department of the Treasury | component 1 (name withheld)",
+     "lo_subagency": -1.1494,
+     "mo_subagency": -0.0085
+    },
+    "Environmental Protection Agency": {
+     "subagency": "Environmental Protection Agency | Environmental Protection Agency",
+     "lo_subagency": -0.6819,
+     "mo_subagency": -0.0106
+    },
+    "General Services Administration": {
+     "subagency": "General Services Administration | component 2 (name withheld)",
+     "lo_subagency": -1.1495,
+     "mo_subagency": 0.0463
+    },
+    "Millennium Challenge Corporation": {
+     "subagency": "Millennium Challenge Corporation | Millennium Challenge Corporation",
+     "lo_subagency": -1.0828,
+     "mo_subagency": -0.1075
+    },
+    "National Aeronautics and Space Administration": {
+     "subagency": "National Aeronautics and Space Administration | National Aeronautics and Space Administration",
+     "lo_subagency": -0.9266,
+     "mo_subagency": -0.7182
+    },
+    "National Archives and Records Administration": {
+     "subagency": "National Archives and Records Administration | National Archives and Records Administration",
+     "lo_subagency": -0.9692,
+     "mo_subagency": -0.0141
+    },
+    "Nuclear Regulatory Commission": {
+     "subagency": "Nuclear Regulatory Commission | Nuclear Regulatory Commission",
+     "lo_subagency": 0.0968,
+     "mo_subagency": 0.1089
+    },
+    "Pension Benefit Guaranty Corporation": {
+     "subagency": "Pension Benefit Guaranty Corporation | Pension Benefit Guaranty Corporation",
+     "lo_subagency": -1.3127,
+     "mo_subagency": -0.056
+    },
+    "Securities and Exchange Commission": {
+     "subagency": "Securities and Exchange Commission | Securities and Exchange Commission",
+     "lo_subagency": -1.0359,
+     "mo_subagency": -0.034
+    },
+    "Small Business Administration": {
+     "subagency": "Small Business Administration | Small Business Administration",
+     "lo_subagency": -2.0152,
+     "mo_subagency": 0.1475
+    },
+    "Social Security Administration": {
+     "subagency": "Social Security Administration | Social Security Administration",
+     "lo_subagency": -0.5925,
+     "mo_subagency": -0.0958
+    },
+    "U.S. Agency for Global Media": {
+     "subagency": "U.S. Agency for Global Media | U.S. Agency for Global Media",
+     "lo_subagency": 0.4814,
+     "mo_subagency": 0.2431
+    },
+    "United States Trade and Development Agency": {
+     "subagency": "United States Trade and Development Agency | United States Trade and Development Agency",
+     "lo_subagency": -1.0033,
+     "mo_subagency": -0.1142
+    }
+   },
+   "pscg": {
+    "10": {
+     "lo_pscg": -0.4539,
+     "lo_psc4": -0.4539,
+     "n_recent": 2597
+    },
+    "12": {
+     "lo_pscg": -0.3503,
+     "lo_psc4": -0.348,
+     "n_recent": 271
+    },
+    "13": {
+     "lo_pscg": -0.3886,
+     "lo_psc4": -0.1453,
+     "n_recent": 256
+    },
+    "14": {
+     "lo_pscg": -1.0056,
+     "lo_psc4": -1.0056,
+     "n_recent": 207
+    },
+    "15": {
+     "lo_pscg": -1.251,
+     "lo_psc4": -1.251,
+     "n_recent": 2264
+    },
+    "16": {
+     "lo_pscg": -0.3322,
+     "lo_psc4": -0.3322,
+     "n_recent": 3443
+    },
+    "17": {
+     "lo_pscg": -0.995,
+     "lo_psc4": -0.995,
+     "n_recent": 1329
+    },
+    "19": {
+     "lo_pscg": -0.916,
+     "lo_psc4": -0.916,
+     "n_recent": 244
+    },
+    "20": {
+     "lo_pscg": -0.3138,
+     "lo_psc4": -0.3154,
+     "n_recent": 1994
+    },
+    "22": {
+     "lo_pscg": -1.8576,
+     "lo_psc4": -1.964,
+     "n_recent": 34
+    },
+    "23": {
+     "lo_pscg": -2.0416,
+     "lo_psc4": -1.99,
+     "n_recent": 1113
+    },
+    "24": {
+     "lo_pscg": -1.6642,
+     "lo_psc4": -1.6784,
+     "n_recent": 180
+    },
+    "25": {
+     "lo_pscg": -0.6796,
+     "lo_psc4": -0.6586,
+     "n_recent": 6759
+    },
+    "26": {
+     "lo_pscg": -0.7498,
+     "lo_psc4": -0.7597,
+     "n_recent": 204
+    },
+    "28": {
+     "lo_pscg": -0.8774,
+     "lo_psc4": -0.8833,
+     "n_recent": 1621
+    },
+    "29": {
+     "lo_pscg": -1.1761,
+     "lo_psc4": -1.1761,
+     "n_recent": 3584
+    },
+    "30": {
+     "lo_pscg": -0.9181,
+     "lo_psc4": -0.9181,
+     "n_recent": 3971
+    },
+    "31": {
+     "lo_pscg": -1.1487,
+     "lo_psc4": -1.1487,
+     "n_recent": 1856
+    },
+    "32": {
+     "lo_pscg": -1.3671,
+     "lo_psc4": -1.5975,
+     "n_recent": 36
+    },
+    "34": {
+     "lo_pscg": -1.493,
+     "lo_psc4": -1.4855,
+     "n_recent": 895
+    },
+    "35": {
+     "lo_pscg": -0.4573,
+     "lo_psc4": -0.4771,
+     "n_recent": 284
+    },
+    "36": {
+     "lo_pscg": -0.7724,
+     "lo_psc4": -0.8367,
+     "n_recent": 462
+    },
+    "37": {
+     "lo_pscg": -1.4233,
+     "lo_psc4": -1.4233,
+     "n_recent": 245
+    },
+    "38": {
+     "lo_pscg": -1.5437,
+     "lo_psc4": -1.6435,
+     "n_recent": 567
+    },
+    "39": {
+     "lo_pscg": -0.7942,
+     "lo_psc4": -0.7945,
+     "n_recent": 1169
+    },
+    "40": {
+     "lo_pscg": -1.1595,
+     "lo_psc4": -1.1595,
+     "n_recent": 767
+    },
+    "41": {
+     "lo_pscg": -0.553,
+     "lo_psc4": -0.595,
+     "n_recent": 2151
+    },
+    "42": {
+     "lo_pscg": -0.791,
+     "lo_psc4": -0.7981,
+     "n_recent": 2033
+    },
+    "43": {
+     "lo_pscg": -0.8412,
+     "lo_psc4": -0.8412,
+     "n_recent": 4726
+    },
+    "44": {
+     "lo_pscg": -0.9798,
+     "lo_psc4": -0.9847,
+     "n_recent": 818
+    },
+    "45": {
+     "lo_pscg": -1.3799,
+     "lo_psc4": -1.3002,
+     "n_recent": 932
+    },
+    "46": {
+     "lo_pscg": -0.9278,
+     "lo_psc4": -0.9728,
+     "n_recent": 331
+    },
+    "47": {
+     "lo_pscg": -0.9713,
+     "lo_psc4": -0.9713,
+     "n_recent": 5363
+    },
+    "48": {
+     "lo_pscg": -0.5716,
+     "lo_psc4": -0.5716,
+     "n_recent": 6756
+    },
+    "49": {
+     "lo_pscg": -1.0933,
+     "lo_psc4": -1.094,
+     "n_recent": 1596
+    },
+    "51": {
+     "lo_pscg": -2.6357,
+     "lo_psc4": -2.6357,
+     "n_recent": 397
+    },
+    "52": {
+     "lo_pscg": -0.0737,
+     "lo_psc4": -0.6373,
+     "n_recent": 135
+    },
+    "53": {
+     "lo_pscg": -1.0224,
+     "lo_psc4": -1.0224,
+     "n_recent": 13304
+    },
+    "54": {
+     "lo_pscg": -0.7623,
+     "lo_psc4": -0.8051,
+     "n_recent": 664
+    },
+    "55": {
+     "lo_pscg": -1.3985,
+     "lo_psc4": -1.6683,
+     "n_recent": 159
+    },
+    "56": {
+     "lo_pscg": -0.1928,
+     "lo_psc4": -0.9692,
+     "n_recent": 1244
+    },
+    "58": {
+     "lo_pscg": -0.7353,
+     "lo_psc4": -0.7405,
+     "n_recent": 1330
+    },
+    "59": {
+     "lo_pscg": -1.1978,
+     "lo_psc4": -1.1978,
+     "n_recent": 15681
+    },
+    "60": {
+     "lo_pscg": -0.9261,
+     "lo_psc4": -0.983,
+     "n_recent": 66
+    },
+    "61": {
+     "lo_pscg": -1.041,
+     "lo_psc4": -1.041,
+     "n_recent": 7016
+    },
+    "62": {
+     "lo_pscg": -0.5217,
+     "lo_psc4": -0.6198,
+     "n_recent": 1561
+    },
+    "63": {
+     "lo_pscg": -0.8089,
+     "lo_psc4": -0.8481,
+     "n_recent": 515
+    },
+    "65": {
+     "lo_pscg": -0.7856,
+     "lo_psc4": -0.7697,
+     "n_recent": 4592
+    },
+    "66": {
+     "lo_pscg": -0.5673,
+     "lo_psc4": -0.7441,
+     "n_recent": 7204
+    },
+    "67": {
+     "lo_pscg": -1.8682,
+     "lo_psc4": -1.8237,
+     "n_recent": 180
+    },
+    "68": {
+     "lo_pscg": 1.2804,
+     "lo_psc4": 0.17,
+     "n_recent": 765
+    },
+    "69": {
+     "lo_pscg": -0.6187,
+     "lo_psc4": -0.6304,
+     "n_recent": 222
+    },
+    "70": {
+     "lo_pscg": -1.0231,
+     "lo_psc4": -1.0231,
+     "n_recent": 0
+    },
+    "71": {
+     "lo_pscg": -0.9554,
+     "lo_psc4": -1.068,
+     "n_recent": 797
+    },
+    "72": {
+     "lo_pscg": -0.0854,
+     "lo_psc4": 0.2192,
+     "n_recent": 278
+    },
+    "73": {
+     "lo_pscg": -0.2472,
+     "lo_psc4": -0.365,
+     "n_recent": 748
+    },
+    "74": {
+     "lo_pscg": -1.9371,
+     "lo_psc4": -1.8224,
+     "n_recent": 34
+    },
+    "75": {
+     "lo_pscg": 1.6576,
+     "lo_psc4": 2.2153,
+     "n_recent": 204
+    },
+    "76": {
+     "lo_pscg": -0.6576,
+     "lo_psc4": -0.4237,
+     "n_recent": 168
+    },
+    "77": {
+     "lo_pscg": -0.4397,
+     "lo_psc4": -2.2038,
+     "n_recent": 69
+    },
+    "78": {
+     "lo_pscg": 1.6634,
+     "lo_psc4": 0.6495,
+     "n_recent": 204
+    },
+    "79": {
+     "lo_pscg": 0.5698,
+     "lo_psc4": 0.6412,
+     "n_recent": 109
+    },
+    "7A": {
+     "lo_pscg": -0.073,
+     "lo_psc4": -0.1323,
+     "n_recent": 558
+    },
+    "7B": {
+     "lo_pscg": -1.0388,
+     "lo_psc4": -1.2178,
+     "n_recent": 371
+    },
+    "7C": {
+     "lo_pscg": -1.014,
+     "lo_psc4": -1.174,
+     "n_recent": 44
+    },
+    "7E": {
+     "lo_pscg": -1.399,
+     "lo_psc4": -1.4051,
+     "n_recent": 427
+    },
+    "7F": {
+     "lo_pscg": -1.0036,
+     "lo_psc4": -1.0166,
+     "n_recent": 33
+    },
+    "7G": {
+     "lo_pscg": -0.6795,
+     "lo_psc4": -0.537,
+     "n_recent": 228
+    },
+    "7H": {
+     "lo_pscg": -0.4892,
+     "lo_psc4": -0.4534,
+     "n_recent": 35
+    },
+    "7J": {
+     "lo_pscg": -0.6657,
+     "lo_psc4": -0.657,
+     "n_recent": 54
+    },
+    "7K": {
+     "lo_pscg": -1.3577,
+     "lo_psc4": -1.3627,
+     "n_recent": 80
+    },
+    "80": {
+     "lo_pscg": -1.6466,
+     "lo_psc4": -1.6197,
+     "n_recent": 295
+    },
+    "81": {
+     "lo_pscg": 0.6645,
+     "lo_psc4": 0.5508,
+     "n_recent": 1597
+    },
+    "83": {
+     "lo_pscg": -0.8559,
+     "lo_psc4": -0.5712,
+     "n_recent": 357
+    },
+    "84": {
+     "lo_pscg": -0.7517,
+     "lo_psc4": -0.7134,
+     "n_recent": 799
+    },
+    "85": {
+     "lo_pscg": -1.4004,
+     "lo_psc4": -1.5012,
+     "n_recent": 11
+    },
+    "87": {
+     "lo_pscg": -1.1175,
+     "lo_psc4": -1.04,
+     "n_recent": 274
+    },
+    "88": {
+     "lo_pscg": -1.1336,
+     "lo_psc4": -1.0546,
+     "n_recent": 174
+    },
+    "89": {
+     "lo_pscg": -2.6001,
+     "lo_psc4": -2.9478,
+     "n_recent": 2862
+    },
+    "91": {
+     "lo_pscg": -1.0473,
+     "lo_psc4": -1.107,
+     "n_recent": 488
+    },
+    "93": {
+     "lo_pscg": -1.3123,
+     "lo_psc4": -1.3065,
+     "n_recent": 523
+    },
+    "95": {
+     "lo_pscg": -2.88,
+     "lo_psc4": -2.8935,
+     "n_recent": 1170
+    },
+    "96": {
+     "lo_pscg": -1.5547,
+     "lo_psc4": -1.6974,
+     "n_recent": 98
+    },
+    "99": {
+     "lo_pscg": 0.431,
+     "lo_psc4": 0.1801,
+     "n_recent": 388
+    },
+    "A": {
+     "lo_pscg": -1.2033,
+     "lo_psc4": -0.9783,
+     "n_recent": 346
+    },
+    "B": {
+     "lo_pscg": -0.816,
+     "lo_psc4": -0.7556,
+     "n_recent": 770
+    },
+    "C": {
+     "lo_pscg": -1.4567,
+     "lo_psc4": -1.8392,
+     "n_recent": 280
+    },
+    "D": {
+     "lo_pscg": -0.308,
+     "lo_psc4": -0.3123,
+     "n_recent": 1987
+    },
+    "E": {
+     "lo_pscg": -0.9753,
+     "lo_psc4": -1.134,
+     "n_recent": 29
+    },
+    "F": {
+     "lo_pscg": -1.9441,
+     "lo_psc4": -1.1906,
+     "n_recent": 2313
+    },
+    "G": {
+     "lo_pscg": -0.5269,
+     "lo_psc4": -0.5736,
+     "n_recent": 501
+    },
+    "H": {
+     "lo_pscg": -0.8387,
+     "lo_psc4": -0.8839,
+     "n_recent": 1291
+    },
+    "J": {
+     "lo_pscg": -0.3528,
+     "lo_psc4": -0.5272,
+     "n_recent": 6533
+    },
+    "K": {
+     "lo_pscg": -0.5914,
+     "lo_psc4": -0.6534,
+     "n_recent": 135
+    },
+    "L": {
+     "lo_pscg": -0.4818,
+     "lo_psc4": -0.5092,
+     "n_recent": 73
+    },
+    "M": {
+     "lo_pscg": -1.0206,
+     "lo_psc4": -1.0526,
+     "n_recent": 300
+    },
+    "N": {
+     "lo_pscg": -1.1229,
+     "lo_psc4": -1.2599,
+     "n_recent": 1021
+    },
+    "P": {
+     "lo_pscg": -1.576,
+     "lo_psc4": -2.3728,
+     "n_recent": 194
+    },
+    "Q": {
+     "lo_pscg": -0.2358,
+     "lo_psc4": -0.5522,
+     "n_recent": 1247
+    },
+    "R": {
+     "lo_pscg": -0.695,
+     "lo_psc4": -0.8049,
+     "n_recent": 3038
+    },
+    "S": {
+     "lo_pscg": -0.367,
+     "lo_psc4": -1.5407,
+     "n_recent": 4814
+    },
+    "T": {
+     "lo_pscg": -0.5532,
+     "lo_psc4": -0.6075,
+     "n_recent": 126
+    },
+    "U": {
+     "lo_pscg": -0.5252,
+     "lo_psc4": -0.564,
+     "n_recent": 843
+    },
+    "V": {
+     "lo_pscg": -1.6277,
+     "lo_psc4": -1.5048,
+     "n_recent": 1319
+    },
+    "W": {
+     "lo_pscg": -1.208,
+     "lo_psc4": -1.4716,
+     "n_recent": 1296
+    },
+    "X": {
+     "lo_pscg": -0.4135,
+     "lo_psc4": -0.9804,
+     "n_recent": 321
+    },
+    "Y": {
+     "lo_pscg": -2.1221,
+     "lo_psc4": -2.2784,
+     "n_recent": 2699
+    },
+    "Z": {
+     "lo_pscg": -1.7049,
+     "lo_psc4": -1.8293,
+     "n_recent": 5672
+    }
+   },
+   "naics3": {
+    "111": {
+     "lo_naics": -1.0634,
+     "log_depth": 6.3919,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 155
+    },
+    "112": {
+     "lo_naics": -1.2226,
+     "log_depth": 5.793,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 121
+    },
+    "113": {
+     "lo_naics": -2.0479,
+     "log_depth": 6.612,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 54
+    },
+    "114": {
+     "lo_naics": -0.1603,
+     "log_depth": 5.4596,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 181
+    },
+    "115": {
+     "lo_naics": -1.9846,
+     "log_depth": 9.0791,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 1140
+    },
+    "212": {
+     "lo_naics": -2.4315,
+     "log_depth": 7.8156,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 314
+    },
+    "213": {
+     "lo_naics": -1.0794,
+     "log_depth": 6.4998,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 64
+    },
+    "221": {
+     "lo_naics": -0.9806,
+     "log_depth": 8.6311,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 454
+    },
+    "236": {
+     "lo_naics": -2.0721,
+     "log_depth": 10.5075,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 2557
+    },
+    "237": {
+     "lo_naics": -2.1944,
+     "log_depth": 9.7856,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 2661
+    },
+    "238": {
+     "lo_naics": -1.365,
+     "log_depth": 9.9704,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 5919
+    },
+    "311": {
+     "lo_naics": -2.4766,
+     "log_depth": 6.3368,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 2803
+    },
+    "312": {
+     "lo_naics": -0.8789,
+     "log_depth": 5.989,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 66
+    },
+    "313": {
+     "lo_naics": -1.1827,
+     "log_depth": 6.1549,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 289
+    },
+    "314": {
+     "lo_naics": -1.0534,
+     "log_depth": 7.7222,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 1059
+    },
+    "315": {
+     "lo_naics": -0.9827,
+     "log_depth": 8.0268,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 628
+    },
+    "316": {
+     "lo_naics": -1.1363,
+     "log_depth": 6.5453,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 84
+    },
+    "321": {
+     "lo_naics": -0.7519,
+     "log_depth": 6.7036,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 396
+    },
+    "322": {
+     "lo_naics": -0.7758,
+     "log_depth": 6.4831,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 228
+    },
+    "323": {
+     "lo_naics": -0.2444,
+     "log_depth": 8.2306,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 81
+    },
+    "324": {
+     "lo_naics": -1.0369,
+     "log_depth": 6.4052,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 497
+    },
+    "325": {
+     "lo_naics": -0.5071,
+     "log_depth": 6.8926,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 2471
+    },
+    "326": {
+     "lo_naics": -0.6776,
+     "log_depth": 6.8628,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 2597
+    },
+    "327": {
+     "lo_naics": -0.8686,
+     "log_depth": 6.0544,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 536
+    },
+    "331": {
+     "lo_naics": -2.2868,
+     "log_depth": 6.3682,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 1833
+    },
+    "332": {
+     "lo_naics": -0.8471,
+     "log_depth": 7.6363,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 29431
+    },
+    "333": {
+     "lo_naics": -0.907,
+     "log_depth": 7.1907,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 21363
+    },
+    "334": {
+     "lo_naics": -0.8047,
+     "log_depth": 8.2738,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 21766
+    },
+    "335": {
+     "lo_naics": -1.0892,
+     "log_depth": 7.4472,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 10537
+    },
+    "336": {
+     "lo_naics": -0.904,
+     "log_depth": 8.0268,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 20491
+    },
+    "337": {
+     "lo_naics": -1.0407,
+     "log_depth": 7.6069,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 881
+    },
+    "339": {
+     "lo_naics": -0.791,
+     "log_depth": 7.7249,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 8065
+    },
+    "423": {
+     "lo_naics": -0.9985,
+     "log_depth": 8.7717,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 639
+    },
+    "424": {
+     "lo_naics": -0.8187,
+     "log_depth": 7.1531,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 104
+    },
+    "441": {
+     "lo_naics": -1.0291,
+     "log_depth": 6.4877,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 191
+    },
+    "442": {
+     "lo_naics": -1.5084,
+     "log_depth": 1.0986,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 0
+    },
+    "443": {
+     "lo_naics": -1.3446,
+     "log_depth": 6.6859,
+     "depth_missing": 1.0,
+     "naics_missing": 0.0,
+     "n_recent": 0
+    },
+    "444": {
+     "lo_naics": -0.8155,
+     "log_depth": 7.3152,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 179
+    },
+    "446": {
+     "lo_naics": -0.238,
+     "log_depth": 6.6859,
+     "depth_missing": 1.0,
+     "naics_missing": 0.0,
+     "n_recent": 0
+    },
+    "451": {
+     "lo_naics": -1.4566,
+     "log_depth": 6.6859,
+     "depth_missing": 1.0,
+     "naics_missing": 0.0,
+     "n_recent": 0
+    },
+    "453": {
+     "lo_naics": -1.0274,
+     "log_depth": 1.3863,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 0
+    },
+    "454": {
+     "lo_naics": -0.9983,
+     "log_depth": 1.0986,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 0
+    },
+    "481": {
+     "lo_naics": -1.5406,
+     "log_depth": 7.3172,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 106
+    },
+    "483": {
+     "lo_naics": -3.4669,
+     "log_depth": 7.1877,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 279
+    },
+    "484": {
+     "lo_naics": -1.3565,
+     "log_depth": 8.7196,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 194
+    },
+    "485": {
+     "lo_naics": -1.6284,
+     "log_depth": 7.4547,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 194
+    },
+    "488": {
+     "lo_naics": -0.449,
+     "log_depth": 8.5932,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 804
+    },
+    "492": {
+     "lo_naics": 0.4259,
+     "log_depth": 9.0799,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 106
+    },
+    "493": {
+     "lo_naics": -1.0502,
+     "log_depth": 8.5732,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 88
+    },
+    "511": {
+     "lo_naics": -0.1779,
+     "log_depth": 3.091,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 0
+    },
+    "512": {
+     "lo_naics": -1.2262,
+     "log_depth": 8.5891,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 52
+    },
+    "513": {
+     "lo_naics": 0.1287,
+     "log_depth": 9.5265,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 806
+    },
+    "515": {
+     "lo_naics": 0.45,
+     "log_depth": 6.6859,
+     "depth_missing": 1.0,
+     "naics_missing": 0.0,
+     "n_recent": 0
+    },
+    "517": {
+     "lo_naics": -0.2095,
+     "log_depth": 8.2628,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 1104
+    },
+    "518": {
+     "lo_naics": -0.4791,
+     "log_depth": 9.938,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 134
+    },
+    "519": {
+     "lo_naics": 0.0497,
+     "log_depth": 8.3323,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 114
+    },
+    "524": {
+     "lo_naics": -1.0184,
+     "log_depth": 6.6682,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 70
+    },
+    "531": {
+     "lo_naics": -0.5599,
+     "log_depth": 7.4599,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 355
+    },
+    "532": {
+     "lo_naics": -1.259,
+     "log_depth": 8.247,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 968
+    },
+    "541": {
+     "lo_naics": -0.929,
+     "log_depth": 10.6335,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 5127
+    },
+    "561": {
+     "lo_naics": -1.5189,
+     "log_depth": 9.9933,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 5313
+    },
+    "562": {
+     "lo_naics": -1.0306,
+     "log_depth": 8.7868,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 2257
+    },
+    "611": {
+     "lo_naics": -0.4114,
+     "log_depth": 10.1503,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 843
+    },
+    "621": {
+     "lo_naics": -0.5828,
+     "log_depth": 8.2242,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 999
+    },
+    "622": {
+     "lo_naics": 0.6998,
+     "log_depth": 8.358,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 42
+    },
+    "623": {
+     "lo_naics": 0.6021,
+     "log_depth": 8.0577,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 72
+    },
+    "624": {
+     "lo_naics": -0.2835,
+     "log_depth": 8.5017,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 151
+    },
+    "711": {
+     "lo_naics": -0.352,
+     "log_depth": 7.6377,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 118
+    },
+    "712": {
+     "lo_naics": -1.2272,
+     "log_depth": 7.8629,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 39
+    },
+    "713": {
+     "lo_naics": -0.1443,
+     "log_depth": 7.6133,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 98
+    },
+    "721": {
+     "lo_naics": -1.5241,
+     "log_depth": 9.2731,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 621
+    },
+    "722": {
+     "lo_naics": -1.4217,
+     "log_depth": 8.4799,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 479
+    },
+    "811": {
+     "lo_naics": -0.2698,
+     "log_depth": 8.8544,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 3522
+    },
+    "812": {
+     "lo_naics": -1.1275,
+     "log_depth": 7.8184,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 412
+    },
+    "813": {
+     "lo_naics": -0.4437,
+     "log_depth": 8.1775,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 154
+    },
+    "921": {
+     "lo_naics": -2.2066,
+     "log_depth": 8.6733,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 13
+    },
+    "922": {
+     "lo_naics": -0.5249,
+     "log_depth": 8.1044,
+     "depth_missing": 0.0,
+     "naics_missing": 0.0,
+     "n_recent": 56
+    },
+    "unknown": {
+     "lo_naics": -0.705,
+     "log_depth": 6.6859,
+     "depth_missing": 1.0,
+     "naics_missing": 1.0,
+     "n_recent": 15
+    }
+   }
+  },
+  "modes": {
+   "agency": "Department of Defense",
+   "setaside": "small business",
+   "notice_type": "Combined Synopsis/Solicitation",
+   "sol_letter": "Q",
+   "pscg": "59",
+   "naics3": "332",
+   "month": "5",
+   "window_days_median": 11.0,
+   "late_sept": 0,
+   "kw_brand": 0,
+   "kw_sole": 0,
+   "has_presol": 0,
+   "has_ss": 0
   }
+ },
+ "crosswalk_sam_to_usaspending": {
+  "note": "SAM.gov department and sub-tier names mapped to USAspending agencies. Kept in the private model file only, because it names components below agency level.",
+  "subtier_pairs": 138,
+  "departments": 48
  },
  "private_files": "The model file, the training table and the history tables hold office-level history and stay in the private data folder. This card, the coefficient table and the evaluation tables are at agency level or coarser.",
  "caveats": [
@@ -2095,6 +5021,7 @@
   "Before fiscal year 2020 about half of the archived notices carry no agency or office; the agency is then taken from earlier awards with the same number start.",
   "Market depth is one 2026 snapshot of SAM.gov registrations applied to every year. It is not an outcome, but it is not historical either.",
   "Defense data are published 90 days late; the two-quarter lag covers that.",
+  "Single-offer outcomes became more predictable in recent years, mostly in Defense. A model fitted on many years and a correction fitted on three years lag behind such a drift; the out-of-time tables show how much.",
   "Award years present when this card was built: 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026. Rerun all three steps when more arrive."
  ],
  "rerun": [
@@ -2104,6 +5031,6 @@
  ],
  "peak_mb": {
   "build": 821,
-  "train": 661
+  "train": 853
  }
 }

@@ -84,6 +84,14 @@ def tx_zip(path, rows):
                        for i, r in enumerate(rows)], columns=S.TX_COLS)
     with zipfile.ZipFile(path, "w") as z:
         z.writestr("Contracts_PrimeTransactions_1.csv", df.to_csv(index=False))
+    live_check(os.path.dirname(path))
+
+
+def live_check(folder, verified=True, files=None):
+    """the record 15_civilian_fytd.py leaves next to the live files after a complete download"""
+    files = sorted(n for n in os.listdir(folder) if n.endswith(".zip")) if files is None else files
+    with open(os.path.join(folder, S.LIVE_CHECK), "w", encoding="utf-8") as fh:
+        json.dump({"verified": verified, "files": files, "problems": [] if verified else ["FY2027Q1: NOT verified (test)"]}, fh)
 
 
 def read(path, mode="rb"):
@@ -422,6 +430,27 @@ class ScoringTests(Base):
         self.assertIn("deadline_date", D.RESOLUTION_RULE)
         self.assertEqual(pub["outcome_rule"], self.batch()["resolution_rule"])
         self.assertFalse(pub["scores_published"])
+
+    def test_unverified_or_unfinished_live_download_scores_nothing(self):
+        sols = self.make_batch(3)
+        self.awards([(sols[0], "FIRST", "2026-11-20", "A", 1, 1)])
+        live = os.path.join(self.tmp, "live")
+        live_check(live, verified=False)                                     # 15 wrote the table but could not verify it
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(S.run([], paths=self.S), S.EXIT_DATA)
+        self.assertIn("NOT VERIFIED", out.getvalue())
+        self.assertFalse(os.path.exists(os.path.join(self.S["results_dir"], S.PUBLIC_JSON)))
+        self.assertFalse(os.path.exists(os.path.join(self.S["private_dir"], S.OUTCOMES_NAME)))
+        os.remove(os.path.join(live, S.LIVE_CHECK))                           # 15 stopped half-way: files but no record
+        self.assertEqual(self.score(), S.EXIT_DATA)
+        live_check(live, files=["CIVILIAN__FY2027Q1.zip", "CIVILIAN__FY2027Q2.zip"])     # a recorded file is missing
+        self.assertEqual(self.score(), S.EXIT_DATA)
+        with open(os.path.join(live, S.LIVE_CHECK), "w", encoding="utf-8") as fh:
+            fh.write("{broken")
+        self.assertEqual(self.score(), S.EXIT_DATA)
+        live_check(live)
+        self.assertEqual(self.score(), 0)
+        self.assertTrue(os.path.exists(os.path.join(self.S["results_dir"], S.PUBLIC_JSON)))
 
     def test_earlier_matches_are_kept_when_live_data_move_on(self):
         sols = self.make_batch(3)

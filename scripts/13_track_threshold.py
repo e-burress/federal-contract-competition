@@ -4,7 +4,8 @@
 The official score comes from 12_resolve_threshold.py after the resolution date.  Until then this script gives a provisional
 reading, so the dashboard can show how the forecast is tracking:
   1. Downloads the civilian purchase-order + definitive-contract base actions from the start of the forecast period to yesterday
-     (same request as 12_resolve_threshold.py).
+     (same request as 12_resolve_threshold.py, through the same STRICT verified download: every file's rows must match
+     USAspending's own count, or the script stops and writes nothing).
   2. Computes the same three quantities with the same estimator (bunching_lib.py), with a 300-resample bootstrap interval.
   3. Writes results/tracking_<forecast id>.json and puts one row per quantity in results/tracking_<forecast id>_history.csv
      (a second run on the same day replaces that day's rows).
@@ -76,7 +77,8 @@ def main():
                       "forecast": q["forecast"], "interval80": q["interval80"], "inside_interval80_so_far": bool(lo <= est <= hi) if ok else None})
 
     out = {"forecast_id": fid, "as_of": today.isoformat(), "data_from": per["start"], "data_to": end.isoformat(),
-           "period": per, "provisional": True, "n_base_actions": int(len(base)), "n_values_used": int(len(v)), "quantities": out_q}
+           "period": per, "provisional": True, "n_base_actions": int(len(base)), "n_values_used": int(len(v)), "quantities": out_q,
+           "download_verification": dict(r12.LAST_VERIFICATION)}
     json.dump(out, open(os.path.join(RESULTS, f"tracking_{fid}.json"), "w", encoding="utf-8"), indent=1)
 
     rows = []

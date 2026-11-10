@@ -1,0 +1,97 @@
+naics3,title,vintage,source_url,retrieved
+111,Crop Production,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+112,Animal Production and Aquaculture,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+113,Forestry and Logging,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+114,"Fishing, Hunting and Trapping",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+115,Support Activities for Agriculture and Forestry,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+211,Oil and Gas Extraction,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+212,Mining (except Oil and Gas),2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+213,Support Activities for Mining,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+221,Utilities,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+236,Construction of Buildings,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+237,Heavy and Civil Engineering Construction,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+238,Specialty Trade Contractors,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+311,Food Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+312,Beverage and Tobacco Product Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+313,Textile Mills,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+314,Textile Product Mills,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+315,Apparel Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+316,Leather and Allied Product Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+321,Wood Product Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+322,Paper Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+323,Printing and Related Support Activities,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+324,Petroleum and Coal Products Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+325,Chemical Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+326,Plastics and Rubber Products Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+327,Nonmetallic Mineral Product Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+331,Primary Metal Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+332,Fabricated Metal Product Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+333,Machinery Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+334,Computer and Electronic Product Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+335,"Electrical Equipment, Appliance, and Component Manufacturing",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+336,Transportation Equipment Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+337,Furniture and Related Product Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+339,Miscellaneous Manufacturing,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+423,"Merchant Wholesalers, Durable Goods",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+424,"Merchant Wholesalers, Nondurable Goods",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+425,Wholesale Trade Agents and Brokers,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+441,Motor Vehicle and Parts Dealers,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+444,Building Material and Garden Equipment and Supplies Dealers,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+445,Food and Beverage Retailers,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+449,"Furniture, Home Furnishings, Electronics, and Appliance Retailers",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+455,General Merchandise Retailers,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+456,Health and Personal Care Retailers,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+457,Gasoline Stations and Fuel Dealers,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+458,"Clothing, Clothing Accessories, Shoe, and Jewelry Retailers",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+459,"Sporting Goods, Hobby, Musical Instrument, Book, and Miscellaneous Retailers",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+481,Air Transportation,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+482,Rail Transportation,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+483,Water Transportation,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+484,Truck Transportation,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+485,Transit and Ground Passenger Transportation,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+486,Pipeline Transportation,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+487,Scenic and Sightseeing Transportation,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+488,Support Activities for Transportation,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+491,Postal Service,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+492,Couriers and Messengers,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+493,Warehousing and Storage,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+512,Motion Picture and Sound Recording Industries,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+513,Publishing Industries,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+516,Broadcasting and Content Providers,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+517,Telecommunications,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+518,"Computing Infrastructure Providers, Data Processing, Web Hosting, and Related Services",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+519,"Web Search Portals, Libraries, Archives, and Other Information Services",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+521,Monetary Authorities-Central Bank,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+522,Credit Intermediation and Related Activities,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+523,"Securities, Commodity Contracts, and Other Financial Investments and Related Activities",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+524,Insurance Carriers and Related Activities,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+525,"Funds, Trusts, and Other Financial Vehicles",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+531,Real Estate,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+532,Rental and Leasing Services,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+533,Lessors of Nonfinancial Intangible Assets (except Copyrighted Works),2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+541,"Professional, Scientific, and Technical Services",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+551,Management of Companies and Enterprises,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+561,Administrative and Support Services,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+562,Waste Management and Remediation Services,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+611,Educational Services,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+621,Ambulatory Health Care Services,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+622,Hospitals,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+623,Nursing and Residential Care Facilities,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+624,Social Assistance,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+711,"Performing Arts, Spectator Sports, and Related Industries",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+712,"Museums, Historical Sites, and Similar Institutions",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+713,"Amusement, Gambling, and Recreation Industries",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+721,Accommodation,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+722,Food Services and Drinking Places,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+811,Repair and Maintenance,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+812,Personal and Laundry Services,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+813,"Religious, Grantmaking, Civic, Professional, and Similar Organizations",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+814,Private Households,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+921,"Executive, Legislative, and Other General Government Support",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+922,"Justice, Public Order, and Safety Activities",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+923,Administration of Human Resource Programs,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+924,Administration of Environmental Quality Programs,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+925,"Administration of Housing Programs, Urban Planning, and Community Development",2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+926,Administration of Economic Programs,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+927,Space Research and Technology,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10
+928,National Security and International Affairs,2022 NAICS,https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx,2026-11-10

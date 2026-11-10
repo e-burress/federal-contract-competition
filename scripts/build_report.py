@@ -393,7 +393,7 @@ def r_civilian():
         f"- Across all {allc['n_agencies']} civilian agencies with competed awards, **{pct(allc['share'])}** of "
         f"{n(allc['n_eval'])} competed awards got a single offer.",
         f"- **GSA** accounts for {pct(int(gsa['n_eval']) / int(allc['n_eval']), 0)} of those awards. Almost all are very small "
-        f"purchase orders from GSA's Federal Acquisition Service, mostly supply orders (median award "
+        f"purchase orders, mostly supply orders (median award "
         f"${num(gsa['median_award_value'], 0)}), and their offer coding changed sharply: one offer on "
         f"{pct(gfy[0]['share'], 0)} of them in FY{gfy[0]['fy']}, {pct(gfy[-1]['share'], 0)} in FY{gfy[-1]['fy']}. "
         f"So the civilian-wide figure is also given **without GSA: {pct(nog['share'])}** of {n(nog['n_eval'])} awards ({path}).",
@@ -617,9 +617,9 @@ def m_gsa():
     g = civ_fy("GSA only")
     yrs = ", ".join(f"{pct(r['share'])} in FY{r['fy']}" for r in g[:-1]) + f" and {pct(g[-1]['share'])} in FY{g[-1]['fy']}"
     return (f"**GSA.** {n(gsa['n_eval'])} of the {n(allc['n_eval'])} awards ({pct(int(gsa['n_eval']) / int(allc['n_eval']), 0)}) "
-            f"are GSA's, almost all very small purchase orders from GSA's Federal Acquisition Service (median award "
-            f"${num(gsa['median_award_value'], 0)}). In a check of FY2026 Q1, most came from its supply-chain contracting division, "
-            f"and the most common products were office supplies, hand tools and measuring tools. Their recorded offers changed "
+            f"are GSA's, almost all very small purchase orders (median award "
+            f"${num(gsa['median_award_value'], 0)}). In a check of FY2026 Q1, "
+            f"the most common products were office supplies, hand tools and measuring tools. Their recorded offers changed "
             f"sharply: one offer on {yrs}, as most began recording more than one offer. That may be a change in how these "
             f"automated orders are recorded rather than in competition. Every civilian-wide total is therefore also given without GSA.")
 
@@ -1443,6 +1443,9 @@ def best_baseline(by):
     return max(rs, key=lambda kr: float(kr[1]["auc"])) if rs else (None, None)
 
 
+V2_SHIPPED_FALLBACK = "logistic v2"       # used when the card names no shipped model (or one with no pooled row)
+
+
 def model_v2_text(prefix, v1_where):
     card = opt_json("model_v2_card.json")
     if not card:
@@ -1450,7 +1453,7 @@ def model_v2_text(prefix, v1_where):
                 f"Until it is finished, the frozen version 1 ({v1_where}) is the published model.")
     try:
         by = {r["model"]: r for r in opt_rows("model_v2_evaluation.csv") if r.get("test_fy") == "pooled" and r.get("sector") == "all"}
-        m = by[card["shipped"]["name_in_evaluation"]]
+        m = by.get((card.get("shipped") or {}).get("name_in_evaluation")) or by[V2_SHIPPED_FALLBACK]
         bname, base = best_baseline(by)
         refit = by.get("version 1 feature set (refit)")
         cmp_ = series([f"{num(base['auc'], 3)} for the best simple baseline, {BASELINE_NAME[bname]}," if base else "",
@@ -1470,6 +1473,14 @@ def model_v2_text(prefix, v1_where):
         if model_v2_stale(card):
             txt += (f" Its award history ends more than {stale_months()} months before it was trained, so it must not score live "
                     "solicitations until it is retrained on newer award years; the daily forecast script refuses a model this old.")
+        sel = card.get("selection") if isinstance(card.get("selection"), dict) else {}
+        if sel.get("rule_pick") and sel.get("shipped"):
+            txt += (" How it was chosen: by a rule written down before fitting (lowest out-of-time log loss over the last five "
+                    "test years; among candidates within 0.5% of the best, the one closest to the earlier model).")
+            if sel.get("amendment") and sel["rule_pick"] != sel["shipped"]:
+                txt += (f" The rule picked \"{sel['rule_pick']}\"; \"{sel['shipped']}\" is shipped instead, because the simpler "
+                        "pick left forecasts miscalibrated by sector. That choice was made after the results were known; the card "
+                        "records it with the numbers (`selection.amendment`).")
         return (txt + f" Version 1 ({v1_where}) is the earlier model, frozen since the {long_date(FIRST_RELEASE['date'])} build. "
                 f"Both are risk indicators about markets, not statements about anyone's conduct. "
                 f"Details: [`results/model_v2_card.json`]({prefix}results/model_v2_card.json).")

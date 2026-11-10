@@ -26,6 +26,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -116,7 +117,7 @@ def run_step(name, extra=()):
     if name == "get-snapshot":
         return get_snapshot()
     if name == "get-history":
-        return get_history()
+        return get_history(require_verified="--require-verified" in extra)
     script, args, online, what = STEPS[name]
     if not os.path.exists(os.path.join(ROOT, script)):
         say(f"--- {name}: skipped ({script} is not in this copy of the project)")
@@ -171,8 +172,10 @@ def get_snapshot():
     say("=== get-snapshot: done, every file matches its fingerprint")
 
 
-def get_history():
-    """Download the yearly history tables (public release history-v1) into data/history/processed/."""
+def get_history(require_verified=False):
+    """Download the yearly history tables (public release history-v1) into data/history/processed/.
+    With require_verified (python run.py get-history --require-verified, used by .github/workflows/history-analysis.yml) it stops
+    with an error, listing the years, when any yearly table is not verified or carries no verification record."""
     say("\n=== get-history: yearly tables of the long history (release history-v1)")
     api = f"https://api.github.com/repos/{DATA_REPO}/releases/tags/history-v1"
     try:
@@ -190,6 +193,63 @@ def get_history():
         say(f"  {a['name']}: downloading ({a['size'] / 1e6:.0f} MB)")
         fetch(a["browser_download_url"], dest)
     say(f"=== get-history: done, {len(assets)} files in data/history/processed")
+    res = history_verification(out)
+    if require_verified:
+        problem = unverified_years(out, res)
+        if problem:
+            sys.exit(problem)
+        say("  --require-verified: every yearly table is verified.")
+
+
+def unverified_years(folder, res):
+    """None when every yearly table in `folder` is verified (res = history_verification(folder)), otherwise an error message that
+    lists the years. A table (parquet) without its history_FY<fy>.json counts as having no verification record."""
+    tables = {m.group(1) for n in (os.listdir(folder) if os.path.isdir(folder) else [])
+              if (m := re.fullmatch(r"(?:base_actions|award_year)_FY(\d{4})\.parquet", n))}
+    no_record = sorted(set(res["no_record"]) | (tables - set(res["verified"]) - set(res["not_verified"]) - set(res["unreadable"])))
+    parts = [f"{label}: FY{', FY'.join(ys)}" for label, ys in (("not verified", sorted(res["not_verified"])),
+                                                                ("no verification record", no_record),
+                                                                ("unreadable", sorted(res["unreadable"]))) if ys]
+    if not res["verified"] and not parts:
+        return "get-history --require-verified: no yearly tables were found."
+    if parts:
+        return ("get-history --require-verified: these yearly tables cannot be used until they are rebuilt and verified ("
+                + "; ".join(parts) + "). See docs/download-integrity.md.")
+    return None
+
+
+def history_verification(folder):
+    """Read each year's history_FY<fy>.json and say whether its download was verified against USAspending's own counts.
+    Returns {"verified": [...], "not_verified": [...], "no_record": [...], "unreadable": [...]} (fiscal years); never raises."""
+    res = {"verified": [], "not_verified": [], "no_record": [], "unreadable": []}
+    names = sorted(n for n in os.listdir(folder) if n.startswith("history_FY") and n.endswith(".json")) if os.path.isdir(folder) else []
+    for name in names:
+        fy = name[len("history_FY"):-len(".json")]
+        try:
+            with open(os.path.join(folder, name), encoding="utf-8") as f:
+                d = json.load(f)
+            v = d.get("verified") if isinstance(d, dict) else None
+        except (OSError, ValueError):
+            res["unreadable"].append(fy)
+            continue
+        if v is True:
+            res["verified"].append(fy)
+        elif v is False:
+            res["not_verified"].append(fy)
+            probs = ((d.get("verification") or {}).get("problems") or [])[:3]
+            say(f"  WARNING: FY{fy} is marked NOT VERIFIED: its download did not fully match USAspending's own counts"
+                + (f" ({'; '.join(probs)})" if probs else "") + ". Its numbers may be too low.")
+        else:
+            res["no_record"].append(fy)
+    if res["verified"]:
+        say(f"  Verified against USAspending's counts: FY{', FY'.join(res['verified'])}.")
+    if res["no_record"]:
+        say(f"  NOTE: FY{', FY'.join(res['no_record'])} carry no download verification (built before November 2026). Some older tables "
+            "were built from cut-off downloads and are too low; see docs/download-integrity.md. The reconcile step compares each "
+            "year with USAspending's own totals.")
+    if res["unreadable"]:
+        say(f"  WARNING: could not read history_FY*.json for FY{', FY'.join(res['unreadable'])}.")
+    return res
 
 
 def find_git():

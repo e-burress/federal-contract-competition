@@ -5,7 +5,11 @@ What it does
   1. Downloads this fiscal year's contract transactions for every civilian agency, with the same request as
      01c_download_civilian.py (36 columns; purchase orders, definitive contracts and contract vehicles), one request per
      quarter (split into months if a quarter is too big).  Every run downloads the whole year so far again, because
-     agencies keep adding and correcting reports for weeks.
+     agencies keep adding and correcting reports for weeks.  Every file goes through the shared verified download
+     (01_download_usaspending.fetch_verified): its rows must match USAspending's own count for the same filters and dates; a
+     cut-off file is replaced by smaller windows, and if that still fails the script stops and writes nothing.  If only the
+     count service cannot be reached, the table is still written but marked "verified": false in the totals file (a live table
+     one day old is useful; a wrong one is not, so only the missing check is tolerated, never a detected cut-off).
   2. Builds one row per award with the same rules as 02_build_awards.py and keeps the awards whose base action
      (modification 0) falls in the fiscal year.
   3. Writes the single-offer share by agency, with 95% Wilson intervals, and the totals.
@@ -36,6 +40,10 @@ from common import DATA, RESULTS, UA_USASPENDING, http_json  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(DATA, "usaspending_live")
+# written into OUT only after every window was downloaded: which files belong to this download and whether they were verified.
+# 32_score_daily.py reads the files in OUT and refuses to score when this record is missing (a run that stopped half-way leaves
+# some files and no record) or says verified: false.
+CHECK_NAME = "download_check.json"
 
 
 def load(name, filename):
@@ -87,9 +95,16 @@ def main(today=None, argv=None):
     print(len(agencies), "civilian top-tier agencies", flush=True)
     failed = []
     for label, start, end in windows:
-        failed += civ.fetch_window(label, start, end, agencies, out=OUT, force=True)
+        failed += civ.fetch_window(label, start, end, agencies, out=OUT, force=True, allow_unverified=True)
     if failed:
-        sys.exit(f"download failed for {failed}; nothing written")
+        sys.exit(f"download failed or did not match USAspending's own count for {failed}; nothing written")
+    check, leaves = civ.dl.verification(OUT, [w[0] for w in windows])
+    if not check["verified"]:
+        print("WARNING: the download is NOT VERIFIED against USAspending's count (" + "; ".join(check["problems"]) + "). "
+              "The live table is written but marked verified: false.", flush=True)
+    with open(os.path.join(OUT, CHECK_NAME), "w", encoding="utf-8") as f:
+        json.dump({"fiscal_year": fy, "data_to": last.isoformat(), "windows": [w[0] for w in windows], "verified": check["verified"],
+                   "files": sorted(os.path.basename(lf["zip"]) for lf in leaves), "problems": check["problems"]}, f, indent=1)
     if not has_transactions(os.path.join(OUT, "*.zip")):
         return nothing_yet(fy, "USAspending has no award records for this fiscal year yet")
 
@@ -117,7 +132,9 @@ def main(today=None, argv=None):
            "n_agencies": int(len(t)), "n_base_awards": int(len(base)), "k_single": int(tot.k_single), "n_eval": int(tot.n_eval),
            "share": float(tot.share), "ci": [float(tot.ci_lo), float(tot.ci_hi)],
            "excluding_gsa": {"k_single": int(ex.k_single), "n_eval": int(ex.n_eval), "share": float(ex.share),
-                             "ci": [float(ex.ci_lo), float(ex.ci_hi)]}}
+                             "ci": [float(ex.ci_lo), float(ex.ci_hi)]},
+           "verified": check["verified"],
+           "download_verification": {k: check[k] for k in ("rule", "expected_rows", "received_rows", "problems")}}
     json.dump(out, open(os.path.join(RESULTS, f"live_fy{fy}_totals.json"), "w", encoding="utf-8"), indent=1)
     print(json.dumps(out, indent=1))
 

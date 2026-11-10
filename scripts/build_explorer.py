@@ -3,8 +3,8 @@ build_explorer.py - build the data file behind the interactive explorer (docs/ex
 
 Run from the repository root:
     python -I scripts/build_explorer.py [--results DIR] [--reference DIR] [--out FILE]
-It reads only result files (results/*.csv, results/*.json), two public reference tables (reference/market_depth_naics.csv and
-reference/thresholds.csv) and the public ledger of the daily sealed forecasts (forecasts/daily/ledger.csv), never data/, and writes docs/data/explorer-data.js, a small script that sets window.FCC_DATA = {...}.
+It reads only result files (results/*.csv, results/*.json), three public reference tables (reference/market_depth_naics.csv,
+reference/thresholds.csv and reference/naics3_titles.csv) and the public ledger of the daily sealed forecasts (forecasts/daily/ledger.csv), never data/, and writes docs/data/explorer-data.js, a small script that sets window.FCC_DATA = {...}.
 A script file (not JSON loaded with fetch) lets the page work both on GitHub Pages and when opened from disk.
 Standard library only.  Every input except the civilian atlas is optional: a missing file leaves its section out (null), so the page
 can say "not available yet".  Files planned but not written yet (model_v2_card.json, daily_forecast_scores.json) are read when present.
@@ -751,18 +751,147 @@ def card_summary(card):
     return out or None
 
 
-# models shown year by year on the page; every model keeps its pooled rows
-MODEL2_BY_YEAR = ("logistic v2", "gradient boosting", "version 1 feature set (refit)", "agency rate (baseline)", "sector rate (baseline)",
+# models shown year by year on the page; every model keeps its pooled rows.  The shipped model (the card's
+# shipped.name_in_evaluation) is always added; SHIPPED_FALLBACK is used when there is no card or it names no model.
+SHIPPED_FALLBACK = "logistic v2"
+MODEL2_BY_YEAR = (SHIPPED_FALLBACK, "gradient boosting", "version 1 feature set (refit)", "agency rate (baseline)", "sector rate (baseline)",
                   "office history only (baseline)")
 
 
-def build_model2(rd):
+def shipped_model_name(card):
+    """the shipped model's name in the evaluation table: the card's shipped.name_in_evaluation, else SHIPPED_FALLBACK."""
+    sh = card.get("shipped") if isinstance(card, dict) and isinstance(card.get("shipped"), dict) else {}
+    name = sh.get("name_in_evaluation")
+    return name if isinstance(name, str) and name.strip() else SHIPPED_FALLBACK
+
+
+# ---- the what-if calculator of the forecast model ---------------------------------------------------------------------
+# The page rebuilds forecast_lib.predict for one hypothetical solicitation: the linear predictor (intercept + category
+# coefficients + b * (x - mean) / sd + flag coefficients), then expit, then the correction by sector group.
+CALC_CATS = ("sector", "agency", "subagency", "setaside", "notice_type", "sol_letter", "pscg", "naics3", "month")
+CALC_SECTORS = ("civilian except GSA", "GSA", "Department of Defense")
+CALC_UNNAMED = ("(name withheld)", "component without its own coefficient")   # how the card writes a component (no names)
+SETASIDE_LABELS = {"none": "No set-aside", "small business": "Small business", "8(a)": "8(a)", "HUBZone": "HUBZone", "SDVOSB": "SDVOSB",
+                   "WOSB": "WOSB/EDWOSB", "VOSB": "VOSB", "other": "Other set-aside"}
+# industry labels: the official 2022 NAICS subsector titles (reference/naics3_titles.csv, from the Census Bureau's code file);
+# a code the model has that is not in the 2022 list is an older code
+
+
+def calc_levels(coef_rows):
+    """{feature: {level: rounded coefficient}} from the public coefficient table (model_v2_coefficients.csv); continuous
+    features and flags under the level "" and the intercept under ("(intercept)", "")."""
+    out = {}
+    for r in coef_rows or []:
+        lv = r.get("level", "") if r.get("type", "").startswith("category") else ""
+        out.setdefault(r.get("feature", ""), {})[lv] = num(r.get("coefficient"), 4)
+    return out
+
+
+def calc_labels(rd, logit, ref=None):
+    """Readable labels: product groups from the 'why only one bid' table (drivers_shares.csv), industries from the official
+    2022 NAICS titles (reference/naics3_titles.csv).  Without that file an industry is shown by its code only."""
+    psc = {}
+    for r in rd.csv("drivers_shares.csv") or []:
+        if r.get("factor") == "psc_cat" and r.get("label"):
+            psc[r.get("level", "")] = r["label"]
+    pscg = {}
+    for lv in logit["cat"].get("pscg", {}):
+        key = ("P" if lv[:1].isdigit() else "S") + lv
+        pscg[lv] = psc.get(key) or (f"product group {lv}" if lv[:1].isdigit() else f"service {lv}")
+    titles = {r.get("naics3", "").strip(): r.get("title", "").strip() for r in ((ref.csv("naics3_titles.csv") if ref else None) or [])}
+    titles = {k: v for k, v in titles.items() if k and v}
+
+    def industry(lv):
+        if lv == "unknown":
+            return "industry not given"
+        if not titles:
+            return f"industry {lv}"
+        return f"{lv}: {titles[lv]}" if lv in titles else f"industry {lv} (older code)"
+    naics = {lv: industry(lv) for lv in logit["cat"].get("naics3", {})}
+    return {"setaside": {lv: SETASIDE_LABELS.get(lv, lv) for lv in logit["cat"].get("setaside", {})}, "pscg": pscg, "naics3": naics}
+
+
+def build_calculator(rd, card, ref=None):
+    """Everything the what-if calculator needs, or None.  Needs the card's 'calculator' block (scripts/30_model_v2.py --train)
+    and the public coefficient table, and the two must describe the same model (each published coefficient equal to the card's
+    full-precision one rounded to 4 places).  Agency level or coarser: office history appears only as medians by sector, and the
+    component (sub-agency) only as the unnamed typical component of each agency.  A card that names a component gives None."""
+    calc = card.get("calculator") if isinstance(card, dict) else None
+    coef_rows = rd.csv("model_v2_coefficients.csv")
+    if not isinstance(calc, dict) or not coef_rows or not isinstance(calc.get("logit"), dict):
+        return None
+    logit, typ, modes = calc["logit"], calc.get("typical") or {}, calc.get("modes") or {}
+    cal = (card.get("shipped") or {}).get("calibration")
+    if not isinstance(cal, dict) or not all(k in cal for k in ("a_pooled", "b_pooled")):
+        return None
+    published = calc_levels(coef_rows)
+    full = [(f, lv, b) for f, table in logit.get("cat", {}).items() for lv, b in table.items()]
+    full += [(f, "", bms[0]) for f, bms in logit.get("cont", {}).items()] + [(f, "", b) for f, b in logit.get("bin", {}).items()]
+    full.append(("(intercept)", "", logit.get("intercept")))
+    for f, lv, b in full:                                   # the card and the coefficient table must describe the same model
+        p = published.get(f, {}).get(lv)
+        if not isinstance(b, (int, float)) or p is None or abs(p - b) > 6e-5:
+            return None
+    cats = {f: {lv: round(b, 10) for lv, b in logit["cat"][f].items() if lv != "unknown" or f in ("sol_letter", "naics3")}
+            for f in CALC_CATS if f in logit.get("cat", {})}
+    groups = {s: g["group"] for g in cal.get("by_sector_group") or [] for s in g.get("sectors", [])}
+    by = {g["group"]: [g["a"], g["b"]] for g in cal.get("by_sector_group") or []}
+    comp = typ.get("component_by_agency") or {}
+    agencies = [a for a in cats.get("agency", {}) if a in typ.get("agency", {}) and isinstance(comp.get(a), dict)]
+
+    def unnamed(level):
+        ag, _, sub = str(level).partition(" | ")
+        return level == "unknown" or sub == ag or sub.endswith(CALC_UNNAMED)
+    if not all(unnamed(lv) for lv in logit.get("cat", {}).get("subagency", {})) or not all(unnamed(comp[a].get("subagency")) for a in agencies):
+        return None                                         # a component is named: publish no calculator
+    used = {comp[a]["subagency"] for a in agencies}
+    cats["subagency"] = {lv: b for lv, b in cats.get("subagency", {}).items() if lv in used}
+
+    def strip(d, keys):
+        return {k: d[k] for k in keys if k in d}
+    office_f = ["lo_office", "mo_office", "log_office_n", "office_known", "lo_prefix", "mo_prefix", "log_prefix_n", "prefix_known"]
+    out = {
+        "years": calc.get("years"),
+        "b0": round(logit["intercept"], 10), "cat": cats,
+        "cont": {f: [round(v, 10) for v in bms] for f, bms in logit.get("cont", {}).items()},
+        "bin": {f: round(b, 10) for f, b in logit.get("bin", {}).items()},
+        "cal": {"a": cal["a_pooled"], "b": cal["b_pooled"], "groups": groups, "by": by}, "eps": 1e-4,
+        "typ": {"overall": strip(typ.get("overall", {}), ["lo_all"]),
+                "office": {s: strip(typ.get("office_by_sector", {}).get(s, {}), office_f) for s in CALC_SECTORS
+                           if s in typ.get("office_by_sector", {})},
+                "agency": {a: strip(typ["agency"][a], ["lo_agency"]) for a in agencies},
+                "comp": {a: strip(comp[a], ["subagency", "lo_subagency", "mo_subagency"]) for a in agencies},
+                "pscg": {lv: strip(v, ["lo_pscg", "lo_psc4"]) for lv, v in typ.get("pscg", {}).items() if lv in cats.get("pscg", {})},
+                "naics3": {lv: strip(v, ["lo_naics", "log_depth", "depth_missing", "naics_missing"]) for lv, v in typ.get("naics3", {}).items()
+                           if lv in cats.get("naics3", {})}},
+        "labels": calc_labels(rd, logit, ref),
+    }
+    out["defaults"] = {**{c: modes.get(c) for c in ("agency", "setaside", "notice_type", "sol_letter", "pscg", "naics3", "month")},
+                       "window_days": modes.get("window_days_median"),
+                       **{c: modes.get(c, 0) for c in ("late_sept", "kw_brand", "kw_sole", "has_presol", "has_ss")}}
+    base = card.get("baselines") or {}
+    out["base"] = {"sector": {s: r4(v) for s, v in (base.get("sector") or {}).items() if s in CALC_SECTORS},
+                   "agency": {a: r4(v) for a, v in (base.get("agency") or {}).items() if a in agencies}}
+    shipped = shipped_model_name(card)
+    last5 = [r for r in ((card.get("evaluation") or {}).get("last_five_years_by_sector") or [])
+             if r.get("model") == shipped and r.get("sector") == "all" and isinstance(r.get("auc"), (int, float))]
+    if last5:
+        out["oot"] = {"years": [min(r["test_fy"] for r in last5), max(r["test_fy"] for r in last5)],
+                      "auc": [r3(min(r["auc"] for r in last5)), r3(max(r["auc"] for r in last5))]}
+    if not (out["typ"]["overall"] and out["typ"]["office"] and agencies and out["typ"]["pscg"] and out["typ"]["naics3"]):
+        return None
+    return out
+
+
+def build_model2(rd, ref=None):
     """Forecast model version 2 (scripts/30_model_v2.py): the card, the rolling-origin evaluation and the reliability table."""
     card = rd.json("model_v2_card.json")
     ev = rd.csv("model_v2_evaluation.csv") or []
     cal = rd.csv("model_v2_calibration.csv") or []
     if not (card or ev or cal):
         return None
+    shipped = shipped_model_name(card)
+    by_year = set(MODEL2_BY_YEAR) | {shipped}
     models, sectors = Strings(), Strings()
     rows, drops, train = [], [], {}
     for r in ev:
@@ -774,7 +903,7 @@ def build_model2(rd):
             drops.append([t, si, m.split(" without: ", 1)[1], r4(r.get("auc")), r4(r.get("logloss")),
                           num(r.get("delta_logloss_when_dropped"), 5), num(r.get("delta_auc_when_dropped"), 5), num(r.get("n"), 0)])
             continue
-        if isinstance(t, int) and m not in MODEL2_BY_YEAR:
+        if isinstance(t, int) and m not in by_year:
             continue
         rows.append([t, si, models(m), num(r.get("n"), 0), r4(r.get("single_share")), r4(r.get("mean_forecast")), r4(r.get("auc")),
                      r4(r.get("brier")), r4(r.get("logloss")), r3(r.get("cal_slope")),
@@ -787,8 +916,8 @@ def build_model2(rd):
                      r4(r.get("mean_forecast")), r4(r.get("observed_share"))])
         if r.get("test_years"):
             cyears.add(r["test_years"])
-    out = {"card": card_summary(card) if card else None, "models": models.items, "sectors": sectors.items, "eval": rows, "drops": drops,
-           "train": train, "cal": crow, "cal_years": sorted(cyears)}
+    out = {"card": card_summary(card) if card else None, "shipped": shipped, "models": models.items, "sectors": sectors.items, "eval": rows, "drops": drops,
+           "train": train, "cal": crow, "cal_years": sorted(cyears), "calc": build_calculator(rd, card, ref) if card else None}
     return out
 
 
@@ -1055,14 +1184,16 @@ def build(results_dir=DEFAULT_RESULTS, out_path=DEFAULT_OUT, repo=None, today=No
         "split": build_split(rd),
         "supplier": build_supplier(rd),
         "outcomes": build_outcomes(rd),
-        "model2": build_model2(rd),
+        "model2": build_model2(rd, ref),
         "scoreboard": build_scoreboard(rd, daily),
         "market_depth": build_market_depth(ref),
         "threshold_table": build_threshold_table(ref),
     }
     data["sources"] = sorted(set(rd.used))
     data["snapshot"] = (data["gsa"] or {}).get("snapshot")
-    text = fit_to_cap(data, cap)
+    # the what-if calculator (about 25 KB) is not counted against the cap, so adding it trims nothing else
+    calc_size = len(dump(data["model2"]["calc"])) if data["model2"] and data["model2"].get("calc") else 0
+    text = fit_to_cap(data, cap + calc_size)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w", encoding="utf-8", newline="\n") as f:
         f.write("/* Built by scripts/build_explorer.py from results/ and reference/. Do not edit by hand. */\n")
@@ -1090,7 +1221,10 @@ def main(argv=None):
     print(f"explorer data: {len(d['agencies'])} agencies, {len(d['sources'])} source files, {size / 1024:.1f} KB -> {shown_path(a.out)}")
     if d.get("trimmed"):
         print("trimmed to stay under the size cap: " + "; ".join(d["trimmed"]))
-    if size > SIZE_CAP:
+    calc = (d.get("model2") or {}).get("calc")
+    if calc:
+        print(f"the what-if calculator adds {len(dump(calc)) / 1024:.1f} KB (not counted against the {SIZE_CAP // 1024} KB aim)")
+    if size - (len(dump(calc)) if calc else 0) > SIZE_CAP:
         print(f"warning: the data file is over the {SIZE_CAP // 1024} KB aim even after trimming")
 
 

@@ -142,7 +142,7 @@ class LiveTableEarlyInTheYear(TempDirTest):
         return ["Department of the Interior"]
 
     def run_main(self, today, rows):
-        def fetch_window(label, start, end, agencies, out, force):
+        def fetch_window(label, start, end, agencies, out, force, **kw):
             write_zip(os.path.join(out, f"CIVILIAN__{label}.zip"), self.m.b02.CIVILIAN_COLS, rows)
             return []
         with mock.patch.object(self.m, "OUT", self.out), mock.patch.object(self.m, "RESULTS", self.res), \
@@ -252,52 +252,46 @@ class ResolveThresholdDownload(TempDirTest):
     def setUpClass(cls):
         cls.m = load("resolve_fix", "scripts/12_resolve_threshold.py")
 
-    def run_fetch(self, start, end, rows_by_window, download_ok=True):
-        """rows_by_window: {(start, end): total_rows reported by USAspending}."""
+    def run_fetch(self, start, end, big=(), download_ok=True):
+        """a fake USAspending (tests/fake_usaspending.py); `big` = windows it reports as too big (500,000 rows)"""
+        import sys
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from fake_usaspending import FakeService
         m = self.m
-
-        def http_json(url, method="GET", body=None, ua=None, **kw):
-            if method == "POST":
-                tp = body["filters"]["time_period"][0]
-                key = f"{tp['start_date']}_{tp['end_date']}"
-                return {"file_name": key + ".zip", "file_url": "https://example.invalid/" + key + ".zip"}
-            key = url.split("file_name=")[1][:-4]
-            s, e = key.split("_")
-            return {"status": "finished", "total_rows": rows_by_window.get((s, e), 1), "total_size": 10}
-
-        def download_file(url, dest, ua=None):
-            if not download_ok:
-                return None
-            key = os.path.basename(dest)[:-4]
-            s = key.split("_")[0]
-            row = {c: "" for c in m.dl.COLUMNS}
-            row.update(contract_transaction_unique_key="t" + key, contract_award_unique_key="a" + key, modification_number="0",
-                       action_date=s, award_type_code="B", base_and_all_options_value="300000", federal_action_obligation="300000")
-            write_zip(dest, m.dl.COLUMNS, [[row[c] for c in m.dl.COLUMNS]])
-            return os.path.getsize(dest)
-
-        with mock.patch.object(m, "http_json", side_effect=http_json), mock.patch.object(m, "download_file", side_effect=download_file), \
-                mock.patch.object(m.dl, "civilian_agencies", return_value=["Department of the Interior"]), \
-                mock.patch.object(m, "DATA", self.tmp), contextlib.redirect_stdout(io.StringIO()):
+        self.svc = svc = FakeService(rows_per_day=1, big=big, fail_download=not download_ok)
+        with contextlib.ExitStack() as st:
+            for p in svc.patch(m.DL):
+                st.enter_context(p)
+            st.enter_context(mock.patch.object(m.dl, "civilian_agencies", return_value=["Department of the Interior"]))
+            st.enter_context(mock.patch.object(m, "DATA", self.tmp))
+            st.enter_context(contextlib.redirect_stdout(io.StringIO()))
             return m.fetch(start, end)
 
     def test_failed_download_stops(self):
         with self.assertRaises(SystemExit) as cm:
-            self.run_fetch("2026-10-01", "2026-12-31", {}, download_ok=False)
-        self.assertIn("failed", str(cm.exception.code))
+            self.run_fetch("2026-10-01", "2026-12-31", download_ok=False)
+        self.assertIn("refusing to score", str(cm.exception.code))
 
     def test_capped_quarter_is_split_into_months(self):
-        base = self.run_fetch("2026-10-01", "2026-12-31", {("2026-10-01", "2026-12-31"): 500_000})
-        self.assertEqual(sorted(base.action_date.dt.month), [10, 11, 12])
+        base = self.run_fetch("2026-10-01", "2026-12-31", big=[("2026-10-01", "2026-12-31")])
+        self.assertEqual(sorted(set(base.action_date.dt.month)), [10, 11, 12])
+        self.assertEqual(len(base), 92)
+        self.assertEqual(self.svc.submits[1:], [("2026-10-01", "2026-10-31"), ("2026-11-01", "2026-11-30"), ("2026-12-01", "2026-12-31")])
 
-    def test_capped_month_is_refused(self):
+    def test_capped_month_is_split_further(self):
+        base = self.run_fetch("2026-10-01", "2026-12-31", big=[("2026-10-01", "2026-12-31"), ("2026-11-01", "2026-11-30")])
+        self.assertEqual(len(base), 92)
+        self.assertIn(("2026-11-01", "2026-11-15"), self.svc.submits)
+
+    def test_capped_single_day_is_refused(self):
         with self.assertRaises(SystemExit) as cm:
-            self.run_fetch("2026-10-01", "2026-12-31", {("2026-10-01", "2026-12-31"): 500_000, ("2026-11-01", "2026-11-30"): 499_999})
+            self.run_fetch("2026-10-01", "2026-10-01", big=[("2026-10-01", "2026-10-01")])
         self.assertIn("refusing to score", str(cm.exception.code))
 
     def test_uncapped_quarter_is_one_download(self):
-        base = self.run_fetch("2026-10-01", "2026-12-31", {})
-        self.assertEqual(len(base), 1)
+        base = self.run_fetch("2026-10-01", "2026-12-31")
+        self.assertEqual(len(base), 92)
+        self.assertEqual(len(self.svc.submits), 1)
 
     def test_write_atomic(self):
         path = os.path.join(self.tmp, "score.json")

@@ -369,6 +369,30 @@ class ExplorerV2Tests(unittest.TestCase):
         self.assertEqual(sb["months"], [["2026-11", 3, 90, 10, 0.15, 0.17]])
         self.assertIn("daily_forecast_scores.json", d["sources"])
 
+    def test_shipped_model_comes_from_the_card(self):
+        v2_files(self.res, self.ref)
+        ship = "logistic v2, half-life 3 years, correction by sector"
+        write_csv(self.res, "model_v2_evaluation.csv", [
+            dict(test_fy=t, sector="all", model=m, n=1000, single_share=0.21, mean_forecast=0.2, auc=0.65, brier=0.16, logloss=0.5,
+                 cal_intercept=0.1, cal_slope=0.9, n_train="", train_years="", outcome_window_complete="", delta_logloss_when_dropped="",
+                 delta_auc_when_dropped="")
+            for t in (2009, 2010, "pooled") for m in ("logistic v2", ship, "logistic v2, half-life 5 years")])
+        with open(os.path.join(self.res, "model_v2_card.json"), "w") as f:
+            json.dump({"shipped": {"kind": "L2 logistic regression", "name_in_evaluation": ship}}, f)
+        m = self.build()["model2"]
+        self.assertEqual(m["shipped"], ship)
+        by_year = {m["models"][r[2]] for r in m["eval"] if r[0] != "pooled"}
+        self.assertIn(ship, by_year)                                        # the shipped model is shown year by year
+        self.assertIn("logistic v2", by_year)
+        self.assertNotIn("logistic v2, half-life 5 years", by_year)         # other candidates keep only their pooled rows
+        self.assertIn("logistic v2, half-life 5 years", [m["models"][r[2]] for r in m["eval"] if r[0] == "pooled"])
+        with open(os.path.join(self.res, "model_v2_card.json"), "w") as f:  # a card without the name: the fallback
+            json.dump({"shipped": {"kind": "L2 logistic regression"}}, f)
+        m = self.build()["model2"]
+        self.assertEqual(m["shipped"], "logistic v2")
+        self.assertNotIn(ship, {m["models"][r[2]] for r in m["eval"] if r[0] != "pooled"})
+        self.assertEqual(bx.shipped_model_name(None), "logistic v2")
+
     def test_trims_when_over_cap(self):
         v2_files(self.res, self.ref)
         d = self.build(cap=1000)                     # far too small: every trim that can change something runs, and the file is still valid

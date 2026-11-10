@@ -1,5 +1,6 @@
 """Offline tests for scripts/forecast_lib.py (and two helpers of scripts/30_model_v2.py) on small synthetic tables."""
 import importlib.util
+import json
 import os
 import sys
 import tempfile
@@ -335,6 +336,114 @@ class TestModel(unittest.TestCase):
         self.assertTrue(((p > 0) & (p < 1)).all())
 
 
+def four_sector_history():
+    """office AAA111 (civilian, from history_rows), BBB222 (Defense) and CCC333 (GSA), 10 awards each in 2019."""
+    extra = [(f"BBB22219Q{i:04d}", "2019-05-15", "BBB222", "A", 1 if i < 5 else 3, 5.0, fl.DOD) for i in range(10)]
+    extra += [(f"CCC33319Q{i:04d}", "2019-05-15", "CCC333", "A", 1 if i < 2 else 3, 5.0, fl.GSA_NAME) for i in range(10)]
+    return fl.history_from_awards(fl.prepare_awards(history_rows(extra)))
+
+
+def four_sector_sols():
+    """one civilian, one Defense, one GSA and one unknown-sector solicitation (sector found from the office history)."""
+    return sols(sol_norm=["AAA11120Q0001", "BBB22220Q0001", "CCC33320R0001", "ZZZ99920Q0001"],
+                aac_code=["AAA111", "BBB222", "CCC333", "ZZZ999"], department=["TESTS, DEPARTMENT OF", None, None, None],
+                set_aside_code=["SBA", None, "8A", None], type_first=["Solicitation", "Combined Synopsis/Solicitation", "Solicitation", "Solicitation"])
+
+
+BY_SECTOR_CAL = {"a": 0.05, "b": 0.9, "n": 1000, "groups": dict(fl.CAL_GROUPS),
+                 "by_group": {"Defense": {"a": -0.3, "b": 1.4, "n": 600}, "civilian": {"a": 0.2, "b": 0.75, "n": 400}}}
+
+
+def by_sector_model(history):
+    m = toy_model(history)
+    m["logit"]["cat"]["sector_x_setaside"] = {fl.DOD + " | none": 0.35, "civilian except GSA | small business": -0.25}
+    m["calibration"] = BY_SECTOR_CAL
+    return m
+
+
+class TestCorrectionBySector(unittest.TestCase):
+    def setUp(self):
+        self.h = four_sector_history()
+        self.f = fl.build_features(four_sector_sols(), self.h)
+
+    def test_sectors_of_the_rows(self):
+        self.assertEqual(self.f.sector.tolist(), ["civilian except GSA", fl.DOD, "GSA", "unknown"])
+
+    def test_each_row_gets_its_group_correction(self):
+        m = by_sector_model(self.h)
+        raw = fl.predict_raw(m, self.f)
+        lo = np.log(raw / (1 - raw))
+        expect = [(0.2, 0.75), (-0.3, 1.4), (0.2, 0.75), (0.05, 0.9)]    # civilian, Defense, GSA with civilian, unknown pooled
+        want = np.array([1 / (1 + np.exp(-(a + b * x))) for (a, b), x in zip(expect, lo)])
+        np.testing.assert_allclose(fl.predict(m, self.f), want, rtol=0, atol=1e-12)
+        a, b = fl.calibration_parameters(BY_SECTOR_CAL, 4, self.f.sector)
+        self.assertEqual(list(zip(a, b)), expect)
+
+    def test_fallbacks(self):
+        m = by_sector_model(self.h)
+        raw = fl.predict_raw(m, self.f)
+        pooled = fl.apply_calibration(raw, {"a": 0.05, "b": 0.9})
+        # a group without its own correction (too few rows when fitted) uses the pooled one
+        no_civ = {**BY_SECTOR_CAL, "by_group": {"Defense": BY_SECTOR_CAL["by_group"]["Defense"]}}
+        p = fl.predict({**m, "calibration": no_civ}, self.f)
+        np.testing.assert_array_equal(p[[0, 2, 3]], pooled[[0, 2, 3]])
+        self.assertNotEqual(p[1], pooled[1])
+        # an old model file (one correction for all sectors) scores exactly as before
+        np.testing.assert_array_equal(fl.predict({**m, "calibration": {"a": 0.05, "b": 0.9}}, self.f), pooled)
+        # a feature table without a sector column, or a sector never seen, gets the pooled correction
+        np.testing.assert_array_equal(fl.apply_calibration(raw, BY_SECTOR_CAL), pooled)
+        np.testing.assert_array_equal(fl.apply_calibration(raw, BY_SECTOR_CAL, ["Mars"] * 4), pooled)
+        np.testing.assert_array_equal(fl.predict({**m, "calibration": None}, self.f), raw)
+
+    def test_interaction_column(self):
+        col = fl.feature_column(self.f, "sector_x_setaside")
+        self.assertEqual(col.astype(str).tolist(), ["civilian except GSA | small business", fl.DOD + " | none", "GSA | 8(a)", "unknown | none"])
+        cat = self.f.astype({"sector": "category", "setaside": "category"})       # category columns (as in training) give the same
+        self.assertEqual(fl.feature_column(cat, "sector_x_setaside").astype(str).tolist(), col.astype(str).tolist())
+        m = by_sector_model(self.h)
+        lp = fl.linear_predictor(m["logit"], self.f) - fl.linear_predictor(toy_model(self.h)["logit"], self.f)
+        np.testing.assert_allclose(lp, [-0.25, 0.35, 0.0, 0.0], atol=1e-12)
+
+    def test_design_matrix_with_interactions_matches_scoring(self):
+        rng = np.random.default_rng(5)
+        f = pd.concat([self.f] * 30, ignore_index=True)
+        spec = fl.fit_spec(f, cat=["setaside", "sector_x_setaside", "sector_x_notice_type"], cont=["lo_office"], binary=["kw_sole"], min_level=30)
+        self.assertIn(fl.DOD + " | none", spec["cat"]["sector_x_setaside"])
+        X = fl.design_matrix(f, spec)
+        coef = rng.normal(size=X.shape[1])
+        np.testing.assert_allclose(0.1 + X @ coef, fl.linear_predictor(fl.logit_to_dict(spec, 0.1, coef), f))
+
+    def test_save_load_round_trip(self):
+        m = by_sector_model(self.h)
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "model_v2.json")
+            fl.save_model(m, path)
+            back = fl.load_model(path)
+            self.assertEqual(back["calibration"], BY_SECTOR_CAL)
+            p0 = fl.predict(m, self.f)
+            p1 = fl.predict(back, fl.build_features(four_sector_sols(), back["history"]))
+            np.testing.assert_array_equal(p0, p1)
+
+    def test_recompute_from_a_daily_batch_is_exact(self):
+        spec = importlib.util.spec_from_file_location("daily31_lib_test", os.path.join(REPO, "scripts", "31_daily_forecast.py"))
+        D = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(D)
+        m = by_sector_model(self.h)
+        s = four_sector_sols()
+        s["first_posted"] = pd.to_datetime(s["first_posted"])
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "model_v2.json")
+            fl.save_model(m, path)
+            back = fl.load_model(path)
+            rec = D.forecast_rows(back, s, "2020-05-12")
+            batch = json.loads(D.batch_bytes({"fields": D.FIELDS, "as_of": "2020-05-12", "forecasts": rec[D.FIELDS].to_numpy(object).tolist()}))
+            p = D.recompute(batch, fl.load_model(path))
+        direct = fl.predict(back, fl.build_features(s.sort_values("sol_norm").reset_index(drop=True), back["history"], as_of="2020-05-12"))
+        np.testing.assert_array_equal(p, direct)                            # bit for bit
+        np.testing.assert_allclose(p, D.batch_records(batch)["p_single_offer"].to_numpy(float), rtol=0, atol=5e-7)
+        self.assertEqual(sorted(D.batch_records(batch)["sector"]), sorted(["civilian except GSA", fl.DOD, "GSA", "unknown"]))
+
+
 class TestTrainingHelpers(unittest.TestCase):
     """the exported trees must reproduce scikit-learn, and the capped sample must be repeatable."""
 
@@ -372,6 +481,91 @@ class TestTrainingHelpers(unittest.TestCase):
         f["setaside"] = f["setaside"].astype("category")                    # category columns give the same fit
         again = self.m30.fit_logit_all(f, y, cat=["setaside"], cont=["lo_office"], binary=["kw_sole"], C=10.0)
         self.assertTrue(np.allclose(fl.linear_predictor(again, f), fl.linear_predictor(newton, f), atol=1e-8))
+
+    def test_weighted_fits_agree(self):
+        rng = np.random.default_rng(6)
+        n = 5000
+        f = pd.DataFrame({"setaside": rng.choice(["none", "small business"], n), "sector": rng.choice([fl.DOD, "civilian except GSA"], n),
+                          "lo_office": rng.normal(size=n), "kw_sole": (rng.random(n) < 0.1).astype(float),
+                          "posted_fy": rng.integers(2015, 2025, n)})
+        lp = -1.0 + 0.8 * (f.setaside == "none") * (f.sector == fl.DOD) + 0.6 * f.lo_office
+        y = (rng.random(n) < 1 / (1 + np.exp(-lp))).astype(float)
+        w = self.m30.decay_weights(f.posted_fy, 2024, 3)
+        self.assertAlmostEqual(w.mean(), 1.0)
+        self.assertAlmostEqual(w[f.posted_fy.to_numpy() == 2021].max() / w[f.posted_fy.to_numpy() == 2024].max(), 0.5)
+        args = dict(cat=["setaside", "sector_x_setaside"], cont=["lo_office"], binary=["kw_sole"], C=1.0)
+        cold = self.m30.fit_logit(f, y, weights=w, **args)
+        warm = self.m30.fit_logit(f, y, weights=w, init=self.m30.fit_logit(f, y, **args), **args)
+        newton = self.m30.fit_logit_all(f, y, weights=w, block=700, **args)
+        for other in (warm, newton):
+            np.testing.assert_allclose(fl.linear_predictor(other, f), fl.linear_predictor(cold, f), atol=2e-3)
+        self.assertGreater(cold["cat"]["sector_x_setaside"][fl.DOD + " | none"], 0.2)
+
+    def test_fit_calibration_by_sector(self):
+        rng = np.random.default_rng(7)
+        n = 30000
+        sector = rng.choice([fl.DOD, "civilian except GSA", "GSA", "unknown"], n, p=[0.6, 0.35, 0.01, 0.04])
+        x = rng.normal(-1.2, 1.0, n)
+        slope = np.where(sector == fl.DOD, 1.4, np.where(sector == "unknown", 1.0, 0.75))
+        y = (rng.random(n) < 1 / (1 + np.exp(-slope * x))).astype(float)
+        cal = self.m30.fit_calibration(1 / (1 + np.exp(-x)), y, sector)
+        self.assertEqual(set(cal["by_group"]), {"Defense", "civilian"})
+        self.assertAlmostEqual(cal["by_group"]["Defense"]["b"], 1.4, delta=0.07)
+        self.assertAlmostEqual(cal["by_group"]["civilian"]["b"], 0.75, delta=0.07)
+        self.assertEqual(cal["by_group"]["civilian"]["n"], int(np.isin(sector, ["civilian except GSA", "GSA"]).sum()))
+        self.assertNotIn("by_group", self.m30.fit_calibration(1 / (1 + np.exp(-x)), y))
+        small = self.m30.fit_calibration(1 / (1 + np.exp(-x[:1500])), y[:1500], sector[:1500])
+        self.assertNotIn("civilian", small["by_group"])                      # under 1,000 rows: the pooled correction is used
+
+    def test_selection_rule(self):
+        m = self.m30
+        years = list(range(2018, 2027))
+        rng = np.random.default_rng(8)
+        n = 400
+        oot = pd.DataFrame({"test_fy": np.repeat(years, n), "y": (rng.random(n * len(years)) < 0.3).astype(float)})
+        good = np.where(oot.y == 1, 0.6, 0.15)
+        for c in m.CANDIDATES:
+            oot[c["col"]] = 0.3                                              # uninformative
+        last = oot.test_fy.isin(years[-m.SELECT_YEARS:]).to_numpy()
+
+        def score(p):
+            return m.metrics(oot.y[last], np.asarray(p)[last])["logloss"]
+        oot["p_logit_sec"] = good * 0.5 + 0.15                              # 1 change, clearly better
+        oot["p_int3_sec"] = good                                             # 4 changes, better still
+        tab, ch = m.select_logistic(oot, years)
+        self.assertEqual(ch["name"], tab.sort_values("logloss").candidate.iloc[0])
+        best = tab.logloss.min()
+        # a simpler candidate within 0.5% of the best wins
+        target = best / (1 - m.SELECT_MARGIN) * 0.9999
+        lo, hi = 0.0, 1.0                                                    # mix toward uninformative until the score is just inside
+        for _ in range(40):
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if score(good * (1 - mid) + 0.3 * mid) < target else (lo, mid)
+        oot["p_decay3_cal"] = good * (1 - lo) + 0.3 * lo
+        tab, ch = m.select_logistic(oot, years)
+        self.assertEqual(ch["name"], "logistic v2, half-life 3 years")
+        self.assertGreater(tab.set_index("candidate").logloss[ch["name"]], best)       # not the lowest, but within 0.5% with fewer changes
+        self.assertEqual(int(tab.chosen_by_rule.sum()), 1)
+        # nothing better than the current model: it stays
+        for c in m.CANDIDATES:
+            oot[c["col"]] = 0.3
+        self.assertEqual(m.select_logistic(oot, years)[1]["name"], m.M_LOGIT)
+        self.assertEqual(len(m.CANDIDATES), 12)
+        self.assertEqual(sorted(c["changes"] for c in m.CANDIDATES), [0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 4])
+
+    def test_amendment_applies_only_to_its_rule_pick(self):
+        m = self.m30
+        tab = pd.DataFrame({"candidate": [c["name"] for c in m.CANDIDATES]})
+        pick = next(c for c in m.CANDIDATES if c["name"] == m.AMENDMENT["rule_pick"])
+        t2, ship, note = m.amended(tab, pick)
+        self.assertEqual(ship["name"], m.AMENDMENT["shipped"])
+        self.assertEqual((ship["raw_col"], ship["correction"], ship["col"]), ("p_decay3", "by sector", "p_decay3_sec"))
+        self.assertIn("after the results were known", note)
+        self.assertEqual(t2.loc[t2.shipped, "candidate"].tolist(), [m.AMENDMENT["shipped"]])
+        other = next(c for c in m.CANDIDATES if c["name"] == m.M_LOGIT)
+        t3, ship, note = m.amended(tab, other)                              # rule 1 picks something else: the rule's pick is shipped
+        self.assertEqual(ship["name"], m.M_LOGIT)
+        self.assertIn("no longer applies", note)
 
     def test_capped_sample(self):
         rows = np.arange(self.m30.MAX_FIT_ROWS + 500)

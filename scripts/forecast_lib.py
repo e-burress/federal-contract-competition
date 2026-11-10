@@ -9,6 +9,7 @@ THE DAILY JOB (score this morning's new solicitations)
     model = fl.load_model(path)                               # <DATA>/models/model_v2.json (private: it holds office history)
     feats = fl.build_features(sols, model["history"], as_of="2026-11-10")
     p     = fl.predict(model, feats)                          # calibrated P(single offer), numpy array, one per row of sols
+                                                              # (the correction follows each row's sector, feats["sector"])
     base  = fl.baseline_predictions(model, feats)             # DataFrame: p_sector_rate, p_agency_rate, p_office_history
   `sols` is a DataFrame with one row per solicitation.  Columns (all optional except the first two; missing ones count as unknown):
     sol_norm or sol_number   the solicitation number (it is normalised here: upper case, letters and digits only)
@@ -47,7 +48,11 @@ MAIN FUNCTIONS
   history_from_awards(awards), merge_history(a, b), trim_history(h, first_q)       quarterly history tables
   build_features(sols, history, as_of)     the feature table (training and scoring)
   design_matrix / fit_spec                 used by training only (scipy sparse)
+  interaction_column, feature_column       sector x another category (INTERACTIONS), built from the feature table when needed
   predict_raw, predict, baseline_predictions, save_model, load_model
+  apply_calibration(p, cal, sector)        the probability correction expit(a + b * logit(p)); with a correction by sector
+                                           group in the model file, each row uses its group's a and b (CAL_GROUPS), and a
+                                           row of another sector ("unknown") uses the pooled a and b
 """
 import json
 import os
@@ -112,6 +117,12 @@ SETASIDE_MAP = {"": "none", "NONE": "none", "NAN": "none", "<NA>": "none", "SBA"
                 "ESB": "small business", "RSB": "small business", "8A": "8(a)", "8AN": "8(a)", "HZC": "HUBZone", "HZS": "HUBZone",
                 "SDVOSBC": "SDVOSB", "SDVOSBS": "SDVOSB", "WOSB": "WOSB", "WOSBSS": "WOSB", "EDWOSB": "WOSB", "EDWOSBSS": "WOSB",
                 "VSA": "VOSB", "VSS": "VOSB", "VSB": "VOSB"}
+# sector interactions: one more category feature per pair, with levels "sector | level" (built from the two columns when needed,
+# so the feature table itself does not change).  Sector is the sector known on the posting day.
+INTERACTIONS = {"sector_x_setaside": ("sector", "setaside"), "sector_x_notice_type": ("sector", "notice_type"),
+                "sector_x_sol_letter": ("sector", "sol_letter"), "sector_x_pscg": ("sector", "pscg")}
+# the probability correction by sector group (a sector not listed here, such as "unknown", gets the one pooled correction)
+CAL_GROUPS = {DOD: "Defense", "civilian except GSA": "civilian", "GSA": "civilian"}
 # fixed orders, used to turn small categories into numbers for the gradient-boosting benchmark
 ORDINALS = {"sector": SECTORS + [UNKNOWN],
             "setaside": ["none", "small business", "8(a)", "HUBZone", "SDVOSB", "WOSB", "VOSB", "other"],
@@ -613,12 +624,42 @@ def build_features(sols, history, as_of=None):
 # ----------------------------------------------------------------------------------------------------------------------
 # the logistic model: specification, design matrix (training) and linear predictor (scoring)
 # ----------------------------------------------------------------------------------------------------------------------
+def _as_category(x):
+    """a column as a pandas category of text (missing values become the empty-string level)."""
+    x = pd.Series(x).reset_index(drop=True)
+    if not isinstance(x.dtype, pd.CategoricalDtype):
+        x = x.astype(object).where(x.notna(), "").astype(str).astype("category")
+    return x
+
+
+def interaction_column(feats, a, b):
+    """the category "level of a | level of b" for each row (category codes are combined; no text is built per row)."""
+    ca, cb = _as_category(feats[a]), _as_category(feats[b])
+    la = list(ca.cat.categories.astype(str)) + [""]
+    lb = list(cb.cat.categories.astype(str)) + [""]
+    ia = np.where(ca.cat.codes.to_numpy() < 0, len(la) - 1, ca.cat.codes.to_numpy()).astype(np.int64)
+    ib = np.where(cb.cat.codes.to_numpy() < 0, len(lb) - 1, cb.cat.codes.to_numpy()).astype(np.int64)
+    code = ia * len(lb) + ib
+    used, inv = np.unique(code, return_inverse=True)
+    names = [f"{la[c // len(lb)]} | {lb[c % len(lb)]}" for c in used]
+    return pd.Series(pd.Categorical.from_codes(inv.reshape(-1), categories=names), index=feats.index)
+
+
+def feature_column(feats, name):
+    """feats[name], or the interaction column when `name` is one of INTERACTIONS and the table does not have it."""
+    if name in INTERACTIONS and name not in feats.columns:
+        return interaction_column(feats, *INTERACTIONS[name])
+    return feats[name]
+
+
 def fit_spec(feats, cat=CAT_FEATURES, cont=CONT_FEATURES, binary=BIN_FEATURES, min_level=100):
     """What the design needs to be rebuilt later: the levels of each category that get their own coefficient (at least
-    `min_level` rows; the rest share the baseline) and the mean and standard deviation of each continuous feature."""
+    `min_level` rows; the rest share the baseline) and the mean and standard deviation of each continuous feature.
+    A category may be one of INTERACTIONS (sector x another category)."""
     spec = {"cat": {}, "cont": {}, "bin": list(binary)}
     for c in cat:
-        vc = feats[c].value_counts() if isinstance(feats[c].dtype, pd.CategoricalDtype) else feats[c].astype(str).value_counts()
+        col = feature_column(feats, c)
+        vc = col.value_counts() if isinstance(col.dtype, pd.CategoricalDtype) else col.astype(str).value_counts()
         spec["cat"][c] = sorted(str(k) for k, v in vc.items() if v >= min_level)
     for c in cont:
         x = feats[c].to_numpy(float)
@@ -648,7 +689,7 @@ def design_matrix(feats, spec, block=50_000):
     n = len(feats)
     codes, start = [], 0
     for c, levels in spec["cat"].items():                       # column number of each row's level, -1 = no own coefficient
-        idx = _level_values(feats[c], {lv: i + start for i, lv in enumerate(levels)}, -1).astype(np.int32)
+        idx = _level_values(feature_column(feats, c), {lv: i + start for i, lv in enumerate(levels)}, -1).astype(np.int32)
         codes.append(idx)
         start += len(levels)
     cont = [(c, mean, sd) for c, (mean, sd) in spec["cont"].items()]
@@ -703,7 +744,7 @@ def linear_predictor(logit, feats):
     """intercept + the coefficient of each row's category levels + coefficient x standardised value.  numpy and pandas only."""
     lp = np.full(len(feats), logit["intercept"], dtype=float)
     for c, table in logit["cat"].items():
-        lp += _level_values(feats[c], table, 0.0).astype(float)
+        lp += _level_values(feature_column(feats, c), table, 0.0).astype(float)
     for c, (b, mean, sd) in logit["cont"].items():
         lp += b * (feats[c].to_numpy(float) - mean) / sd
     for c, b in logit["bin"].items():
@@ -758,11 +799,29 @@ def fit_platt(p, y, max_iter=50):
     return float(beta[0]), float(beta[1])
 
 
-def apply_calibration(p, cal):
-    """p -> expit(a + b * logit(p)); cal is {"a": .., "b": ..} or None (no change)."""
+def calibration_parameters(cal, n, sector=None):
+    """(a, b) per row.  cal: {"a", "b"} (one correction for every row), optionally with
+         "groups":   {sector: group name}, for example {"Department of Defense": "Defense", "GSA": "civilian", ...}
+         "by_group": {group name: {"a", "b", ...}}
+    A row whose sector is in no group, or whose group has no correction, gets the pooled a and b."""
+    a, b = np.full(n, float(cal["a"])), np.full(n, float(cal["b"]))
+    groups, by_group = cal.get("groups") or {}, cal.get("by_group") or {}
+    if sector is not None and groups and by_group:
+        s = pd.Series(np.asarray(sector, dtype=object)).map(groups).to_numpy(object)
+        for g, c in by_group.items():
+            m = s == g
+            a[m], b[m] = float(c["a"]), float(c["b"])
+    return a, b
+
+
+def apply_calibration(p, cal, sector=None):
+    """p -> expit(a + b * logit(p)); cal is {"a": .., "b": ..} or None (no change).  With `sector` (one value per row) and a
+    correction by sector group in `cal`, each row gets its group's a and b (see calibration_parameters)."""
     if not cal:
         return np.clip(np.asarray(p, float), 0.0, 1.0)
-    return _expit(cal["a"] + cal["b"] * _logit(p))
+    lp = _logit(p)
+    a, b = calibration_parameters(cal, len(np.atleast_1d(lp)), sector)
+    return _expit(a + b * lp)
 
 
 def predict_raw(model, feats):
@@ -773,8 +832,10 @@ def predict_raw(model, feats):
 
 
 def predict(model, feats):
-    """calibrated P(exactly one offer | the award is competed with a usable offer count), one number per row, in [0, 1]."""
-    return apply_calibration(predict_raw(model, feats), model.get("calibration"))
+    """calibrated P(exactly one offer | the award is competed with a usable offer count), one number per row, in [0, 1].
+    The correction is chosen by each row's sector as known on the posting day (feats["sector"]), when the model has one by sector."""
+    sector = feats["sector"].to_numpy(object) if "sector" in feats.columns else None
+    return apply_calibration(predict_raw(model, feats), model.get("calibration"), sector)
 
 
 def sector_rate_predictor(rates, feats):

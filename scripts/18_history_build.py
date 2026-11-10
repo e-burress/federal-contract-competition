@@ -28,12 +28,21 @@ codes made the same way: vendor_uei_code from the UEI alone (SHA-256("fcc-v1:" +
 (SHA-256("fcc-v1:duns:" + DUNS)), each empty when that identifier is blank.  A row that carries both links the two.  vendor_id equals
 vendor_uei_code when there is a UEI, and vendor_duns_code otherwise.
 
-Usage:  python -I scripts/18_history_build.py FY
-Input : data/history/FY<fy>/*.zip
-Output: data/history/processed/base_actions_FY<fy>.parquet, award_year_FY<fy>.parquet, history_FY<fy>.json (counts)
+Which files are used, and the year's verification: the build follows the download records (manifest_<window>.json, written by
+17_history_download.py) from the year's civilian quarters and Defense months down to the files that hold their rows (a window that was
+split points to its pieces). Files no record points to (left over from an earlier download) are ignored, so no row is counted twice.
+history_FY<fy>.json carries, for every file, the rows USAspending counts for its filters and dates (expected_rows) and the rows in the
+file (received_rows), and "verified": true only when every window of both sectors is present and every file matched its count.
+With --require-verified the script exits with code 2 when the year is not verified (the files are still written, for local use);
+.github/workflows/history.yml uses it so an unverified year is never published.
+
+Usage:  python -I scripts/18_history_build.py FY [--require-verified]
+Input : data/history/FY<fy>/*.zip and manifest_*.json
+Output: data/history/processed/base_actions_FY<fy>.parquet, award_year_FY<fy>.parquet, history_FY<fy>.json (counts and verification)
 """
 import glob
 import hashlib
+import importlib.util
 import json
 import os
 import sys
@@ -56,6 +65,24 @@ BASE_COLS = ["contract_award_unique_key", "award_id_piid", "parent_award_id_piid
              "other_than_full_and_open_competition_code", "purchase_card_as_payment_method_code", "cost_or_pricing_data_code",
              "period_of_performance_start_date", "period_of_performance_potential_end_date"]
 VENDOR_COLS = ["recipient_uei", "recipient_duns"]
+EXIT_NOT_VERIFIED = 2
+
+_spec = importlib.util.spec_from_file_location("hist17", os.path.join(os.path.dirname(os.path.abspath(__file__)), "17_history_download.py"))
+H17 = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(H17)
+
+
+def files_and_verification(src, fy):
+    """(the ZIP files to use, the verification summary, the files that are ignored). Follows the download records of the year's
+    windows (both sectors). A folder without any record (made by hand) is used whole and marked not verified."""
+    every = sorted(glob.glob(os.path.join(src, "*.zip")))
+    check, leaves = H17.civ.dl.verification(src, H17.top_labels(fy, "all"))
+    if not glob.glob(os.path.join(src, "manifest_*.json")):
+        check.update(verified=False, problems=["no download records (manifest_*.json): the files cannot be checked"])
+        return every, check, []
+    use = sorted({os.path.normpath(lf["zip"]) for lf in leaves})
+    ignored = [os.path.basename(z) for z in every if os.path.normpath(z) not in use]
+    return use, check, ignored
 
 
 def vendor_id(uei, duns):
@@ -91,13 +118,17 @@ def read_zip(path):
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
-    fy = int(sys.argv[1])
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    require_verified = "--require-verified" in sys.argv[1:]
+    fy = int(args[0])
     src = os.path.join(DATA, "history", f"FY{fy}")
     out_dir = os.path.join(DATA, "history", "processed")
     os.makedirs(out_dir, exist_ok=True)
-    zips = sorted(glob.glob(os.path.join(src, "*.zip")))
+    zips, check, ignored = files_and_verification(src, fy)
     if not zips:
         sys.exit(f"no downloads in {src}: run 17_history_download.py {fy} first")
+    for name in ignored:
+        print(f"  {name}: ignored (no download record points to it; left over from an earlier download)", flush=True)
 
     bases, parts, n_rows = [], [], 0
     for p in zips:
@@ -156,13 +187,23 @@ def main():
 
     counts = {"fiscal_year": fy, "transactions": int(n_rows), "base_actions": int(len(base)), "defense_base_actions": int(base.is_dod.sum()),
               "competed": int(base.competed.sum()), "eval_set": int(base.eval_set.sum()), "single": int((base.eval_set & base.single).sum()),
-              "awards_with_actions": int(len(ay)), "files": [os.path.basename(z) for z in zips]}
+              "awards_with_actions": int(len(ay)), "files": [os.path.basename(z) for z in zips],
+              "verified": bool(check["verified"]),
+              "verification": {k: check[k] for k in ("rule", "expected_rows", "received_rows", "problems", "windows")},
+              "ignored_files": ignored}
     # write each table under a temporary name and swap it in, so a reader never sees a half-written file
     for name, write in ((f"base_actions_FY{fy}.parquet", lambda p: base.to_parquet(p, index=False, compression="zstd")),
                         (f"award_year_FY{fy}.parquet", lambda p: ay.to_parquet(p, index=False, compression="zstd")),
                         (f"history_FY{fy}.json", lambda p: write_json(counts, p))):
         swap_in(write, os.path.join(out_dir, name))
-    print(json.dumps({k: v for k, v in counts.items() if k != "files"}, indent=1))
+    print(json.dumps({k: v for k, v in counts.items() if k not in ("files", "verification", "ignored_files")}, indent=1))
+    if check["verified"]:
+        print(f"FY{fy} VERIFIED: every file matched USAspending's count ({check['received_rows']:,} rows received, "
+              f"{check['expected_rows']:,} expected).", flush=True)
+    else:
+        print(f"FY{fy} NOT VERIFIED: " + "; ".join(check["problems"][:10]) + (" ..." if len(check["problems"]) > 10 else ""), flush=True)
+        if require_verified:
+            sys.exit(EXIT_NOT_VERIFIED)
 
 
 def write_json(obj, path):

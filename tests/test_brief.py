@@ -284,6 +284,18 @@ class ModelTileTest(unittest.TestCase):
         self.assertNotIn("0.79", page)
         self.assertFalse(any("model" in x for x in notes))
 
+    def test_shipped_name_comes_from_the_card(self):
+        ship = "logistic v2, half-life 3 years, correction by sector"
+        pooled = [{"sector": "all", "model": "logistic v2", "auc": 0.6924}, {"sector": "all", "model": ship, "auc": 0.7612},
+                  {"sector": "all", "model": "office history only (baseline)", "auc": 0.5835}]
+        write_json(os.path.join(self.root, "results", "model_v2_card.json"),
+                   {"shipped": {"name_in_evaluation": ship}, "evaluation": {"pooled": pooled}})
+        page, _ = bb.build(self.root, today=date(2030, 11, 10))
+        self.assertIn("<b>0.76</b><span>forecast score (AUC) of model version 2", page)
+        write_json(os.path.join(self.root, "results", "model_v2_card.json"), {"shipped": {}, "evaluation": {"pooled": pooled}})
+        page, _ = bb.build(self.root, today=date(2030, 11, 10))
+        self.assertIn("<b>0.69</b><span>forecast score (AUC) of model version 2", page)     # no name: the fallback row
+
     def test_falls_back_to_version_1(self):
         page, notes = bb.build(self.root, today=date(2030, 11, 10))      # no card
         self.assertIn("<b>0.79</b>", page)

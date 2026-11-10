@@ -16,9 +16,20 @@ has no agency in that year's tables, so a civilian / Defense split of our totals
 Polite: four requests per year (the same two with and without the agency list), a pause between them, retries with back-off.  If the service is down the script says so, keeps
 what it has, and exits with code 0 (it runs in a weekly robot job and must not break it).  It never changes our numbers.
 
-Usage:  python -I scripts/28_reconcile.py [FY ...]       (default: every year present)
+--strict: exit with code 1 when a SETTLED year's like-for-like total (sector download_agencies: transactions or dollars) differs from
+USAspending's by more than STRICT_PCT (0.5 percent), when a year could not be checked, or when the script could not finish (USAspending
+could not be reached: then nothing is committed that week).  A year is settled when its last day (30 September) is more than
+SETTLED_MONTHS (15) months before the day of the check.  Before that, USAspending's total keeps growing after our download by itself:
+Defense data are published 90 days late, and agencies report late and correct for months.  So a year that is not settled fails only
+when our transaction count is ABOVE USAspending's by more than STRICT_PCT (we should never hold more than the source); a lower count
+is reported as expected growth since the download.  Recent years are protected by the record made at download time instead
+(python run.py get-history --require-verified).  The weekly robot (.github/workflows/history-analysis.yml) runs both first, so it
+never commits results built from incomplete yearly tables.  Without --strict the script always exits with code 0, as before.
+
+Usage:  python -I scripts/28_reconcile.py [FY ...] [--strict]       (default: every year present)
 Output: results/reconciliation.csv, results/reconciliation_summary.json
 """
+import calendar
 import csv
 import glob
 import json
@@ -26,6 +37,7 @@ import os
 import re
 import sys
 import time
+from datetime import date
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common  # noqa: E402
@@ -36,6 +48,9 @@ ENDPOINT = "search/spending_by_transaction_count + search/spending_over_time"
 COLUMNS = ["fy", "sector", "our_transactions", "api_transactions", "diff_transactions_pct", "our_obligations", "api_obligations",
            "diff_obligations_pct", "checked_utc", "endpoint"]
 FLAG_PCT = 1.0
+STRICT_PCT = 0.5             # --strict fails above this difference (a cut-off download makes years 3 to 31 percent short)
+SETTLED_MONTHS = 15          # a year is held to STRICT_PCT only when it ended more than this many months before the check: Defense
+                             # data come 90 days late, and late reports and corrections keep arriving for about a year
 PAUSE = 3.0
 
 
@@ -207,18 +222,69 @@ def run(fetch=fetch_api, processed=None, results_dir=None, years=None, pause=PAU
     return rows, summary
 
 
-def main(argv=None):
+def settled(fy, today):
+    """True when fiscal year `fy` ended (30 September) more than SETTLED_MONTHS months before `today`"""
+    m = 9 + SETTLED_MONTHS                          # counted from January of calendar year fy
+    y, m = fy + (m - 1) // 12, (m - 1) % 12 + 1
+    return today > date(y, m, min(30, calendar.monthrange(y, m)[1]))
+
+
+def strict_problems(rows, limit=STRICT_PCT, today=None, notes=None):
+    """the reasons a strict check fails: a settled year whose like-for-like total differs by more than `limit` percent, a recent
+    year whose transaction count is ABOVE USAspending's by more than `limit` percent, or a year that was not checked (no answer).
+    Empty when every year passes. A recent year below USAspending's total is not a failure: a line about it goes to `notes`."""
+    today = today or date.today()
+    main_rows = [r for r in rows if r["sector"] == "download_agencies"]
+    if not main_rows:
+        return ["no yearly tables were found"]
+    out = []
+    for r in main_rows:
+        if r["api_transactions"] is None or r["api_obligations"] is None:
+            out.append(f"FY{r['fy']}: not checked (USAspending did not answer)")
+        elif settled(int(r["fy"]), today):
+            if worst_pct(r) > limit:
+                out.append(f"FY{r['fy']}: differs from USAspending's total by {worst_pct(r):.2f} percent "
+                           f"(transactions {r['diff_transactions_pct']}%, dollars {r['diff_obligations_pct']}%)")
+        elif (r["diff_transactions_pct"] or 0) > limit:
+            out.append(f"FY{r['fy']} (recent): our tables hold {r['diff_transactions_pct']}% MORE transactions than USAspending counts")
+        elif notes is not None and worst_pct(r) > limit:
+            notes.append(f"FY{r['fy']} (ended less than {SETTLED_MONTHS} months ago): transactions {r['diff_transactions_pct']}%, "
+                         f"dollars {r['diff_obligations_pct']}%: expected growth since the download, not a failure")
+    return out
+
+
+def main(argv=None, run_fn=None):
     argv = sys.argv[1:] if argv is None else argv
+    strict = "--strict" in argv
     years = [int(a) for a in argv if a.isdigit()] or None
     try:
-        rows, summary = run(years=years)
-    except Exception as e:                # never break the weekly job
+        rows, summary = (run_fn or run)(years=years)
+    except Exception as e:                # never break the weekly job (unless --strict)
         print("reconcile: could not finish:", repr(e))
+        if strict:
+            print("STRICT CHECK FAILED: USAspending could not be reached (or the comparison could not finish), so the yearly tables "
+                  "were not checked. Nothing is committed this week; the next run tries again.")
+            return 1
         return 0
     print(summary["verdict"])
     for r in rows:
         print(f"  FY{r['fy']} {r['sector']}: transactions {r['our_transactions']:,} vs {r['api_transactions']} ({r['diff_transactions_pct']}%), "
               f"obligations {r['diff_obligations_pct']}%")
+    if strict:
+        notes = []
+        problems = strict_problems(rows, notes=notes)
+        for n in notes:
+            print("  note: " + n)
+        if problems:
+            print(f"STRICT CHECK FAILED (limit {STRICT_PCT} percent):")
+            for p in problems:
+                print("  " + p)
+            if any("did not answer" in p for p in problems):
+                print("USAspending did not answer for some years, so they were not checked. Nothing is committed this week; "
+                      "the next run tries again.")
+            return 1
+        print(f"Strict check passed: every settled year is within {STRICT_PCT} percent of USAspending's like-for-like total, and no "
+              "recent year holds more transactions than USAspending counts.")
     return 0
 
 

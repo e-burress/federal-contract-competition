@@ -698,6 +698,15 @@ def scope_text(present):
     return t
 
 
+def live_verification_note(lt):
+    """a visible warning for the live table when 15_civilian_fytd.py could not check its download against USAspending's own count
+    ("verified": false in live_fy<FY>_totals.json), or ''. Older files without the field get no note."""
+    if not isinstance(lt, dict) or lt.get("verified") is not False:
+        return ""
+    return ('<p class="note"><b>Not verified:</b> on the day of this update, USAspending\'s count service could not confirm that '
+            "the download was complete. These numbers may be too low. They will be checked again at the next update.</p>")
+
+
 def number_sections(page):
     n = itertools.count(1)
     return re.sub(r'(<h2 class="num"[^>]*>)', lambda m: m.group(1) + f"{next(n)}. ", page)
@@ -802,8 +811,8 @@ def main():
             f"<tr><td>{esc(short_name(r['agency']))}{' (' + esc(r['abbreviation']) + ')' if r['abbreviation'] else ''}</td>"
             f"<td data-v='{r['share']}'><span class='bar'><i style='width:{100 * float(r['share']) / ltop:.1f}%'></i></span><b>{pct(r['share'])}</b></td>"
             f"<td>{pct(r['ci_lo'])}–{pct(r['ci_hi'])}</td><td data-v='{r['n_eval']}'>{int(r['n_eval']):,}</td></tr>" for r in lrows)
-        live_tiles.append(f'<div class="card kpi"><b>{pct(lx["share"])}</b><span>of {lx["n_eval"]:,} competed awards so far in FY{lt["fiscal_year"]} got only one offer (civilian agencies except GSA)</span></div>')
-        live_parts.append(f"""<p class="sub" style="margin:0 0 10px">Fiscal year {lt['fiscal_year']} so far: awards dated {nice(lt['data_from'])} to {nice(lt['data_to'])}, every civilian agency. With GSA's very small supply orders included, the share is {pct(lt['share'])} of {lt['n_eval']:,} awards. USAspending's latest data load: {nice(lt['usaspending_last_updated']) if lt['usaspending_last_updated'] else 'unknown'}.</p>
+        live_tiles.append(f'<div class="card kpi"><b>{pct(lx["share"])}</b><span>of {lx["n_eval"]:,} competed awards so far in FY{lt["fiscal_year"]} got only one offer (civilian agencies except GSA){" (not verified)" if live_verification_note(lt) else ""}</span></div>')
+        live_parts.append(live_verification_note(lt) + f"""<p class="sub" style="margin:0 0 10px">Fiscal year {lt['fiscal_year']} so far: awards dated {nice(lt['data_from'])} to {nice(lt['data_to'])}, every civilian agency. With GSA's very small supply orders included, the share is {pct(lt['share'])} of {lt['n_eval']:,} awards. USAspending's latest data load: {nice(lt['usaspending_last_updated']) if lt['usaspending_last_updated'] else 'unknown'}.</p>
 <div class="tablewrap"><table class="sortable civ">
   <thead><tr><th>Agency</th><th>Single-offer share so far</th><th>95% interval</th><th>Competed awards so far</th></tr></thead>
   <tbody>{ltr}</tbody></table></div>
