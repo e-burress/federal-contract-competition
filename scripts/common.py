@@ -22,6 +22,14 @@ import urllib.request
 # PROJECT = the repository folder (parent of scripts/)
 PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(PROJECT, "data")
+# Optional: keep the big data folder somewhere else (for example outside a cloud-synced folder).  Set the environment variable
+# FCC_DATA_DIR, or put   [paths]  data = "D:/somewhere"   in a file named config.local.toml next to config.toml (git-ignored).
+_local = os.path.join(PROJECT, "config.local.toml")
+if os.environ.get("FCC_DATA_DIR"):
+    DATA = os.environ["FCC_DATA_DIR"]
+elif os.path.exists(_local):
+    with open(_local, "rb") as _f:
+        DATA = tomllib.load(_f).get("paths", {}).get("data", DATA)
 RESULTS = os.path.join(PROJECT, "results")
 FORECASTS = os.path.join(PROJECT, "forecasts")
 for _p in (DATA, RESULTS, FORECASTS):

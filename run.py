@@ -42,6 +42,14 @@ import tomllib  # noqa: E402  (Python 3.11+)
 
 with open(os.path.join(ROOT, "config.toml"), "rb") as _f:
     CONFIG = tomllib.load(_f)
+# optional local data folder, as in scripts/common.py (FCC_DATA_DIR, or [paths] data in config.local.toml)
+if os.environ.get("FCC_DATA_DIR"):
+    DATA = os.environ["FCC_DATA_DIR"]
+elif os.path.exists(os.path.join(ROOT, "config.local.toml")):
+    with open(os.path.join(ROOT, "config.local.toml"), "rb") as _f:
+        DATA = tomllib.load(_f).get("paths", {}).get("data", DATA)
+PROCESSED = os.path.join(DATA, "processed")
+PUBLISHED = os.path.join(DATA, "published_results")
 SNAPSHOT = CONFIG["data"]["snapshot"]
 DATA_REPO = CONFIG["project"]["repository"]                # the published snapshot always comes from the original project
 CONTACT = os.environ.get("PIO_CONTACT") or CONFIG["contact"]["default"]
@@ -61,6 +69,8 @@ STEPS = {
     "figures":             ("scripts/make_figures.py", [], False, "the charts"),
     "report":              ("scripts/build_report.py", [], False, "the numbers in README.md and docs/methodology.md"),
     "dashboard":           ("scripts/build_dashboard.py", [], False, "the dashboard page (docs/index.html)"),
+    "explorer":            ("scripts/build_explorer.py", [], False, "the data behind the interactive explorer (docs/explorer.html)"),
+    "market-depth":        ("scripts/25_market_depth.py", [], True, "registered companies per industry code, from SAM.gov's public entity extract"),
     "sam-snapshot":        ("scripts/14_sam_daily_snapshot.py", [], True, "today's SAM.gov list of open notices and the daily counts"),
     "live":                ("scripts/15_civilian_fytd.py", [], True, "single-offer shares this fiscal year so far, every civilian agency"),
     "track-f2":            ("scripts/13_track_threshold.py", [], True, "how the sealed threshold forecast (F2) is tracking"),
@@ -69,10 +79,10 @@ STEPS = {
     "threshold-staggered": ("scripts/21_threshold_staggered.py", [], False, "the 2018 change, agency by agency (staggered adoption dates)"),
 }
 PIPELINES = {
-    "quick": ["get-snapshot", "atlas", "atlas-civilian", "quality", "threshold", "threshold-quarterly", "figures", "report", "dashboard"],
+    "quick": ["get-snapshot", "atlas", "atlas-civilian", "quality", "threshold", "threshold-quarterly", "figures", "report", "dashboard", "explorer"],
     "all":   ["download", "build-five", "build-civilian", "build-threshold", "atlas", "atlas-civilian", "quality", "threshold",
-              "threshold-quarterly", "sql-check", "figures", "report", "dashboard"],
-    "daily": ["sam-snapshot", "live", "track-f2", "dashboard"],
+              "threshold-quarterly", "sql-check", "figures", "report", "dashboard", "explorer"],
+    "daily": ["sam-snapshot", "live", "track-f2", "dashboard", "explorer"],
     "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered"],
 }
 # results that change every day, are not rebuilt by quick/all, or are never published (office level); `verify` skips them

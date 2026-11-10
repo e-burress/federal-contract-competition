@@ -1,5 +1,5 @@
-# downloaded data and caches (large; rebuilt by the scripts)
-data/
+# downloaded data and caches (large; rebuilt by the scripts); only the top-level folder, not docs/data
+/data/
 logs/
 __pycache__/
 *.pyc
@@ -17,3 +17,6 @@ forecasts/PIO-F1-*.json
 
 # export folder for the public data snapshot (run.py export-data)
 dist/
+
+# local settings (for example a data folder outside the repository)
+config.local.toml

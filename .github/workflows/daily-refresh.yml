@@ -51,6 +51,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: python run.py dashboard
 
+      - name: Rebuild the explorer data
+        if: ${{ !cancelled() }}
+        run: python run.py explorer
+
       - name: Check the sealed forecast is unchanged
         id: seal
         if: ${{ !cancelled() }}

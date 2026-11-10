@@ -266,7 +266,7 @@ footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
 <button class="theme" id="theme" type="button">Theme</button>
 <h1>Federal Contract Competition: Findings &amp; Forecasts</h1>
 <p class="sub">How often do competed federal contracts get only one bid, and do purchases bunch under dollar limits? Civilian agencies, fiscal years 2024–2026; the Department of Defense is not included. The threshold test and the agency table cover every civilian agency. The in-depth single-bid analysis and the forecasts cover five departments: VA, HHS, DHS, Interior and USDA.</p>
-<p class="sub">By <a href="{AUTHOR_URL}">{AUTHOR}</a> · data through {nice(CFG["analysis"]["window_end"])} · <a href="{REPO}">code and data</a> · <a href="methodology">methodology</a></p>
+<p class="sub">By <a href="{AUTHOR_URL}">{AUTHOR}</a> · data through {nice(CFG["analysis"]["window_end"])} · <a href="explorer.html"><b>explore the data</b></a> · <a href="{REPO}">code and data</a> · <a href="methodology">methodology</a></p>
 
 <div class="kpis">
   <div class="card kpi"><b>{pct(total_k / total_n)}</b><span>of {total_n:,} competed awards in five departments got only one offer</span></div>
