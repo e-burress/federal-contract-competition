@@ -89,7 +89,7 @@ PIPELINES = {
     "all":   ["download", "build-five", "build-civilian", "build-threshold", "atlas", "atlas-civilian", "quality", "threshold",
               "threshold-quarterly", "sql-check", "figures", "report", "dashboard", "explorer"],
     "daily": ["sam-snapshot", "live", "track-f2", "dashboard", "explorer"],
-    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "split-screen", "outcomes"],
+    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "split-screen", "outcomes", "report", "dashboard", "explorer"],
 }
 # results that change every day, are not rebuilt by quick/all, or are never published (office level); `verify` skips them
 LIVE_OR_FROZEN = ("tracking_", "live_fy", "sam_daily_", "model_", "resolution_", "threshold_resolution_", "atlas_offices")

@@ -1,0 +1,61 @@
+# Reruns the long-history analyses (single offers since FY2008, pile-ups under every dollar limit, the 2018 agency-by-agency
+# test, drivers, split-like clusters, post-award outcomes) from the public yearly tables in the release "history-v1",
+# then rebuilds the README numbers, the dashboard and the explorer, and commits the results.
+# Runs every Sunday and on demand (Actions tab, "Run workflow"). Takes about half an hour.
+name: History analyses
+
+on:
+  schedule:
+    - cron: "0 6 * * 0"      # Sundays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: history-analysis
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      PIO_CONTACT: https://github.com/${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Download the yearly tables and rerun the history analyses
+        run: python run.py history
+
+      - name: Rebuild the README numbers, the dashboard and the explorer
+        run: |
+          python run.py report
+          python run.py dashboard
+          python run.py explorer
+
+      - name: Check the sealed forecast is unchanged
+        run: |
+          cd forecasts
+          grep PIO-F2 SHA256SUMS.txt | awk '{print $1"  "$2}' | sha256sum -c -
+
+      - name: Publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results figures docs README.md
+          if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
+          git commit -m "History analyses: $(date -u +%Y-%m-%d)"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase origin main && git push; then exit 0; fi
+            sleep $((i * 20))
+          done
+          exit 1

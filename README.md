@@ -9,7 +9,9 @@ Everything here is built from free public data (USAspending.gov and SAM.gov), ru
 <!-- auto:status -->
 > **Status (November 9, 2026):** every result was rebuilt from one public data snapshot, [`data-2026-11-09`](https://github.com/e-burress/federal-contract-competition/releases/tag/data-2026-11-09), downloaded from USAspending on November 9, 2026. `python run.py quick` downloads it and rebuilds everything. The first release (October 24, 2026) used an earlier download that was not kept. Rebuilt from this snapshot, single-offer shares moved by at most 0.05 percentage points (five departments: 97,643 → 97,672 awards, still 22.8%) and bunching ratios by at most 0.02 ($350K after the change: 1.95 → 1.96). The forecast model and the sealed forecasts are from October 24, 2026 and are unchanged.
 >
-> The in-depth analysis and the forecasts cover five civilian departments (VA, HHS, DHS, Interior and USDA) for FY2024–FY2026. Single-offer shares cover every civilian agency, and the threshold test is civilian-wide. Defense data is excluded because of DoD's 90-day reporting delay.
+> The in-depth analysis and the forecasts cover five civilian departments (VA, HHS, DHS, Interior and USDA) for FY2024–FY2026. Single-offer shares cover every civilian agency, and the threshold test is civilian-wide. These FY2024–FY2026 tables leave out Defense because of DoD's 90-day reporting delay.
+>
+> **Long history, in progress:** findings 4 to 9 add civilian agencies and Defense from FY2008 on. The single-offer history now uses FY2008–FY2021. FY2022–FY2026 are still to come. Each finding names the fiscal years it uses, which can differ while the history is being built.
 <!-- /auto:status -->
 
 ---
@@ -108,6 +110,94 @@ A transparent logistic-regression model uses only information known when a solic
 The model was then applied to **150 currently open solicitations** with response deadlines between Nov 1 and Dec 15, 2026. Those forecasts are sealed below.
 <!-- /auto:model-applied -->
 
+### 4. Single-offer shares since FY2008: civilian agencies, GSA and Defense
+
+The long history follows every competed award from FY2008 on, for civilian agencies and the Department of Defense, with the same definitions as finding 2. GSA is shown on its own because its very small supply orders outnumber everything else.
+
+<!-- auto:history -->
+Among competed awards with a usable offer count, the single-offer share fell in civilian agencies except GSA from 47.9% (95% interval 47.6–48.1%) in FY2008 to 30.8% (30.4–31.1%) in FY2021 and fell at Defense from 34.5% (34.3–34.7%) in FY2008 to 23.9% (23.8–24.0%) in FY2021. GSA's share ranged from 21.3% (FY2008) to 40.5% (FY2020), on 2,935 to 77,127 awards a year. Its very small supply orders change in number and in how offers are recorded, so its line says little about competition.
+
+![Single-offer share by fiscal year, civilian agencies except GSA, GSA and Defense](figures/single_offer_history.png)
+
+*What it cannot show:* whether competition itself changed or only how offers were recorded (agencies change their coding: see *Data quality* below). A Defense year is incomplete until its last quarter is published, 90 days late.
+<!-- /auto:history -->
+
+### 5. Does the pile-up follow the limit? Every change since FY2008
+
+The simplified-acquisition limit moved from $100K to $150K in FY2011 and from $150K to $250K in 2018, when agencies switched on different dates. If the rule shapes behavior, each line's pile-up should grow when it becomes the limit and fade after.
+
+<!-- auto:threshold-history -->
+In FY2008–FY2021, the pile-up under a simplified-acquisition limit was larger in the years it was the limit than in the years it was not, for all 6 line-and-sector pairs that had both kinds of year. Bunching ratio on average: 1.47 against 1.15 for civilian agencies and 2.29 against 1.12 for Defense. At each of the 4 changes of the limit in these years (civilian and Defense counted separately), the pile-up under the new line grew and the one under the old line shrank, from the last year before the change to the first full year after it. The largest move: Defense under $250K, from 0.78 (0.70–0.88) in FY2017 to 2.00 (1.85–2.15) in FY2019 (95% intervals). The $350K limit is not in force in any of these years, so its change cannot be tested here yet. Finding 1 tests the move to $350K with the FY2024–FY2026 data.
+
+![Bunching ratio under each simplified-acquisition limit by fiscal year](figures/threshold_history.png)
+<!-- /auto:threshold-history -->
+
+<!-- auto:threshold-staggered -->
+**The 2018 change, agency by agency.** Civilian agencies raised the limit from $150K to $250K on their own dates (22 agencies with a documented date, from February 27, 2018 to January 7, 2020). Pooling the awards of civilian agencies (FY2016–FY2021) by quarter around each agency's own date, the ratio under $250K averaged 1.10 in the 8 quarters before the switch and 1.51 in the 9 quarters from it on. Its largest one-quarter rise came at quarter 0 (1.12 to 1.64). The 95% intervals of those two quarters (0.81–1.49 and 1.31–2.03) overlap, so the timing rests on the whole pattern, not on one quarter. Placebo: with every date moved one year earlier, the largest rise came at quarter +4, four quarters later, as a real effect predicts.
+
+![Bunching ratio by quarter around each agency's own adoption date, with the placebo dates](figures/threshold_staggered.png)
+
+*What it cannot show:* why the pile-up follows the limit: budgets written to fit the rules, small-business rules tied to the line and contracts split to stay under it all look the same here. 7 of the 22 adoption dates are of medium confidence, and agencies without a documented date are left out.
+<!-- /auto:threshold-staggered -->
+
+### 6. A scan of every FAR dollar limit
+
+The same test, run on every dollar limit in the Federal Acquisition Regulation where awards could pile up: micro-purchase, simplified acquisition, public posting, certified cost or pricing data, commercial items, subcontracting plans, justification approvals and the 8(a) limits. For each change, the pile-up "moved" when it grew under the new line relative to the old one (a difference-in-differences).
+
+<!-- auto:threshold-scan -->
+The scan measures pile-ups under 14 families of FAR dollar limits, fiscal year by fiscal year, in FY2008–FY2021. Of the 104 changes of a limit (civilian agencies and Defense counted separately), 33 can be tested with these years. In 12 of them the pile-up moved with the line (the 95% interval of the difference-in-differences is above zero): micro-purchase $3,500 to $5,000 (Defense); simplified acquisition $100K to $150K (civilian, Defense); simplified acquisition $150K to $250K (Defense); certified cost or pricing data $700K to $750K (Defense); certified cost or pricing data $750K to $2M (Defense); subcontracting plan $550K to $650K (civilian, Defense); justification approval, level 1 $650K to $700K (civilian); justification approval, level 1 $550K to $650K (Defense); 8(a) competition limit (not manufacturing) $3.5M to $4M (civilian, Defense). In 2 it moved the wrong way: micro-purchase $3,000 to $3,500 (civilian, Defense). The other 19 tested changes show no clear move. Of the 71 that cannot be tested, 18 need years before or after the data's range, 35 wait for fiscal years that are not in the data yet and 18 have too few awards near the line.
+
+![Bunching ratio under each FAR dollar limit by fiscal year](figures/threshold_scan.png)
+
+*What it cannot show:* why a pile-up forms. Many limits move on the same day, so a test of one change is confounded by the others, and round values attract awards everywhere.
+<!-- /auto:threshold-scan -->
+
+### 7. What goes with single offers
+
+Which measurable circumstances go with a single offer, holding the agency and the year constant: what is bought, set-asides, how the award was competed, size, timing, the buying office's workload, the incumbent and the number of registered companies in the industry.
+
+<!-- auto:drivers -->
+In a model of 350,528 sampled competed purchase orders and definitive contracts (FY2011–FY2021), holding agency and sector × year constant, the clearest associations with a single offer (large and precisely measured) were: set-aside: service-disabled veteran-owned small business rather than no set-aside, −23.2 percentage points (−25.6 to −20.9); product/service category: product group 37: agricultural machinery rather than product group 53: hardware and abrasives, −26.2 percentage points (−34.2 to −18.1); industry (NAICS sector): 51: information rather than 31-33: manufacturing, +16.3 percentage points (+12.7 to +19.9). On awards held out of the fit (train FY2011-FY2020, test FY2021), the model ranks awards with an AUC of 0.729. Leaving out what is bought lowers it the most, by 0.044 (0.040 to 0.047).
+
+![What goes with single offers: marginal effects with 95% intervals](figures/drivers.png)
+
+*What it cannot show:* causes. The factors travel together and with things the data do not record, and differences in how agencies code their data can look like drivers.
+<!-- /auto:drivers -->
+
+### 8. After award: do single-offer awards turn out differently?
+
+Federal data has no unit prices, so the closest evidence is what happens after an award is made: money obligated, scope changes, terminations and options.
+
+<!-- auto:outcomes -->
+Single-offer and multi-offer awards were compared inside the same buying office, quarter, award type, product and size band: 333,302 competed purchase orders and definitive contracts (31% of the 1,068,615 awards of $25K or more) made in FY2008–FY2018, followed through the third fiscal year after award. Differences, single-offer minus multi-offer, in percentage points (95% interval): dollars obligated relative to the initial value: +1.57 (+0.85 to +2.30); awards obligated at 125% or more: −0.16 (−0.39 to +0.08); scope changes: −0.26 (−0.43 to −0.09); terminations: −0.46 (−0.65 to −0.28). Where the interval excludes zero, single-offer awards had slightly more dollars obligated relative to the initial value and slightly fewer scope changes and terminations, by at most 1.6 percentage points. The difference in awards obligated at 125% or more cannot be told apart from zero. Single-offer awards also differ slightly on things fixed at award (log of the initial value and planned length in years), so the cells do not make the two groups fully alike. The two placebo checks, which competition cannot affect (an even signing day and a coin flip), show no difference, as they should.
+
+![After award: single-offer minus multi-offer awards, with 95% intervals](figures/outcomes.png)
+
+*What it cannot show:* prices, which the data do not hold, or whether extra obligations, scope changes or terminations were justified. Only awards in cells with both kinds of award carry the estimate. Total growth of an award's potential value is not in the yearly tables used here, so it is not measured.
+<!-- /auto:outcomes -->
+
+### 9. Purchases that look split
+
+The FAR forbids splitting one requirement into several purchases just to stay under a limit. This screen looks for the pattern in the data and compares it with fake limits where no rule applies.
+
+<!-- auto:split-screen -->
+A split-like cluster is two or more purchases from the same company, office and product within 30 days, each at or under a limit but together above it. In FY2008–FY2021, the share of purchases at or under the limit that sit in such clusters, divided by what placebo lines predict (1.00 = no excess, 95% interval): at the simplified-acquisition limit, 1.07 for civilian agencies except GSA (1.05–1.11), 1.08 for GSA (1.04–1.14) and 1.13 for Defense (1.10–1.15); leaving out the awards within 10% of the limit, 1.04 for civilian agencies except GSA (1.02–1.09), 1.08 for GSA (1.04–1.14) and 1.04 for Defense (1.02–1.06). At the micro-purchase limit, 1.25 for civilian agencies except GSA (1.23–1.27), 1.06 for GSA (0.95–1.15) and 1.06 for Defense (1.05–1.07); without the awards within 10% of the limit, 1.08 for civilian agencies except GSA (1.06–1.10), 1.00 for GSA (0.91–1.09) and 1.02 for Defense (1.00–1.03). 10 of these 12 intervals lie above 1.00. When a limit rose, the excess in the band between the old and the new limit should fall. Of 11 such before-and-after tests, it fell clearly in 4, rose clearly in 0 and was unclear in 7; some of them use only part of their years after the change so far.
+
+![Split-like clusters: excess at the real limits over placebo lines](figures/split_screen.png)
+
+*What it cannot show:* a prohibited split from legitimate repeat buying, such as monthly supply orders. It is a screening pattern at sector level, not evidence that any purchase was split.
+<!-- /auto:split-screen -->
+
+### Data quality and reference files
+
+<!-- auto:quality -->
+**Data quality.** `16_quality_monitor.py` looks for quarters in which an agency changed how it records its data. It compares each civilian agency, award type and quarter of the FY2024–FY2026 table with the quarters before it and flags only large, clear breaks. It flagged 85: 28 on the share of awards marked competed, 27 on award counts, 14 on the share with one offer, 6 on the share with three offers, 5 on the share with no usable offer count and 5 on the share with two offers. The largest change in offer coding: Department of Justice purchase orders in FY2024 Q4, where the one-offer share went from 28.6% to 57.4%. A flag means "check before you trust numbers from this agency and quarter". It cannot say whether the change is in coding, in late reporting or in competition itself. Full list: [`results/quality_flags.csv`](results/quality_flags.csv).
+<!-- /auto:quality -->
+
+<!-- auto:reference -->
+**Reference data.** [`reference/thresholds.csv`](reference/thresholds.csv) lists 108 value periods of 28 FAR dollar thresholds, each with its source and the words that show the value ([notes](reference/thresholds.md)). [`reference/threshold_adoption_2018.csv`](reference/threshold_adoption_2018.csv) gives the date each agency adopted the 2018 limits: 24 of its 33 rows (agencies and the FAR itself) have a date, from February 27, 2018 to August 31, 2020, 7 of them of medium confidence ([notes](reference/README.md)). [`reference/market_depth_naics.csv`](reference/market_depth_naics.csv) counts the companies registered in SAM.gov to compete for federal contracts in each industry code: 1,085 codes, a median of 842 companies per code, on November 1, 2026. A registration is not a capable bidder ([notes](reference/market_depth.md)).
+<!-- /auto:reference -->
+
 ---
 
 ## Pre-registered forecasts
@@ -135,7 +225,7 @@ sha256sum forecasts/PIO-F2-threshold-fy2027q1-20261024.json
 
 ## How it works
 
-One download serves every analysis. All scripts are in `scripts/`; `run.py` runs them in the right order.
+One download serves every FY2024–FY2026 analysis, and the long history (findings 4 to 9) has its own yearly tables. All scripts are in `scripts/`; `run.py` runs them in the right order.
 
 | Step | Script | What it does |
 |---|---|---|
@@ -154,8 +244,23 @@ One download serves every analysis. All scripts are in `scripts/`; `run.py` runs
 | 9, 12, 13 | `09_resolve_forecast.py`, `12_resolve_threshold.py`, `13_track_threshold.py` | Scoring of PIO-F1 and PIO-F2 after they resolve, and a daily provisional check of PIO-F2 against the FY2027 Q1 data so far |
 | 14 | `14_sam_daily_snapshot.py` | Saves SAM.gov's nightly list of active notices (contact details removed) and updates daily counts of open solicitations |
 | 15 | `15_civilian_fytd.py` | Live single-offer table for every civilian agency, this fiscal year so far |
-| tool | `build_dashboard.py` | The [public dashboard](https://e-burress.github.io/federal-contract-competition/) (`docs/index.html`) |
+| 16 | `16_quality_monitor.py` | Flags quarters where an agency suddenly changed how it records offers, competition or award counts |
+| 17, 18 | `17_history_download.py`, `18_history_build.py` | The long history: one fiscal year of transactions at a time (FY2008 onward, civilian agencies and Defense), turned into two yearly tables, one row per base award and one row per award per year of later actions. They run on GitHub's computers (`.github/workflows/history.yml`) and the tables are published as a public release of this repository |
+| 19 | `19_history_atlas.py` | Single-offer shares since FY2008 for civilian agencies except GSA, GSA and Defense |
+| 20, 21 | `20_threshold_history.py`, `21_threshold_staggered.py` | Pile-ups under every simplified-acquisition limit since FY2008, and the 2018 change agency by agency with its placebo |
+| 22 | `22_sam_archive.py` | Turns SAM.gov's yearly archive files of past notices into small tables of solicitations (no names, no contacts), the training data of forecast model version 2 |
+| 23 | `23_drivers.py` | What goes with single offers: shares by factor, a model with agency and year controls, and how much each block of factors explains |
+| 24 | `24_outcomes.py` | After award: single-offer versus multi-offer awards in the same office, quarter, product and size, with placebo checks |
+| 25 | `25_market_depth.py` | Registered companies per industry code, from SAM.gov's public entity extract (counts only) |
+| 26 | `26_split_screen.py` | Split-like purchase clusters, compared with placebo lines |
+| 27 | `27_threshold_scan.py` | Pile-ups under every FAR dollar limit, with placebo values and a before-and-after test of each change |
+| 30 | `30_model_v2.py` | Forecast model version 2, trained on SAM.gov's archive (being built) |
+| tool | `build_dashboard.py`, `build_explorer.py` | The [public dashboard](https://e-burress.github.io/federal-contract-competition/) (`docs/index.html`) and the data behind the explorer (`docs/explorer.html`) |
 | tool | `run.py` (in the repository root) | Runs the steps above in order. See below |
+
+**Data behind the long history.** The yearly tables (`base_actions_FY<year>.parquet` and `award_year_FY<year>.parquet`) are published as a public release of this repository; `python run.py history` downloads them and rebuilds findings 4 to 9. The SAM.gov archive tables (from `22_sam_archive.py`) hold solicitation numbers, dates, codes and two keyword flags, never titles, descriptions, names or contacts. The reference files (`reference/`) are described under *Data quality and reference files* above.
+
+**Scoring the sealed forecasts.** [`docs/scoring-forecasts.md`](docs/scoring-forecasts.md) explains, for a person and not a programmer, how PIO-F1 is scored with `python run.py score-f1` and how the daily job scores PIO-F2. No AI is needed or used.
 
 A GitHub Actions job (`.github/workflows/daily-refresh.yml`) runs steps 14, 15 and 13 and the dashboard build every morning and publishes the result. It checks the sealed PIO-F2 fingerprint on every run and never changes the forecast files. The full daily SAM.gov snapshots are kept in draft (non-public) releases of this repository; the daily counts in `results/sam_daily_counts.csv` are public.
 
@@ -180,6 +285,8 @@ With [uv](https://docs.astral.sh/uv/), one line installs the right Python and pa
 | `python run.py verify` | Compares your results with the published ones |
 | `python run.py test` | Runs the offline tests |
 | `python run.py daily` | The morning refresh: SAM.gov snapshot, this fiscal year so far, forecast tracking, dashboard |
+| `python run.py history` | Downloads the yearly tables of the long history (FY2008 onward) and rebuilds findings 4 to 9. Then `python run.py report` writes their numbers into this README |
+| `python run.py score-f1` | Scores the sealed single-offer forecast (PIO-F1) once its private file is posted. See [`docs/scoring-forecasts.md`](docs/scoring-forecasts.md) |
 
 No coding needed: open the project in GitHub Codespaces with the button at the top and type `python run.py quick`. Step-by-step instructions for every route (Codespaces, your own self-refreshing copy, double-click launchers) are in [`docs/run-it-yourself.md`](docs/run-it-yourself.md).
 
@@ -193,8 +300,16 @@ The scripts that created the sealed forecasts (10 and 10b) and the frozen foreca
 - **Offer counts are entered by staff.** In the five departments, <!-- auto:limit-999 -->760 competed awards<!-- /auto:limit-999 --> carry a "999" placeholder and were excluded.
 - **FY2026 is unusual.** It saw a government shutdown, a reporting-system move and staffing changes. <!-- auto:limit-fy2026 -->HHS and VA competed-award counts fell 34–50% from FY2024 to FY2026.<!-- /auto:limit-fy2026 -->
 - **SAM.gov's public search endpoint is undocumented.** This project uses it politely, at about one request per second. The documented alternatives are SAM's API (key required) and its daily CSV extract.
-- **Coverage:** every civilian agency for single-offer shares; five departments for the deeper analysis and the forecasts; DoD is excluded.
+- **Coverage:** every civilian agency for single-offer shares; five departments for the deeper analysis and the forecasts. DoD is left out of the FY2024–FY2026 tables and included in the long history (findings 4 to 9).
 - **GSA's supply orders** dominate civilian award counts and changed how they record offers, so civilian-wide figures are also given without GSA.
+- **Defense data arrive 90 days late.** The newest Defense year is incomplete until its last quarter is published. Scripts that need a full year leave an incomplete Defense year out and say so.
+- **The history tables are still being filled in.** <!-- auto:limit-history -->The single-offer history uses FY2008–FY2021 so far; FY2022–FY2026 are still to come.<!-- /auto:limit-history --> Each of findings 4 to 9 names the years it uses. Agencies change how they record offers and competition (see *Data quality*), so a change over time can be a change in recording.
+- **Company codes are not anonymous.** The history tables carry a short company code made from each company's public identifier (UEI or DUNS), so the same company can be followed across awards. Anyone with the identifier can compute the same code, contract numbers are kept, and the underlying records are public on USAspending.gov. A company that switched from DUNS to UEI in 2022 can have two codes. Published results are at agency level or coarser.
+- **After award, not prices.** The after-award comparison (finding 8) measures obligations, scope changes, terminations and options, not prices. Extra obligations and scope changes are often legitimate.
+- **Forecast model version 2 is being built** on SAM.gov's archive files (`22_sam_archive.py`, `30_model_v2.py`). Until it is finished, the frozen October 2026 model above is the published one.
+<!-- auto:model-v2 -->
+
+<!-- /auto:model-v2 -->
 
 ## Responsible use
 

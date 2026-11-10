@@ -27,6 +27,7 @@ import sys
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 from functools import cache
+from statistics import mean, median
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import CONFIG, FORECASTS, PROJECT, RESULTS  # noqa: E402
@@ -49,10 +50,20 @@ SHOW_ABBR = {"HHS", "VA", "DHS", "DOT", "USDA", "DOI"}   # departments shown wit
 
 
 # ---- reading ------------------------------------------------------------------------------------
+# Caches are keyed by the full path, so the tests can point RESULTS, REFERENCE and FIGURES at a temporary folder.
+REFERENCE = os.path.join(PROJECT, "reference")
+FIGURES = os.path.join(PROJECT, "figures")
+SCRIPTS = os.path.dirname(os.path.abspath(__file__))
+
+
 @cache
-def rows(name):
-    with open(os.path.join(RESULTS, name), newline="", encoding="utf-8") as fh:
+def read_csv(path):
+    with open(path, newline="", encoding="utf-8") as fh:
         return list(csv.DictReader(fh))
+
+
+def rows(name):
+    return read_csv(os.path.join(RESULTS, name))
 
 
 @cache
@@ -66,9 +77,40 @@ def res_json(name):
 
 
 @cache
-def text(name):
-    with open(os.path.join(RESULTS, name), encoding="utf-8") as fh:
+def read_text(path):
+    with open(path, encoding="utf-8") as fh:
         return fh.read()
+
+
+def text(name):
+    return read_text(os.path.join(RESULTS, name))
+
+
+def opt_rows(name, folder=None):
+    """The rows of an OPTIONAL result file: [] when it is missing or cannot be read (for example half written by a running script)."""
+    path = os.path.join(folder or RESULTS, name)
+    if not os.path.exists(path):
+        return []
+    try:
+        return read_csv(path)
+    except (OSError, csv.Error, UnicodeDecodeError, ValueError):
+        return []
+
+
+def opt_json(name, folder=None):
+    """An OPTIONAL JSON result file, or None when it is missing or cannot be read."""
+    path = os.path.join(folder or RESULTS, name)
+    if not os.path.exists(path):
+        return None
+    try:
+        return load_json(path)
+    except (OSError, UnicodeDecodeError, ValueError):
+        return None
+
+
+def clear_caches():
+    for f in (read_csv, load_json, read_text):
+        f.cache_clear()
 
 
 def grab(pattern, name):
@@ -276,7 +318,22 @@ def r_status():
             f"and are unchanged.\n>\n"
             f"> The in-depth analysis and the forecasts cover five civilian departments ({five}) for {fy_span()}. "
             f"Single-offer shares cover every civilian agency, and the threshold test is civilian-wide. "
-            f"Defense data is excluded because of DoD's 90-day reporting delay.")
+            f"These {fy_span()} tables leave out Defense because of DoD's 90-day reporting delay.\n>\n"
+            f"> {history_status()}")
+
+
+def history_status():
+    """One sentence on the long history: which fiscal years its results use now, and which are still to come."""
+    years = history_years()
+    if not years:
+        return ("**Long history (FY2008 onward), in progress:** its yearly tables have not been built yet, so findings 4 to 9 "
+                "say \"not yet available\".")
+    want = range(HISTORY_FIRST_FY, CONFIG["analysis"]["fiscal_years"][-1] + 1)
+    missing = [y for y in want if y not in years]
+    tail = f" {fy_text(missing)} {'is' if len(missing) == 1 else 'are'} still to come." if missing else ""
+    return (f"**Long history, in progress:** findings 4 to 9 add civilian agencies and Defense from FY{HISTORY_FIRST_FY} on. "
+            f"The single-offer history now uses {fy_text(years)}.{tail} Each finding names the fiscal years it uses, which can differ "
+            f"while the history is being built.")
 
 
 def r_threshold_table():
@@ -726,13 +783,900 @@ def m_limit_fy2026():
     return f"HHS and VA competed-award counts fell {span} from FY{fys[0]} to FY{fys[-1]}."
 
 
+# ---- the long history and the other newer analyses (README findings 4-9, methodology sections 7-17) ---------------------
+# Every file read below is OPTIONAL.  While the history is being built a file can be missing, thin, or made from fewer years than
+# the others.  A block then says "not yet available" (model-v2 prints nothing) instead of failing, and it always names the
+# fiscal years it uses, read from its own file.
+HISTORY_FIRST_FY = 2008     # the long history starts in FY2008 (scripts/17_history_download.py): a design choice, not a result
+SECTOR = {"civilian except GSA": "civilian agencies except GSA", "civilian_ex_gsa": "civilian agencies except GSA",
+          "GSA": "GSA", "gsa": "GSA", "Department of Defense": "Defense", "defense": "Defense",
+          "civilian": "civilian agencies", "all": "civilian agencies and Defense together", "all sectors": "all sectors"}
+KIND = {"PO": "purchase orders", "DEF": "definitive contracts", "IDV": "contract vehicles"}
+FAMILY = {"micro_purchase": "micro-purchase", "simplified_acquisition": "simplified acquisition", "synopsis": "public posting",
+          "cost_or_pricing_data": "certified cost or pricing data", "commercial_simplified": "simplified procedures for commercial items",
+          "subcontracting_plan": "subcontracting plan", "subcontracting_plan_construction": "subcontracting plan (construction)",
+          "justification_level1": "justification approval, level 1", "justification_level2": "justification approval, level 2",
+          "justification_level3_civilian": "justification approval, level 3 (civilian)",
+          "justification_level3_dod": "justification approval, level 3 (Defense)",
+          "8a_competitive_threshold_nonmfg": "8(a) competition limit (not manufacturing)",
+          "8a_competitive_threshold_mfg": "8(a) competition limit (manufacturing)", "8a_sole_source_ja": "8(a) sole-source justification"}
+METRIC = {"volume": "award counts", "competed": "the share of awards marked competed", "offers_1": "the share with one offer",
+          "offers_2": "the share with two offers", "offers_3": "the share with three offers",
+          "offers_unusable": "the share with no usable offer count"}
+OUTCOME = {"oblig_ratio_w": "dollars obligated, as a share of the initial value", "overrun25": "obligated 125% or more of the initial value",
+           "value_jump_w": "largest single rise in potential value, as a share of the initial value",
+           "value_jump25": "a single rise in potential value of 25% or more", "value_growth_w": "growth of potential value",
+           "value_growth25": "potential value grew 25% or more", "any_scope": "any scope change",
+           "n_scope_w": "number of scope changes", "any_termination": "any termination",
+           "option_exercised": "an option exercised (awards with options)", "placebo_even_day": "signed on an even day (placebo)",
+           "placebo_coin": "coin flip tied to the award number (placebo)", "bal_log_value": "log of the initial value",
+           "bal_planned_years": "planned length in years", "bal_has_options": "has options", "bal_month": "month of award"}
+OUTCOME_SHORT = {"oblig_ratio_w": "dollars obligated relative to the initial value", "overrun25": "awards obligated at 125% or more",
+                 "any_scope": "scope changes", "any_termination": "terminations"}
+LEVEL = {"SDVOSB": "service-disabled veteran-owned small business", "WOSB/EDWOSB": "women-owned small business",
+         "VOSB": "veteran-owned small business", "HUBZone": "HUBZone small business"}    # set-aside groups of 23_drivers.py
+FOLLOW_UP = {"t to t+3": "through the third fiscal year after award", "t to t+1": "through the next fiscal year"}
+WHY = {"fiscal years not present yet": "wait for fiscal years that are not in the data yet",
+       "too few awards near the line": "have too few awards near the line"}
+
+
+def fl(x):
+    """a float, or None for a blank, 'nan' or missing value"""
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return None
+    return None if math.isnan(v) or math.isinf(v) else v
+
+
+def fy_text(years):
+    """[2008, 2009, 2010, 2018] -> 'FY2008–FY2010 and FY2018'"""
+    runs = []
+    for y in sorted({int(y) for y in years}):
+        if runs and y == runs[-1][1] + 1:
+            runs[-1][1] = y
+        else:
+            runs.append([y, y])
+    return series([f"FY{a}" if a == b else f"FY{a}–FY{b}" for a, b in runs]) or "no fiscal years"
+
+
+def series(items):
+    items = [i for i in items if i]
+    if len(items) <= 1:
+        return "".join(items)
+    return ", ".join(items[:-1]) + " and " + items[-1]
+
+
+def usd(v):
+    """$3,500, $150K, $2M, $5.5M"""
+    v = float(v)
+    if v >= 1e6:
+        return f"${v / 1e6:g}M"
+    return f"${v / 1e3:g}K" if v >= 1e4 else f"${v:,.0f}"
+
+
+def rng(lo, hi, d=2):
+    """an interval of levels, 1.64–1.94"""
+    return f"{num(lo, d)}–{num(hi, d)}"
+
+
+def srng(lo, hi, d=2):
+    """an interval of differences, −0.74 to +0.10"""
+    return f"{sgn(lo, d)} to {sgn(hi, d)}"
+
+
+def ratio_ci(r):
+    return f"{num(r['ratio'])} ({rng(r['ci_lo'], r['ci_hi'])})"
+
+
+def share_ci(r, label=False):
+    return f"{pct(r['share'])} ({'95% interval ' if label else ''}{pts(r['ci_lo'])}–{pct(r['ci_hi'])})"
+
+
+def quarter_text(q):
+    return re.sub(r"Q(\d)$", r" Q\1", q)
+
+
+def includes_zero(e):
+    return float(e["lo"]) <= 0 <= float(e["hi"])
+
+
+def figure(name, alt):
+    """a README image line, only when the figure exists"""
+    return f"![{alt}](figures/{name})" if os.path.exists(os.path.join(FIGURES, name)) else ""
+
+
+def cannot(s):
+    return f"*What it cannot show:* {s}"
+
+
+def not_yet(what):
+    return f"*Not yet available:* {what} `python run.py history` builds it."
+
+
+def cap(s):
+    return s[:1].upper() + s[1:]
+
+
+def paras(*parts):
+    return "\n\n".join(p for p in parts if p)
+
+
+# -- single-offer history (19_history_atlas.py)
+def history_all():
+    """sector -> rows of history_by_fy.csv (all award kinds together), in fiscal-year order"""
+    out = {}
+    for r in opt_rows("history_by_fy.csv"):
+        if r.get("award_kind", "all") == "all" and fl(r.get("share")) is not None and fl(r.get("n_eval")):
+            out.setdefault(r["sector"], []).append(r)
+    return {s: sorted(v, key=lambda r: int(r["fy"])) for s, v in out.items()}
+
+
+def history_years():
+    return sorted({int(r["fy"]) for v in history_all().values() for r in v})
+
+
+def r_history():
+    h = history_all()
+    parts = []
+    for sector, where in (("civilian except GSA", "in civilian agencies except GSA"), ("Department of Defense", "at Defense")):
+        rs = h.get(sector, [])
+        if len(rs) >= 2:
+            a, b = rs[0], rs[-1]
+            verb = "fell" if float(b["share"]) < float(a["share"]) else "rose" if float(b["share"]) > float(a["share"]) else "was unchanged"
+            parts.append(f"{verb} {where} from {share_ci(a, not parts)} in FY{a['fy']} to {share_ci(b)} in FY{b['fy']}")
+    if not parts:
+        return not_yet("the single-offer history (`results/history_by_fy.csv`) has not been built, or has fewer than two years.")
+    s = "Among competed awards with a usable offer count, the single-offer share " + " and ".join(parts) + "."
+    g = h.get("GSA", [])
+    if len(g) >= 2:
+        lo, hi = min(g, key=lambda r: float(r["share"])), max(g, key=lambda r: float(r["share"]))
+        counts = [int(float(r["n_eval"])) for r in g]
+        s += (f" GSA's share ranged from {pct(lo['share'])} (FY{lo['fy']}) to {pct(hi['share'])} (FY{hi['fy']}), on {n(min(counts))} to "
+              f"{n(max(counts))} awards a year. Its very small supply orders change in number and in how offers are recorded, so its "
+              f"line says little about competition.")
+    return paras(s, figure("single_offer_history.png", "Single-offer share by fiscal year, civilian agencies except GSA, GSA and Defense"),
+                 cannot("whether competition itself changed or only how offers were recorded (agencies change their coding: see "
+                        "*Data quality* below). A Defense year is incomplete until its last quarter is published, 90 days late."))
+
+
+# -- pile-ups under every simplified-acquisition limit since FY2008 (20_threshold_history.py)
+def th_table():
+    t = {}
+    for r in opt_rows("threshold_history.csv"):
+        if fl(r.get("ratio")) is not None and fl(r.get("ci_lo")) is not None and fl(r.get("ci_hi")) is not None:
+            t[(r["sector"], int(float(r["line"])), int(r["fy"]))] = r
+    return t
+
+
+def active(r):
+    return str(r.get("active", "")).strip().lower() == "true"
+
+
+def th_changes(t):
+    """each time a line became the limit inside the years present: the new and the old line, the last year before the change and
+    the first year when the new line was the only limit (2018 and 2019 were transition years with both)"""
+    out = []
+    for sector in sorted({k[0] for k in t}):
+        years = sorted({k[2] for k in t if k[0] == sector})
+        lines = sorted({k[1] for k in t if k[0] == sector})
+        on = {y: [ln for ln in lines if (sector, ln, y) in t and active(t[(sector, ln, y)])] for y in years}
+        for new in lines:
+            first = next((y for y in years if new in on[y]), None)
+            if first is None or first == years[0]:
+                continue
+            before = max(y for y in years if y < first)
+            after = next((y for y in years if y >= first and on[y] == [new]), None)
+            if after is None or len(on[before]) != 1:
+                continue
+            old = on[before][0]
+            keys = [(sector, new, before), (sector, new, after), (sector, old, before), (sector, old, after)]
+            if all(k in t for k in keys):
+                out.append({"sector": sector, "old": old, "new": new, "before": before, "after": after,
+                            "nb": t[keys[0]], "na": t[keys[1]], "ob": t[keys[2]], "oa": t[keys[3]]})
+    return out
+
+
+def th_levels(t):
+    """sector -> ratios in years a line was the limit ('on') and years it was not ('off'), over the lines that had both kinds of
+    year; 'higher' counts the lines whose mean ratio was higher while they were the limit"""
+    by = {}
+    for (s, ln, _), r in t.items():
+        by.setdefault((s, ln), {True: [], False: []})[active(r)].append(float(r["ratio"]))
+    out = {}
+    for (s, _), v in sorted(by.items()):
+        if v[True] and v[False]:
+            o = out.setdefault(s, {"on": [], "off": [], "higher": 0, "pairs": 0})
+            o["on"] += v[True]
+            o["off"] += v[False]
+            o["pairs"] += 1
+            o["higher"] += mean(v[True]) > mean(v[False])
+    return out
+
+
+def moved_ok(c):
+    return float(c["na"]["ratio"]) > float(c["nb"]["ratio"]) and float(c["oa"]["ratio"]) < float(c["ob"]["ratio"])
+
+
+def threshold_history_text(t):
+    years = sorted({k[2] for k in t})
+    out = []
+    lv = th_levels(t)
+    if lv:
+        pairs, higher = sum(o["pairs"] for o in lv.values()), sum(o["higher"] for o in lv.values())
+        each = ("for the one line-and-sector pair" if pairs == 1 else f"for all {pairs} line-and-sector pairs") if higher == pairs             else f"for {higher} of the {pairs} line-and-sector pairs"
+        avg = series([f"{num(mean(o['on']))} against {num(mean(o['off']))} for {SECTOR.get(s, s)}" for s, o in lv.items()])
+        out.append(f"In {fy_text(years)}, the pile-up under a simplified-acquisition limit was larger in the years it was the limit than in "
+                   f"the years it was not, {each} that had both kinds of year. Bunching ratio on average: {avg}.")
+    ch = th_changes(t)
+    if ch:
+        ok = [c for c in ch if moved_ok(c)]
+        each = ("At the one change" if len(ch) == 1 else f"At each of the {len(ch)} changes") if len(ok) == len(ch)             else f"At {len(ok)} of the {len(ch)} changes"
+        big = max(ch, key=lambda c: float(c["na"]["ratio"]) - float(c["nb"]["ratio"]))
+        out.append(f"{each} of the limit in these years (civilian and Defense counted separately), the pile-up under the new line grew "
+                   f"and the one under the old line shrank, from the last year before the change to the first full year after it. "
+                   f"The largest move: {SECTOR.get(big['sector'], big['sector'])} under {money(big['new'])}, from {ratio_ci(big['nb'])} in "
+                   f"FY{big['before']} to {ratio_ci(big['na'])} in FY{big['after']} (95% intervals).")
+    never = sorted({k[1] for k in t} - {k[1] for k, r in t.items() if active(r)})
+    if never:
+        one_ = len(never) == 1
+        out.append(f"The {series([money(x) for x in never])} limit{'' if one_ else 's'} {'is' if one_ else 'are'} not in force in any of "
+                   f"these years, so {'its' if one_ else 'their'} change cannot be tested here yet.")
+    return " ".join(out)
+
+
+def r_threshold_history():
+    t = th_table()
+    if not t:
+        return not_yet("the pile-up history (`results/threshold_history.csv`) has not been built.")
+    return paras(threshold_history_text(t) + " Finding 1 tests the move to $350K with the FY2024–FY2026 data.",
+                 figure("threshold_history.png", "Bunching ratio under each simplified-acquisition limit by fiscal year"))
+
+
+# -- the 2018 change, agency by agency (21_threshold_staggered.py)
+def stag_table():
+    d = {}
+    for r in opt_rows("threshold_staggered.csv"):
+        if fl(r.get("ratio")) is not None and fl(r.get("ci_lo")) is not None and fl(r.get("ci_hi")) is not None:
+            kind = "actual" if r.get("dates") == "actual" else "placebo"
+            d.setdefault((r["sector"], kind, int(float(r["line"]))), {})[int(r["event_quarter"])] = r
+    return d
+
+
+def stag_summary(q):
+    """mean ratio before (quarters < 0) and from the switch on (>= 0), and the quarter with the largest one-quarter rise"""
+    pre = [float(r["ratio"]) for k, r in q.items() if k < 0]
+    post = [float(r["ratio"]) for k, r in q.items() if k >= 0]
+    jumps = [(float(q[k]["ratio"]) - float(q[k - 1]["ratio"]), k) for k in sorted(q) if k - 1 in q]
+    if len(pre) < 2 or len(post) < 2 or not jumps:
+        return None
+    at = max(jumps)[1]
+    return {"pre": mean(pre), "post": mean(post), "npre": len(pre), "npost": len(post), "at": at, "from": q[at - 1], "to": q[at]}
+
+
+def adoption_civilian():
+    """civilian agencies with a documented 2018 adoption date (high or medium confidence), as 21_threshold_staggered.py uses them"""
+    return [r for r in opt_rows("threshold_adoption_2018.csv", REFERENCE)
+            if r.get("sat_effective_date") and r.get("confidence") in ("high", "medium")
+            and r.get("agency") != "Department of Defense" and not r.get("agency", "").startswith("FAR")]
+
+
+def staggered_years():
+    """the fiscal years the staggered test reads (YEARS in 21_threshold_staggered.py) that are present in the history"""
+    try:
+        m = re.search(r"^YEARS = range\((\d{4}), (\d{4})\)", read_text(os.path.join(SCRIPTS, "21_threshold_staggered.py")), re.M)
+    except OSError:
+        return []
+    have = {k[2] for k in th_table()} or set(history_years())
+    return sorted(y for y in have if m and int(m[1]) <= y < int(m[2]))
+
+
+def staggered_text(d, sector, who=""):
+    a = stag_summary(d.get((sector, "actual", 250000), {}))
+    if not a:
+        return ""
+    yrs = staggered_years()
+    when = f" ({fy_text(yrs)})" if yrs else ""
+    overlap = float(a["to"]["ci_lo"]) <= float(a["from"]["ci_hi"])
+    s = (f"Pooling the awards of {SECTOR.get(sector, sector)}{when} by quarter around {who or 'the adoption date'}, the ratio under $250K "
+         f"averaged {num(a['pre'])} in the {a['npre']} quarters before the switch and {num(a['post'])} in the {a['npost']} quarters from "
+         f"it on. Its largest one-quarter rise came at quarter {sgn(a['at'], 0)} ({num(a['from']['ratio'])} to {num(a['to']['ratio'])}). "
+         f"The 95% intervals of those two quarters ({rng(a['from']['ci_lo'], a['from']['ci_hi'])} and {rng(a['to']['ci_lo'], a['to']['ci_hi'])}) "
+         + ("overlap, so the timing rests on the whole pattern, not on one quarter." if overlap else "do not overlap."))
+    p = stag_summary(d.get((sector, "placebo", 250000), {}))
+    if p:
+        expect = a["at"] + 4
+        last_q = max(d.get((sector, "placebo", 250000), {}))
+        s += (f" Placebo: with every date moved one year earlier, the largest rise came at quarter {sgn(p['at'], 0)}"
+              + (", four quarters later, as a real effect predicts." if p["at"] == expect else
+                 f"; a real effect would put it at quarter {sgn(expect, 0)}, outside the window." if expect > last_q else
+                 f", not at quarter {sgn(expect, 0)} where a real effect would put it."))
+    return s
+
+
+def r_threshold_staggered():
+    d = stag_table()
+    civ = adoption_civilian()
+    dates = sorted(r["sat_effective_date"] for r in civ)
+    who = f" ({len(civ)} agencies with a documented date, from {long_date(dates[0])} to {long_date(dates[-1])})" if civ else ""
+    body = staggered_text(d, "civilian", "each agency's own date")
+    if not body:
+        return not_yet("the 2018 agency-by-agency test (`results/threshold_staggered.csv`) has not been built.")
+    med = sum(r["confidence"] == "medium" for r in civ)
+    return paras(f"**The 2018 change, agency by agency.** Civilian agencies raised the limit from $150K to $250K on their own dates{who}. "
+                 + body,
+                 figure("threshold_staggered.png", "Bunching ratio by quarter around each agency's own adoption date, with the placebo dates"),
+                 cannot("why the pile-up follows the limit: budgets written to fit the rules, small-business rules tied to the line and "
+                        "contracts split to stay under it all look the same here. "
+                        + (f"{med} of the {len(civ)} adoption dates {'is' if med == 1 else 'are'} of medium confidence, and " if civ else "")
+                        + "agencies without a documented date are left out."))
+
+
+# -- the scan of every FAR dollar limit (27_threshold_scan.py)
+def fam(f):
+    return FAMILY.get(f, f.replace("_", " "))
+
+
+def scan_changes():
+    return [r for r in opt_rows("threshold_scan_changes.csv") if r.get("sector") in ("civilian", "defense") and r.get("verdict")]
+
+
+def scan_years():
+    s = opt_json("threshold_scan_summary.json") or {}
+    return s.get("fiscal_years_present") or sorted({int(r["fy"]) for r in opt_rows("threshold_scan.csv") if r.get("fy")})
+
+
+def grouped(rs):
+    """'simplified acquisition, $100K to $150K (civilian, Defense)'"""
+    g = {}
+    for r in rs:
+        g.setdefault(f"{fam(r['family'])} {usd(r['old_line'])} to {usd(r['new_line'])}", []).append(
+            "civilian" if r["sector"] == "civilian" else "Defense")
+    return [f"{k} ({', '.join(v)})" for k, v in g.items()]
+
+
+def untestable_counts():
+    """why the untestable changes (civilian and Defense) cannot be tested, from the scan's summary"""
+    s = opt_json("threshold_scan_summary.json") or {}
+    c = {}
+    for e in s.get("not_testable") or []:
+        sector = e.get("change", "").split(":")[0].split()[-1:]
+        if sector in (["civilian"], ["defense"]):
+            why = e.get("why", "other reasons")
+            why = WHY.get(why, "need years before or after the data's range" if "outside" in why else why)
+            c[why] = c.get(why, 0) + 1
+    return c
+
+
+def r_threshold_scan():
+    rs = scan_changes()
+    if not rs:
+        return not_yet("the scan of every FAR dollar limit (`results/threshold_scan_changes.csv`) has not been built.")
+    fams = {r["family"] for r in opt_rows("threshold_scan.csv")} or {r["family"] for r in rs}
+    tested = [r for r in rs if r["verdict"] != "not testable"]
+    moved_ = [r for r in tested if r["verdict"] == "moved"]
+    wrong = [r for r in tested if r["verdict"] == "moved the wrong way"]
+    rest = len(tested) - len(moved_) - len(wrong)
+    s = (f"The scan measures pile-ups under {len(fams)} families of FAR dollar limits, fiscal year by fiscal year, in {fy_text(scan_years())}. "
+         f"Of the {len(rs)} changes of a limit (civilian agencies and Defense counted separately), {len(tested)} can be tested with these "
+         f"years. In {len(moved_)} of them the pile-up moved with the line (the 95% interval of the difference-in-differences is above "
+         f"zero): {'; '.join(grouped(moved_)) or 'none'}.")
+    if wrong:
+        s += f" In {len(wrong)} it moved the wrong way: {'; '.join(grouped(wrong))}."
+    if rest:
+        s += " The other tested change shows no clear move." if rest == 1 else f" The other {rest} tested changes show no clear move."
+    why = untestable_counts()
+    if why:
+        s += f" Of the {len(rs) - len(tested)} that cannot be tested, " + series([f"{v} {k}" for k, v in why.items()]) + "."
+    return paras(s, figure("threshold_scan.png", "Bunching ratio under each FAR dollar limit by fiscal year"),
+                 cannot("why a pile-up forms. Many limits move on the same day, so a test of one change is confounded by the others, "
+                        "and round values attract awards everywhere."))
+
+
+# -- what goes with single offers (23_drivers.py)
+def drivers():
+    s = opt_json("drivers_summary.json") or {}
+    return s, s.get("top_five_factors") or []
+
+
+def factor_text(t, d=1):
+    return (f"{t['factor']}: {LEVEL.get(t['level'], t['level'])} rather than {LEVEL.get(t['versus'], t['versus'])}, {sgn(t['marginal_effect_points'], d)} percentage points "
+            f"({srng(t['ci_95_points'][0], t['ci_95_points'][1], d)})")
+
+
+def best_block():
+    b = [r for r in opt_rows("drivers_blocks.csv") if fl(r.get("auc_drop_without")) is not None and fl(r.get("auc_full")) is not None]
+    return max(b, key=lambda r: float(r["auc_drop_without"])) if b else None
+
+
+def r_drivers():
+    s, top = drivers()
+    if not top:
+        return not_yet("the analysis of what goes with single offers (`results/drivers_summary.json`) has not been built.")
+    years = s.get("years_in_model") or s.get("years_present") or []
+    fit = ((s.get("model") or {}).get("fit") or {}).get("all sectors") or {}
+    size = f"{n(fit['n'])} sampled" if fit.get("n") else "a sample of"
+    txt = (f"In a model of {size} competed purchase orders and definitive contracts ({fy_text(years)}), holding agency and sector × year "
+           f"constant, the clearest associations with a single offer (large and precisely measured) were: "
+           + "; ".join(factor_text(t) for t in top[:3]) + ".")
+    b = best_block()
+    if b:
+        txt += (f" On awards held out of the fit ({b['split']}), the model ranks awards with an AUC of {num(b['auc_full'], 3)}. Leaving "
+                f"out {b['block']} lowers it the most, by {num(b['auc_drop_without'], 3)} ({num(b['auc_drop_ci_lo'], 3)} to "
+                f"{num(b['auc_drop_ci_hi'], 3)}).")
+    return paras(txt, figure("drivers.png", "What goes with single offers: marginal effects with 95% intervals"),
+                 cannot("causes. The factors travel together and with things the data do not record, and differences in how "
+                        "agencies code their data can look like drivers."))
+
+
+# -- after award (24_outcomes.py)
+def outcomes():
+    s = opt_json("outcomes_summary.json") or {}
+    h = s.get("headline_follow_up")
+    fu = (s.get("follow_ups") or {}).get(h) or {}
+    return s, h, fu
+
+
+def outcome_units():
+    return {r["outcome"]: r.get("unit", "") for r in opt_rows("outcomes_estimates.csv") if r.get("outcome")}
+
+
+def diff_text(e, unit="share", d=2):
+    """a difference single minus multi, in percentage points for shares and ratios"""
+    k = 100 if unit in ("share", "ratio") else 1
+    return f"{sgn(float(e['coef']) * k, d)} ({srng(float(e['lo']) * k, float(e['hi']) * k, d)})"
+
+
+def r_outcomes():
+    s, h, fu = outcomes()
+    pooled = fu.get("pooled") or {}
+    items = [k for k in ("oblig_ratio_w", "overrun25", "any_scope", "any_termination") if k in pooled]
+    if not items or not fu.get("cohorts"):
+        return not_yet("the after-award comparison (`results/outcomes_summary.json`) has not been built.")
+    units = outcome_units()
+    floor = ((s.get("design") or {}).get("size_floor"))
+    clear = [k for k in items if not includes_zero(pooled[k])]
+    if not clear:
+        reading = "None of these differences can be told apart from zero."
+    else:
+        up = [OUTCOME_SHORT[k] for k in clear if float(pooled[k]["coef"]) > 0]
+        down = [OUTCOME_SHORT[k] for k in clear if float(pooled[k]["coef"]) < 0]
+        biggest = max(abs(float(pooled[k]["coef"])) * 100 for k in clear)
+        reading = ("Where the interval excludes zero, single-offer awards had "
+                   + series([f"slightly more {series(up)}" if up else "", f"slightly fewer {series(down)}" if down else ""])
+                   + f", by at most {num(biggest, 1)} percentage points."
+                   + (f" The difference in {series([OUTCOME_SHORT[k] for k in items if k not in clear])} cannot be told apart from zero."
+                      if len(clear) < len(items) else ""))
+    bal = [OUTCOME.get(k, k) for k, e in (fu.get("balance") or {}).items() if "lo" in e and not includes_zero(e)]
+    if bal:
+        reading += (f" Single-offer awards also differ slightly on things fixed at award ({series(bal)}), so the cells do not make the "
+                    f"two groups fully alike.")
+    pl = fu.get("placebo") or {}
+    placebo = ""
+    if pl:
+        placebo = (" The two placebo checks, which competition cannot affect (an even signing day and a coin flip), show no difference, as "
+                   "they should." if all(includes_zero(e) for e in pl.values()) else
+                   " At least one placebo check shows a difference, so the two groups also differ in ways the cells do not capture.")
+    base = (f" ({pct(fu['share_of_awards_carrying_the_estimate'], 0)} of the {n(fu['awards_at_or_above_floor'])} awards"
+            + (f" of {usd(floor)} or more" if floor else "") + ")") \
+        if fu.get("awards_at_or_above_floor") and fu.get("share_of_awards_carrying_the_estimate") is not None else ""
+    txt = (f"Single-offer and multi-offer awards were compared inside the same buying office, quarter, award type, product and size band: "
+           f"{n(fu['awards_in_cells_with_both_kinds'])} competed purchase orders and definitive contracts{base} made in "
+           f"{fy_text(fu['cohorts'])}, followed {FOLLOW_UP.get(h, 'over ' + str(h))}. Differences, single-offer minus multi-offer, in "
+           f"percentage points (95% interval): "
+           + "; ".join(f"{OUTCOME_SHORT[k]}: {diff_text(pooled[k], units.get(k, 'share'))}" for k in items) + f". {reading}{placebo}")
+    growth = "" if "value_growth_w" in pooled else (" Total growth of an award's potential value is not in the yearly tables used here, "
+                                                     "so it is not measured.")
+    return paras(txt, figure("outcomes.png", "After award: single-offer minus multi-offer awards, with 95% intervals"),
+                 cannot("prices, which the data do not hold, or whether extra obligations, scope changes or terminations were "
+                        "justified. Only awards in cells with both kinds of award carry the estimate." + growth))
+
+
+# -- split-like purchase clusters (26_split_screen.py)
+def split():
+    s = opt_json("split_screen_summary.json") or {}
+    ex = s.get("excess_ratio_pooled") or {}
+
+    def er(sector, typ, var):
+        e = ex.get(f"{sector}|{typ}|{var}")
+        return e if e and None not in (fl(e.get("ratio")), fl(e.get("ci_lo")), fl(e.get("ci_hi"))) else None
+    return s, er
+
+
+def split_phrase(er, typ, var):
+    return series([f"{num(e['ratio'])} for {SECTOR[sec]} ({rng(e['ci_lo'], e['ci_hi'])})"
+                   for sec in ("civilian_ex_gsa", "gsa", "defense") if (e := er(sec, typ, var))]) or "not available"
+
+
+def natural(s):
+    ne = [e for e in s.get("natural_experiment") or []
+          if e.get("variant") == "all" and fl((e.get("after_minus_before") or {}).get("change")) is not None]
+    fell = sum(float(e["after_minus_before"]["ci_hi"]) < 0 for e in ne)
+    rose = sum(float(e["after_minus_before"]["ci_lo"]) > 0 for e in ne)
+    last = max(s.get("years_used") or [0])
+    partial = any(max(e.get("after_years") or [0]) > last for e in ne)
+    return ne, fell, rose, partial
+
+
+def r_split():
+    s, er = split()
+    if not any(er(sec, t, "all") for sec in ("civilian_ex_gsa", "gsa", "defense") for t in ("SAT", "MPT")):
+        return not_yet("the split screen (`results/split_screen_summary.json`) has not been built.")
+    d = s.get("design") or {}
+    gap, donut = d.get("gap_days"), d.get("donut_cap")
+    all_e = [e for sec in ("civilian_ex_gsa", "gsa", "defense") for t in ("SAT", "MPT") for v in ("all", "donut") if (e := er(sec, t, v))]
+    above = sum(float(e["ci_lo"]) > 1 for e in all_e)
+    near = f"within {num((1 - float(donut)) * 100, 0)}% of the limit" if donut else "just under the limit"
+    txt = (f"A split-like cluster is two or more purchases from the same company, office and product"
+           + (f" within {gap} days" if gap else "") + ", each at or under a limit but together above it. "
+           f"In {fy_text(s.get('years_used') or [])}, the share of purchases at or under the limit that sit in such clusters, divided by "
+           f"what placebo lines predict (1.00 = no excess, 95% interval): at the simplified-acquisition limit, {split_phrase(er, 'SAT', 'all')}; "
+           f"leaving out the awards {near}, {split_phrase(er, 'SAT', 'donut')}. At the micro-purchase limit, {split_phrase(er, 'MPT', 'all')}; "
+           f"without the awards {near}, {split_phrase(er, 'MPT', 'donut')}. {above} of these {len(all_e)} intervals lie above 1.00.")
+    ne, fell, rose, partial = natural(s)
+    if ne:
+        txt += (f" When a limit rose, the excess in the band between the old and the new limit should fall. Of {len(ne)} such "
+                f"before-and-after tests, it fell clearly in {fell}, rose clearly in {rose} and was unclear in {len(ne) - fell - rose}"
+                + ("; some of them use only part of their years after the change so far." if partial else "."))
+    return paras(txt, figure("split_screen.png", "Split-like clusters: excess at the real limits over placebo lines"),
+                 cannot("a prohibited split from legitimate repeat buying, such as monthly supply orders. It is a screening pattern "
+                        "at sector level, not evidence that any purchase was split."))
+
+
+# -- data quality (16_quality_monitor.py)
+def quality():
+    q = opt_json("quality_summary.json")
+    return q, opt_rows("quality_flags.csv")
+
+
+def flag_change(r):
+    if r["metric"] == "volume":
+        return f"{n(r['before'])} → {n(r['after'])} awards"
+    return f"{num(r['before'], 1)}% → {num(r['after'], 1)}%"
+
+
+def r_quality():
+    q, flags = quality()
+    if q is None:
+        return "**Data quality.** *Not yet available:* the data-quality monitor has not run. `python run.py quality` runs it."
+    bm = sorted((q.get("by_metric") or {}).items(), key=lambda kv: -kv[1])
+    txt = (f"**Data quality.** `16_quality_monitor.py` looks for quarters in which an agency changed how it records its data. It compares "
+           f"each civilian agency, award type and quarter of the {fy_span()} table with the quarters before it and flags only large, clear "
+           f"breaks. It flagged {q.get('n_flags', 0)}" + (": " + series([f"{v} on {METRIC.get(k, k)}" for k, v in bm]) if bm else "") + ".")
+    o1 = [r for r in flags if r.get("metric") == "offers_1" and fl(r.get("change_points")) is not None]
+    if o1:
+        b = max(o1, key=lambda r: abs(float(r["change_points"])))
+        txt += (f" The largest change in offer coding: {b['agency']} {KIND.get(b['award_kind'], b['award_kind'])} in "
+                f"{quarter_text(b['quarter'])}, where the one-offer share went from {num(b['before'], 1)}% to {num(b['after'], 1)}%.")
+    txt += (" A flag means \"check before you trust numbers from this agency and quarter\". It cannot say whether the change is in coding, "
+            "in late reporting or in competition itself. Full list: [`results/quality_flags.csv`](results/quality_flags.csv).")
+    return txt
+
+
+# -- reference files
+def reference_text(prefix):
+    th = opt_rows("thresholds.csv", REFERENCE)
+    ad = opt_rows("threshold_adoption_2018.csv", REFERENCE)
+    md = opt_rows("market_depth_naics.csv", REFERENCE)
+    out = []
+    if th:
+        out.append(f"[`reference/thresholds.csv`]({prefix}reference/thresholds.csv) lists {len(th)} value periods of "
+                   f"{len({r['threshold'] for r in th})} FAR dollar thresholds, each with its source and the words that show the value "
+                   f"([notes]({prefix}reference/thresholds.md)).")
+    if ad:
+        dated = sorted(r["sat_effective_date"] for r in ad if r.get("sat_effective_date"))
+        med = sum(r.get("confidence") == "medium" and bool(r.get("sat_effective_date")) for r in ad)
+        if dated:
+            out.append(f"[`reference/threshold_adoption_2018.csv`]({prefix}reference/threshold_adoption_2018.csv) gives the date each "
+                       f"agency adopted the 2018 limits: {len(dated)} of its {len(ad)} rows (agencies and the FAR itself) have a date, "
+                       f"from {long_date(dated[0])} to {long_date(dated[-1])}, {med} of them of medium confidence "
+                       f"([notes]({prefix}reference/README.md)).")
+    vals = sorted(int(float(r["n_any"])) for r in md if fl(r.get("n_any")) is not None)
+    if vals:
+        out.append(f"[`reference/market_depth_naics.csv`]({prefix}reference/market_depth_naics.csv) counts the companies registered in "
+                   f"SAM.gov to compete for federal contracts in each industry code: {n(len(vals))} codes, a median of "
+                   f"{n(median(vals))} companies per code, on {long_date(md[0]['extract_date'])}. A registration is not a capable "
+                   f"bidder ([notes]({prefix}reference/market_depth.md)).")
+    return "**Reference data.** " + (" ".join(out) if out else "*Not yet available.*")
+
+
+def r_reference():
+    return reference_text("")
+
+
+def m_reference():
+    return reference_text("../")
+
+
+# -- the forecast model, version 2 (30_model_v2.py): prints nothing until its card exists
+def model_v2_text(prefix):
+    card = opt_json("model_v2_card.json")
+    if not card:
+        return ""
+    try:
+        by = {r["model"]: r for r in opt_rows("model_v2_evaluation.csv") if r.get("test_fy") == "pooled" and r.get("sector") == "all"}
+        m = by[card["shipped"]["name_in_evaluation"]]
+        base, v1 = by.get("sector rate (baseline)"), by.get("version 1 feature set (refit)")
+        cmp_ = series([f"{num(base['auc'], 3)} for the sector-wide rate" if base else "",
+                       f"{num(v1['auc'], 3)} for version 1's features refitted" if v1 else ""])
+        data = card.get("data") or {}
+        built = card.get("built_utc", "")[:10]
+        return (f"- **Forecast model, version 2" + (f" (built {long_date(built)})" if built else "") + ".** "
+                f"Trained on {n(data['resolved_solicitations'])} solicitations from SAM.gov's archive that were matched to a competed award "
+                f"(award years {fy_text(data['award_years_present'])}). Tested out of time on {fy_text(card['evaluation']['test_years'])}, "
+                f"the shipped {card['shipped']['kind']} ranks solicitations with an AUC of {num(m['auc'], 3)}"
+                + (f" ({cmp_})" if cmp_ else "") + f", with a Brier score of {num(m['brier'], 3)}"
+                + (f" against {num(base['brier'], 3)} for the sector-wide rate" if base else "")
+                + f" and a calibration slope of {num(m['cal_slope'])} (1.00 is ideal). It is a risk indicator about markets, not a "
+                f"statement about anyone's conduct. Details: [`results/model_v2_card.json`]({prefix}results/model_v2_card.json).")
+    except (KeyError, TypeError, ValueError, IndexError):
+        return ""
+
+
+def r_model_v2():
+    return model_v2_text("")
+
+
+def m_model_v2():
+    return model_v2_text("../")
+
+
+def r_limit_history():
+    years = history_years()
+    if not years:
+        return "The long-history tables have not been built yet."
+    missing = [y for y in range(HISTORY_FIRST_FY, CONFIG["analysis"]["fiscal_years"][-1] + 1) if y not in years]
+    return (f"The single-offer history uses {fy_text(years)} so far"
+            + (f"; {fy_text(missing)} {'is' if len(missing) == 1 else 'are'} still to come." if missing else "."))
+
+
+# ---- methodology blocks for the newer analyses ----------------------------------------------------------------------------
+def m_quality():
+    q, flags = quality()
+    if q is None:
+        return "*Not yet available:* the monitor has not run (`python run.py quality`)."
+    th = q.get("thresholds") or {}
+    rules = ""
+    if th:
+        rules = (f"**Rules** (from `results/quality_summary.json`): both sides need at least {n(th['min_n'])} awards; a share is flagged "
+                 f"only if |z| ≥ {num(th['z_bar'], 0)} and it moved by at least {num(th['min_points'], 0)} percentage points; award counts "
+                 f"are flagged when they move by {num(th['volume_pct'], 0)}% or more against the {th.get('volume_baseline', 'same quarter a year earlier')}. "
+                 f"Share baseline: {th.get('baseline', 'the previous four quarters')}.")
+    bm = sorted((q.get("by_metric") or {}).items(), key=lambda kv: -kv[1])
+    qs = sorted({r["quarter"] for r in flags if r.get("quarter")})
+    head = (f"**Results** ({fy_span()} civilian table): {q.get('n_flags', 0)} flags"
+            + (f", in quarters from {quarter_text(qs[0])} to {quarter_text(qs[-1])}" if qs else "") + ". The largest of each kind:")
+    out = [rules, "", head, "", "| What changed | Flags | Largest flag |", "|---|---|---|"]
+    for k, v in bm:
+        fs = [r for r in flags if r.get("metric") == k and fl(r.get("change_points")) is not None]
+        big = max(fs, key=lambda r: abs(float(r["change_points"]))) if fs else None
+        cell = (f"{big['agency']}, {KIND.get(big['award_kind'], big['award_kind'])}, {quarter_text(big['quarter'])}: {flag_change(big)}"
+                if big else "")
+        out.append(f"| {METRIC.get(k, k)} | {v} | {cell} |")
+    return "\n".join(x for x in out if x is not None).strip()
+
+
+def m_history():
+    h = history_all()
+    years = history_years()
+    if not years:
+        return not_yet("The yearly tables have not been built.")
+    order = [s for s in ("civilian except GSA", "GSA", "Department of Defense") if s in h]
+    cell = {(s, int(r["fy"])): r for s in order for r in h[s]}
+    tot = {s: sum(int(float(r["n_eval"])) for r in h[s]) for s in order}
+    out = [f"**Results** ({fy_text(years)}). Competed awards with a usable offer count: "
+           + series([f"{n(tot[s])} ({SECTOR[s]})" for s in order]) + ". Single-offer share (95% interval):", "",
+           "| Fiscal year | " + " | ".join(cap(SECTOR[s]) for s in order) + " |", "|---" * (len(order) + 1) + "|"]
+    for y in years:
+        out.append(f"| FY{y} | " + " | ".join(f"{share_ci(cell[(s, y)])}, n = {n(cell[(s, y)]['n_eval'])}" if (s, y) in cell else ""
+                                             for s in order) + " |")
+    return "\n".join(out)
+
+
+def m_threshold_history():
+    t = th_table()
+    if not t:
+        return not_yet("`results/threshold_history.csv` has not been built.")
+    years = sorted({k[2] for k in t})
+    sectors = sorted({k[0] for k in t})
+    lines = sorted({k[1] for k in t})
+    cols = [(s, ln) for s in sectors for ln in lines]
+    out = [f"**Results** ({fy_text(years)}; bold = the line was the limit that year):", "",
+           "| Fiscal year | " + " | ".join(f"{cap(SECTOR.get(s, s))}, {money(ln)}" for s, ln in cols) + " |",
+           "|---" * (len(cols) + 1) + "|"]
+    for y in years:
+        cells = []
+        for s, ln in cols:
+            r = t.get((s, ln, y))
+            cells.append("" if r is None else f"**{num(r['ratio'])}**" if active(r) else num(r["ratio"]))
+        out.append(f"| FY{y} | " + " | ".join(cells) + " |")
+    out += ["", threshold_history_text(t)]
+    ch = th_changes(t)
+    if ch:
+        out += ["", "Each change, from the last year before it to the first full year after it (95% intervals):", ""]
+        for c in ch:
+            out.append(f"- {cap(SECTOR.get(c['sector'], c['sector']))}, {money(c['old'])} → {money(c['new'])}: under {money(c['new'])}, "
+                       f"{ratio_ci(c['nb'])} in FY{c['before']} → {ratio_ci(c['na'])} in FY{c['after']}; under {money(c['old'])}, "
+                       f"{ratio_ci(c['ob'])} → {ratio_ci(c['oa'])}.")
+    return "\n".join(out)
+
+
+def m_staggered():
+    d = stag_table()
+    if not d:
+        return not_yet("`results/threshold_staggered.csv` has not been built.")
+    civ = adoption_civilian()
+    dod = [r for r in opt_rows("threshold_adoption_2018.csv", REFERENCE) if r.get("agency") == "Department of Defense"
+           and r.get("sat_effective_date")]
+    out = []
+    if civ:
+        out.append(f"**Agencies:** {len(civ)} civilian agencies with a documented date of high or medium confidence "
+                   f"({sum(r['confidence'] == 'medium' for r in civ)} medium).")
+    for sector, who in (("civilian", "each agency's own date"), ("defense", "its adoption date")):
+        txt = staggered_text(d, sector, who)
+        if txt:
+            out.append(f"**{cap(SECTOR[sector])}.** {txt}")
+    if dod:
+        out.append(f"Defense has one adoption date ({long_date(dod[0]['sat_effective_date'])}), so its test is a before-and-after "
+                   f"comparison around that date, not a staggered one.")
+    cols = [(s, k, ln) for s in ("civilian", "defense") for (k, ln) in (("actual", 150000), ("actual", 250000), ("placebo", 250000))
+            if d.get((s, k, ln))]
+    qs = sorted({q for c in cols for q in d[c]})
+    table = ["Bunching ratio (95% interval) by quarter around the adoption date (quarter 0 starts on adoption day):", "",
+             "| Quarter | " + " | ".join(f"{cap(SECTOR[s])}, {money(ln)}{', placebo dates' if k == 'placebo' else ''}"
+                                     for s, k, ln in cols) + " |", "|---" * (len(cols) + 1) + "|"]
+    table += [f"| {sgn(q, 0)} | " + " | ".join(ratio_ci(d[c][q]) if q in d[c] else "" for c in cols) + " |" for q in qs]
+    return "\n\n".join(out + ["\n".join(table)])
+
+
+def m_scan():
+    rs = scan_changes()
+    if not rs:
+        return not_yet("`results/threshold_scan_changes.csv` has not been built.")
+    tested = [r for r in rs if r["verdict"] != "not testable"]
+    partial = [r for r in rs if r["verdict"] == "not testable" and fl(r.get("did")) is not None]
+    out = [f"**Results** ({fy_text(scan_years())}; civilian agencies and Defense; the combined rows are in the file). "
+           f"{len(tested)} of {len(rs)} changes can be tested:", "",
+           "| Limit | Change | Date | Sector | Difference-in-differences (95% interval) | Reading |", "|---|---|---|---|---|---|"]
+    for r in tested:
+        out.append(f"| {fam(r['family'])} | {usd(r['old_line'])} → {usd(r['new_line'])} | {r['change_date']} | "
+                   f"{'civilian' if r['sector'] == 'civilian' else 'Defense'} | {sgn(r['did'])} ({srng(r['did_lo'], r['did_hi'])}) | "
+                   f"{r['verdict']}; {r.get('reason', '')} |")
+    if partial:
+        out += ["", "Waiting for later years (the numbers so far use part of the windows and are not a test): "
+                + "; ".join(f"{fam(r['family'])} {usd(r['old_line'])} → {usd(r['new_line'])}, "
+                            f"{'civilian' if r['sector'] == 'civilian' else 'Defense'}, {sgn(r['did'])} ({srng(r['did_lo'], r['did_hi'])})"
+                            for r in partial) + "."]
+    why = untestable_counts()
+    if why:
+        out += ["", f"Not testable ({len(rs) - len(tested)}): " + series([f"{v} {k}" for k, v in why.items()]) + "."]
+    lv = [x for x in (opt_json("threshold_scan_summary.json") or {}).get("levels") or []
+          if x.get("sector") in ("civilian", "defense") and x.get("active_minus_inactive_ci")]
+    if lv:
+        up = sum(float(x["active_minus_inactive_ci"][0]) > 0 for x in lv)
+        out += ["", f"**Level check.** In {up} of {len(lv)} limit-and-sector pairs with both kinds of year, the pile-up was larger in the "
+                    f"years the value was the limit than in years it was not (95% interval of the difference above zero)."]
+    return "\n".join(out)
+
+
+def m_drivers():
+    s, top = drivers()
+    if not top:
+        return not_yet("`results/drivers_summary.json` has not been built.")
+    sample = s.get("sample") or {}
+    fit = (s.get("model") or {}).get("fit") or {}
+    out = [" ".join(x for x in (
+               f"**Results** (model years {fy_text(s.get('years_in_model') or [])}; shares use {fy_text(s.get('years_in_shares') or [])}).",
+               f"Quota per fiscal year × sector: {n(sample['quota_per_stratum'])} awards (seed {sample.get('seed')})." if sample.get("quota_per_stratum") else "",
+               "Incumbency could not be measured yet: it needs the three previous fiscal years." if not s.get("incumbency_years") else
+               f"Incumbency is measured for {fy_text(s['incumbency_years'])}.",
+               f"Defense years left out as incomplete: {fy_text(s['defense_years_left_out_incomplete'])}." if s.get("defense_years_left_out_incomplete") else "")
+               if x),
+           "", "| Scope | Sampled awards | Single-offer share | Buying offices (clusters) | McFadden R² | AUC (in sample) |",
+           "|---|---|---|---|---|---|"]
+    for k, f in fit.items():
+        out.append(f"| {SECTOR.get(k, k)} | {n(f['n'])} | {pct(f['single_share'])} | {n(f['n_clusters_offices'])} | "
+                   f"{num(f['mcfadden_r2'], 3)} | {num(f['auc_in_sample'], 3)} |")
+    out += ["", "**Strongest associations** (one level per factor, ranked by the end of the 95% interval nearest zero; average marginal "
+                "effects in percentage points against the most common level):", ""]
+    out += [f"- {factor_text(t)}" for t in top]
+    blocks = [r for r in opt_rows("drivers_blocks.csv") if fl(r.get("auc_drop_without")) is not None]
+    if blocks:
+        out += ["", f"**Blocks** ({blocks[0]['split']}; {n(blocks[0]['n_train'])} training and {n(blocks[0]['n_test'])} test awards; "
+                    f"full model AUC {num(blocks[0]['auc_full'], 3)}):", "",
+                "| Block | AUC drop without it (95% interval) | Log-loss increase without it (95% interval) | AUC with this block alone |",
+                "|---|---|---|---|"]
+        for r in sorted(blocks, key=lambda r: -float(r["auc_drop_without"])):
+            out.append(f"| {r['block']} | {num(r['auc_drop_without'], 4)} ({num(r['auc_drop_ci_lo'], 4)} to {num(r['auc_drop_ci_hi'], 4)}) | "
+                       f"{num(r['log_loss_increase_without'], 4)} ({num(r['log_loss_increase_ci_lo'], 4)} to "
+                       f"{num(r['log_loss_increase_ci_hi'], 4)}) | {num(r['auc_alone'], 3) if fl(r.get('auc_alone')) is not None else ''} |")
+    return "\n".join(out)
+
+
+def m_outcomes():
+    s, h, fu = outcomes()
+    if not fu.get("pooled"):
+        return not_yet("`results/outcomes_summary.json` has not been built.")
+    units = outcome_units()
+    fus = s.get("follow_ups") or {}
+    yp = (s.get("years_present") or {}).get("award_year") or []
+    out = [f"**Results** (award-year tables present: {fy_text(yp)}). "
+           + " ".join(f"Follow-up {k} ({FOLLOW_UP.get(k, k)}): cohorts {fy_text(v.get('cohorts') or [])}, "
+                      f"{n(v.get('awards_at_or_above_floor', 0))} awards at or above the size floor ({pct(v.get('single_offer_share', 0))} "
+                      f"single-offer), of which {n(v.get('awards_in_cells_with_both_kinds', 0))} in {n(v.get('cells', 0))} cells with both "
+                      f"kinds of award, from {n(v.get('buying_offices', 0))} buying offices."
+                      for k, v in fus.items() if v.get("pooled")), ""]
+    keys = list(fus)
+    out += ["| Outcome | " + " | ".join(f"Multi-offer mean, {k} | Single minus multi, {k} (95% interval)" for k in keys) + " |",
+            "|---" * (1 + 2 * len(keys)) + "|"]
+    for o in [k for k in OUTCOME if any(k in (fus[f].get("pooled") or {}) for f in keys)]:
+        cells = []
+        for f in keys:
+            e = (fus[f].get("pooled") or {}).get(o)
+            u = units.get(o, "share")
+            if e:
+                m_ = pct(e["mean_multi_offer"]) if u in ("share", "ratio") else num(e["mean_multi_offer"], 3)
+                cells += [m_, diff_text(e, u, 2 if u in ("share", "ratio") else 3)]
+            else:
+                cells += ["", ""]
+        out.append(f"| {OUTCOME[o]} | " + " | ".join(cells) + " |")
+    out += ["", "Shares and ratios are in percent and percentage points; the number of scope changes is a count."]
+    for title, part in (("Placebo checks", "placebo"), ("Balance on things fixed at award", "balance")):
+        es = fu.get(part) or {}
+        if es:
+            out += ["", f"**{title}** ({h}): " + "; ".join(
+                f"{OUTCOME.get(k, k)} {diff_text(e, units.get(k, 'share'), 3)}" + ("" if includes_zero(e) else " (interval excludes zero)")
+                for k, e in es.items()) + "."]
+    ck = fu.get("checks") or {}
+    tested = [(o, name, e) for o, d in ck.items() if isinstance(d, dict) for name, e in d.items() if isinstance(e, dict) and "lo" in e]
+    if tested:
+        flips = [(o, name) for o, name, e in tested if o in fu["pooled"] and includes_zero(e) != includes_zero(fu["pooled"][o])]
+        out += ["", f"**Checks** ({h}; other size floors and other cells): {len(tested)} alternative estimates. In {len(flips)} of them the "
+                    f"interval {'' if flips else 'never '}changes side of zero compared with the main design"
+                    + (": " + "; ".join(f"{OUTCOME.get(o, o)}, {name}" for o, name in flips) if flips else "") + "."]
+    return "\n".join(out)
+
+
+def m_split():
+    s, er = split()
+    rows_ = [(sec, [er(sec, t, v) for t in ("SAT", "MPT") for v in ("all", "donut")]) for sec in ("civilian_ex_gsa", "gsa", "defense")]
+    if not any(e for _, es in rows_ for e in es):
+        return not_yet("`results/split_screen_summary.json` has not been built.")
+    d = s.get("design") or {}
+    out = [f"**Results** ({fy_text(s.get('years_used') or [])}"
+           + (f"; links at most {d['gap_days']} days apart; placebo multiples {', '.join(num(m, 2) for m in d['multiples'] if float(m) != 1)}; "
+              f"{d.get('bootstrap')} bootstrap resamples of {d.get('bootstrap_unit')}" if d.get("multiples") else "") + "). "
+           "Excess ratio, pooled over the years (1.00 = no excess; 95% interval):", "",
+           "| Sector | Simplified acquisition | Same, donut | Micro-purchase | Same, donut |", "|---|---|---|---|---|"]
+    for sec, es in rows_:
+        out.append(f"| {SECTOR[sec]} | " + " | ".join(ratio_ci(e) if e else "" for e in es) + " |")
+    ne, fell, rose, partial = natural(s)
+    if ne:
+        last = max(s.get("years_used") or [0])
+        out += ["", "**When a limit rose** (band between the old and the new limit, all awards; change in the excess ratio, after minus before):", "",
+                "| Limit | Change | Sector | Before | After | Change (95% interval) |", "|---|---|---|---|---|---|"]
+        for e in ne:
+            b, a = e.get("before_years") or [], e.get("after_years") or []
+            a_txt = (fy_text([y for y in range(a[0], a[-1] + 1) if y <= last]) + (" so far" if a[-1] > last else "")) if a else ""
+            c = e["after_minus_before"]
+            label = {"SAT": "simplified acquisition", "MPT": "micro-purchase"}.get(e["threshold_type"], e["threshold_type"])
+            out.append(f"| {label} | {usd(e['old_line'])} → {usd(e['new_line'])} | {SECTOR.get(e['sector'], e['sector'])} | "
+                       f"{num(e['before']['ratio'])} ({fy_text(range(b[0], b[-1] + 1)) if b else ''}) | {num(e['after']['ratio'])} ({a_txt}) | "
+                       f"{sgn(c['change'])} ({srng(c['ci_lo'], c['ci_hi'])}) |")
+        out += ["", f"It fell clearly in {fell}, rose clearly in {rose} and was unclear in {len(ne) - fell - rose} of {len(ne)} tests."]
+    return "\n".join(out)
+
+
 BLOCKS = {
     # README.md
     "status": r_status, "threshold-table": r_threshold_table, "threshold-quarters": r_threshold_quarters,
     "single-offer-five": r_single_five, "civilian": r_civilian, "civilian-table": r_civilian_table,
     "model-table": r_model_table, "model-applied": r_model_applied, "forecasts": r_forecasts,
     "limit-premium": r_limit_premium, "limit-999": r_limit_999, "limit-fy2026": r_limit_fy2026,
-    # docs/methodology.md
+    # README.md, the long history and the other newer analyses (optional files)
+    "history": r_history, "threshold-history": r_threshold_history, "threshold-staggered": r_threshold_staggered,
+    "threshold-scan": r_threshold_scan, "drivers": r_drivers, "outcomes": r_outcomes, "split-screen": r_split,
+    "quality": r_quality, "reference": r_reference, "limit-history": r_limit_history, "model-v2": r_model_v2,
     "m-header": m_header, "m-download": m_download, "m-999": m_999, "m-coverage": m_coverage, "m-recount": m_recount,
     "m-five-table": m_five_table, "m-other-cuts": m_other_cuts, "m-premium": m_premium, "m-offices": m_offices,
     "m-civ-data": m_civ_data, "m-civ-check": m_civ_check, "m-gsa": m_gsa, "m-civ-table": m_civ_table,
@@ -740,7 +1684,15 @@ BLOCKS = {
     "m-threshold-quarters": m_threshold_quarters, "m-micro": m_micro, "m-did": m_did, "m-model-frozen": m_model_frozen,
     "m-model-pop": m_model_pop, "m-oot": m_oot, "m-effects": m_effects, "m-open": m_open, "m-registered": m_registered,
     "m-backtest": m_backtest, "m-f2": m_f2, "m-limit-fy2026": m_limit_fy2026,
+    # docs/methodology.md, the newer analyses (optional files)
+    "m-quality": m_quality, "m-history": m_history, "m-threshold-history": m_threshold_history, "m-staggered": m_staggered,
+    "m-scan": m_scan, "m-drivers": m_drivers, "m-outcomes": m_outcomes, "m-split": m_split, "m-reference": m_reference,
+    "m-model-v2": m_model_v2,
 }
+# blocks that read only optional files: they must never fail, whatever is missing (tests/test_report.py checks this)
+OPTIONAL_BLOCKS = ["history", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "outcomes", "split-screen",
+                   "quality", "reference", "limit-history", "model-v2", "m-quality", "m-history", "m-threshold-history", "m-staggered",
+                   "m-scan", "m-drivers", "m-outcomes", "m-split", "m-reference", "m-model-v2"]
 
 
 def fill(doc_text, changed, seen, label):
