@@ -117,13 +117,22 @@ def fiscal_year(x):
     return None if v is None else int(v)
 
 
+def newest_live_fy(rd):
+    """The newest fiscal year with a live_fy<year>_totals.json (as build_dashboard.py picks it), or None."""
+    if not os.path.isdir(rd.folder):
+        return None
+    years = [int(m.group(1)) for f in os.listdir(rd.folder) if (m := re.fullmatch(r"live_fy(\d{4})_totals\.json", f))]
+    return max(years) if years else None
+
+
 # ---- sections -----------------------------------------------------------------------------------------------------
 def build_agencies(rd):
     atlas = rd.csv("atlas_civilian_by_agency.csv") or []
     atlas_fy = rd.csv("atlas_civilian_by_agency_fy.csv") or []
     hist = rd.csv("history_by_agency_fy.csv") or []
-    live = rd.csv("live_fy2027_by_agency.csv") or []
-    live_tot = rd.json("live_fy2027_totals.json")
+    live_fy_file = newest_live_fy(rd)
+    live_tot = rd.json(f"live_fy{live_fy_file}_totals.json") if live_fy_file else None
+    live = (rd.csv(f"live_fy{live_fy_file}_by_agency.csv") or []) if live_fy_file else []
     abbr = {r["agency"]: r.get("abbreviation", "") for r in atlas}
     for r in live:
         abbr.setdefault(r["agency"], r.get("abbreviation", ""))

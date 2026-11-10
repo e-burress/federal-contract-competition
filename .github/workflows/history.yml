@@ -1,6 +1,8 @@
 # Builds the long history (FY2008 onward; civilian agencies and the Department of Defense) on GitHub's computers, one job per fiscal year,
 # and publishes the compact yearly tables (scripts/18_history_build.py) as assets of the public release "history-v1".
 # Start it from the Actions tab ("Run workflow"). Each year takes up to an hour, mostly waiting on USAspending; rerunning a year replaces its files.
+# Every year is always built from both sectors (civilian and Defense). For a one-sector download on your own computer, use
+# python -I scripts/17_history_download.py FY civilian (or defense); never publish a year built that way.
 name: History backfill
 
 on:
@@ -14,11 +16,6 @@ on:
         description: "Last fiscal year"
         default: "2026"
         required: true
-      scope:
-        description: "Which agencies"
-        type: choice
-        options: [all, civilian, defense]
-        default: all
 
 permissions:
   contents: write            # publish the yearly tables to the history-v1 release
@@ -59,8 +56,10 @@ jobs:
       - name: Install
         run: pip install -r requirements.txt
 
-      - name: Download FY${{ matrix.fy }}
-        run: python -I scripts/17_history_download.py ${{ matrix.fy }} ${{ inputs.scope }}
+      # Always both sectors: the yearly tables hold civilian and Defense awards together, and the upload below replaces
+      # the year's files, so a one-sector rebuild would drop the other sector from the public tables.
+      - name: Download FY${{ matrix.fy }} (civilian agencies and Defense)
+        run: python -I scripts/17_history_download.py ${{ matrix.fy }} all
 
       - name: Build the yearly tables
         run: python -I scripts/18_history_build.py ${{ matrix.fy }}
@@ -68,5 +67,5 @@ jobs:
       - name: Publish to the history-v1 release
         run: |
           gh release view history-v1 > /dev/null 2>&1 || gh release create history-v1 --title "History tables" \
-            --notes "Yearly tables for the long history (FY2008 onward, civilian agencies and the Department of Defense), built by .github/workflows/history.yml. Office names are left out and company identifiers are replaced by pseudonymous ids. See docs/data-dictionary.md." || true
+            --notes "Yearly tables for the long history (FY2008 onward, civilian agencies and the Department of Defense), built by .github/workflows/history.yml. Office names and raw company identifiers are left out only to keep the tables small and focused. vendor_id is a short code derived from the company's public identifier, so the same company can be followed across awards; it is not anonymous. Contract numbers are kept, and every award is public on USAspending.gov. See docs/data-dictionary.md." || true
           gh release upload history-v1 data/history/processed/*FY${{ matrix.fy }}* --clobber

@@ -70,4 +70,12 @@ jobs:
           git add results docs
           if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
           git commit -m "Daily refresh: $(date -u +%Y-%m-%d)"
-          git push
+          # main may have moved during the run: put this commit on top of it and push, up to 5 tries
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase origin main && git push; then exit 0; fi
+            git rebase --abort 2> /dev/null || true
+            echo "push attempt $attempt failed; trying again shortly"
+            sleep $((attempt * 10))
+          done
+          echo "could not push the daily results after 5 tries"
+          exit 1

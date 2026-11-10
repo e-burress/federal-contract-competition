@@ -9,7 +9,7 @@ The five departments of the original analysis are measured again from this newer
 published five-department numbers (atlas_civilian_five_check.csv), which shows how much late reporting moved them.
 
 Input : data/processed/base_awards_civilian.parquet   (02_build_awards.py --civilian)
-        data/usaspending_civilian/agencies.json and the ZIPs   (01c_download_civilian.py)
+        data/usaspending_civilian/agencies.json, the ZIPs and their manifests   (01c_download_civilian.py)
 Output: results/atlas_civilian_by_agency.csv, atlas_civilian_by_agency_fy.csv, atlas_civilian_totals.csv, atlas_civilian_by_fy.csv,
         atlas_civilian_by_kind.csv, atlas_civilian_by_setaside.csv, atlas_civilian_five_check.csv, atlas_civilian_summary.txt
 """
@@ -36,11 +36,34 @@ GSA = "General Services Administration"               # mostly very small supply
 
 SRC = os.path.join(DATA, "usaspending_civilian")
 PROCESSED = os.path.join(DATA, "processed")
-zips = glob.glob(os.path.join(SRC, "*.zip"))
-if zips:                                   # built from your own download: its date
-    snapshot = datetime.fromtimestamp(max(os.path.getmtime(p) for p in zips), timezone.utc).strftime("%Y-%m-%d")
-else:                                      # built from the published data snapshot (run.py quick): the date it records
-    snapshot = json.load(open(os.path.join(PROCESSED, "snapshot.json"), encoding="utf-8"))["downloaded"]
+
+
+def snapshot_date(src=SRC, processed=PROCESSED):
+    """The download date, YYYY-MM-DD.  File times change when files are copied, so they are the last resort:
+    1. the newest `downloaded_utc` in the manifest_*.json files next to the ZIPs (01c_download_civilian.py writes it);
+    2. `downloaded` in processed/snapshot.json (the published data snapshot, or a copy of dist/snapshot.json);
+    3. the newest modification time of the ZIPs."""
+    stamps = []
+    for m in glob.glob(os.path.join(src, "manifest_*.json")):
+        try:
+            stamps.append(json.load(open(m, encoding="utf-8")).get("downloaded_utc") or "")
+        except (OSError, ValueError):
+            continue
+    stamps = [s for s in stamps if s]
+    if stamps:
+        return max(stamps)[:10]
+    snap = os.path.join(processed, "snapshot.json")
+    if os.path.exists(snap):
+        d = json.load(open(snap, encoding="utf-8")).get("downloaded")
+        if d:
+            return d
+    zips = glob.glob(os.path.join(src, "*.zip"))
+    if zips:
+        return datetime.fromtimestamp(max(os.path.getmtime(p) for p in zips), timezone.utc).strftime("%Y-%m-%d")
+    sys.exit(f"no download date found: no manifests or ZIPs in {src} and no {snap}")
+
+
+snapshot = snapshot_date()
 agencies_file = os.path.join(SRC, "agencies.json")
 if not os.path.exists(agencies_file):
     agencies_file = os.path.join(PROCESSED, "agencies.json")

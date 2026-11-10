@@ -2,17 +2,20 @@
 18_history_build.py - turn ONE fiscal year of downloaded transactions (17_history_download.py) into two compact public tables.
 
   base_actions_FY<fy>.parquet   one row per award whose base action (modification 0) is dated in the year: what was bought, how it was
-                                competed, offers received, set-aside, values at award, agency, buying-office code, a pseudonymous vendor
-                                id, and whether it is a Department of Defense award.  Same rules as 02_build_awards.py
+                                competed, offers received, set-aside, values at award, agency, buying-office code, a vendor_id (a short
+                                company code, see below), and whether it is a Department of Defense award.  Same rules as 02_build_awards.py
                                 (competed = A/D/E/F/CDO; usable offers = 1..998; eval set = both; single = exactly one offer).
   award_year_FY<fy>.parquet     one row per award with any action in the year: number of actions, dollars obligated, highest and latest
                                 potential value, last action date, and how many actions were option exercises, scope changes
                                 (supplemental agreements, change orders) or terminations.  Joining the years gives each award's history
                                 after it was made (cost growth, extensions, terminations), even when that history spans many years.
 
-Privacy, as in the public snapshot: buying-office NAMES are left out (codes stay), and company identifiers (UEI, or DUNS before 2022) are
-replaced by vendor_id = the first 16 hex digits of SHA-256("fcc-v1:" + identifier), so awards to the same company can be linked without
-publishing the identifier.
+What is left out, as in the public snapshot: buying-office NAMES (codes stay), company names and raw company identifiers.  They are left
+out only to keep the tables small and focused, not to hide anything.  vendor_id is a short code derived from the company's public
+identifier (the first 16 hex digits of SHA-256("fcc-v1:" + UEI, or "duns:" + DUNS when there is no UEI)), so the same company can be
+followed across awards.  It is not anonymous: anyone with the identifier can compute the same code, contract numbers are kept, and the
+underlying records are public on USAspending.gov.  Known limit: a company whose records carry a UEI in some years and only a DUNS in
+others (the switch from DUNS to UEI came in April 2022) gets two codes.
 
 Usage:  python -I scripts/18_history_build.py FY
 Input : data/history/FY<fy>/*.zip

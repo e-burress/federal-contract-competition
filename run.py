@@ -22,6 +22,7 @@ This file uses only the standard library, so `check` works before anything is in
 """
 import hashlib
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -33,7 +34,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data")
 PROCESSED = os.path.join(DATA, "processed")
 RESULTS = os.path.join(ROOT, "results")
-PUBLISHED = os.path.join(DATA, "published_results")       # copy of results/ taken before a rebuild, for `verify`
+PUBLISHED = os.path.join(DATA, "published_results")       # the published results, set aside before a rebuild, for `verify`
 DIST = os.path.join(ROOT, "dist")
 
 if sys.version_info < (3, 11):
@@ -77,13 +78,16 @@ STEPS = {
     "history-atlas":       ("scripts/19_history_atlas.py", [], False, "single-offer shares FY2008 onward, civilian and Defense"),
     "threshold-history":   ("scripts/20_threshold_history.py", [], False, "pile-ups under every simplified-acquisition limit since FY2008"),
     "threshold-staggered": ("scripts/21_threshold_staggered.py", [], False, "the 2018 change, agency by agency (staggered adoption dates)"),
+    "drivers":             ("scripts/23_drivers.py", [], False, "why some competed awards get one offer: shares, model, blocks"),
+    "split-screen":        ("scripts/26_split_screen.py", [], False, "split-like purchase clusters: excess at each threshold over placebo lines"),
+    "score-f1":            ("scripts/09_resolve_forecast.py", [], True, "score the sealed single-offer forecast F1 (optional: path to the private file)"),
 }
 PIPELINES = {
     "quick": ["get-snapshot", "atlas", "atlas-civilian", "quality", "threshold", "threshold-quarterly", "figures", "report", "dashboard", "explorer"],
     "all":   ["download", "build-five", "build-civilian", "build-threshold", "atlas", "atlas-civilian", "quality", "threshold",
               "threshold-quarterly", "sql-check", "figures", "report", "dashboard", "explorer"],
     "daily": ["sam-snapshot", "live", "track-f2", "dashboard", "explorer"],
-    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered"],
+    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered", "drivers", "split-screen"],
 }
 # results that change every day, are not rebuilt by quick/all, or are never published (office level); `verify` skips them
 LIVE_OR_FROZEN = ("tracking_", "live_fy", "sam_daily_", "model_", "resolution_", "threshold_resolution_", "atlas_offices")
@@ -93,7 +97,7 @@ def say(msg=""):
     print(msg, flush=True)
 
 
-def run_step(name):
+def run_step(name, extra=()):
     if name == "get-snapshot":
         return get_snapshot()
     if name == "get-history":
@@ -105,7 +109,7 @@ def run_step(name):
     say(f"\n=== {name}: {what}")
     env = dict(os.environ, PIO_CONTACT=CONTACT, PYTHONIOENCODING="utf-8")
     t0 = time.time()
-    r = subprocess.run([sys.executable, "-I", os.path.join(ROOT, script), *args], cwd=ROOT, env=env)
+    r = subprocess.run([sys.executable, "-I", os.path.join(ROOT, script), *args, *extra], cwd=ROOT, env=env)
     if r.returncode != 0:
         hint = " It needs the internet: check your connection and run the same command again (finished parts are kept)." if online else ""
         sys.exit(f"\nStep '{name}' failed (exit code {r.returncode}).{hint}")
@@ -173,28 +177,106 @@ def get_history():
     say(f"=== get-history: done, {len(assets)} files in data/history/processed")
 
 
-def keep_published_copy():
-    """Copy results/ aside before a rebuild, so `verify` can compare against what was published."""
-    if os.path.isdir(PUBLISHED):
-        shutil.rmtree(PUBLISHED)
-    shutil.copytree(RESULTS, PUBLISHED)
+def find_git():
+    """The git program: on PATH, in GIT_BIN, or in its usual Windows folder. None when there is none."""
+    for g in (shutil.which("git"), os.environ.get("GIT_BIN"), r"C:\Program Files\Git\cmd\git.exe"):
+        if g and os.path.isfile(g):
+            return g
+    return None
+
+
+def git_published():
+    """The published result files, {name: bytes}, from the last commit (git show HEAD:results/<file>).
+    None when this folder is not a git checkout or git is not available."""
+    git = find_git()
+    if not git or not os.path.exists(os.path.join(ROOT, ".git")):
+        return None
+    r = subprocess.run([git, "-C", ROOT, "ls-tree", "-z", "HEAD", "results/"], capture_output=True)
+    if r.returncode != 0:
+        return None
+    wanted = []                                     # (object id, file name) of each published .csv and .json
+    for entry in r.stdout.decode("utf-8").split("\0"):
+        if "\t" not in entry:
+            continue
+        info, path = entry.split("\t", 1)
+        kind, obj = info.split()[1:3]
+        name = path[len("results/"):]
+        if kind == "blob" and path.startswith("results/") and "/" not in name and name.endswith((".csv", ".json")):
+            wanted.append((obj, name))
+    if not wanted:
+        return None
+    # one git process for every file (the same bytes as git show HEAD:results/<file>)
+    r = subprocess.run([git, "-C", ROOT, "cat-file", "--batch"], input="".join(o + "\n" for o, _ in wanted).encode(), capture_output=True)
+    if r.returncode != 0:
+        return None
+    out, pos = {}, 0
+    for obj, name in wanted:
+        eol = r.stdout.index(b"\n", pos)
+        header = r.stdout[pos:eol].split()
+        if len(header) != 3 or header[1] != b"blob":
+            return None
+        size = int(header[2])
+        out[name] = r.stdout[eol + 1:eol + 1 + size]
+        pos = eol + 1 + size + 1                    # the content is followed by one newline
+    return out
+
+
+STAMP = "rebuild_started.txt"      # in PUBLISHED: when the last `quick` or `all` started, so `verify` knows what it rebuilt
+
+
+def keep_published_copy(cmd=""):
+    """Set the published results aside before a rebuild, so `verify` compares against them.
+    In a git checkout they come from the last commit, so a second run still compares with the published files and not with
+    the previous rebuild.  Without git, results/ is copied only when there is no copy yet."""
+    started = time.time()
+    published = git_published()
+    if published is not None:
+        tmp = PUBLISHED + ".part"
+        if os.path.isdir(tmp):
+            shutil.rmtree(tmp)
+        os.makedirs(tmp)
+        for name, blob in published.items():
+            with open(os.path.join(tmp, name), "wb") as f:
+                f.write(blob)
+        if os.path.isdir(PUBLISHED):
+            shutil.rmtree(PUBLISHED)
+        os.replace(tmp, PUBLISHED)
+        say(f"verify will compare with the published results ({len(published)} files from the last git commit)")
+    elif os.path.isdir(PUBLISHED):
+        say(f"verify will compare with the copy of results/ already in {PUBLISHED} (git is not available, so it was not replaced)")
+    else:
+        shutil.copytree(RESULTS, PUBLISHED)
+        say(f"verify will compare with a copy of results/ taken now, in {PUBLISHED} (git is not available; the copy is kept for later runs)")
+    with open(os.path.join(PUBLISHED, STAMP), "w", encoding="utf-8") as f:
+        f.write(f"{started}\n{cmd}\n")
 
 
 def verify():
-    """Compare rebuilt results with the copy taken before the rebuild: numbers must agree to 9 significant digits."""
+    """Compare rebuilt results with the published ones: numbers must agree to 9 significant digits.
+    Files the last `quick` or `all` did not write are listed apart, never counted as a match."""
     try:
         import pandas as pd
     except ImportError:
         sys.exit("verify needs the packages in requirements.txt (pandas).")
     if not os.path.isdir(PUBLISHED):
         sys.exit("Nothing to compare with yet: run `python run.py quick` (or `all`) first.")
-    same, differ, missing = 0, [], []
+    started, cmd = None, "the last rebuild"
+    stamp = os.path.join(PUBLISHED, STAMP)
+    if os.path.exists(stamp):
+        with open(stamp, encoding="utf-8") as f:
+            lines = f.read().splitlines()
+        started = float(lines[0])
+        cmd = f"`{lines[1]}`" if len(lines) > 1 and lines[1] else cmd
+    same, differ, missing, stale = 0, [], [], []
     for name in sorted(os.listdir(PUBLISHED)):
         if name.startswith(LIVE_OR_FROZEN) or not name.endswith((".csv", ".json")):
             continue
         a, b = os.path.join(PUBLISHED, name), os.path.join(RESULTS, name)
         if not os.path.exists(b):
             missing.append(name)
+            continue
+        if started is not None and os.path.getmtime(b) < started - 2:     # 2 s for coarse file-system clocks
+            stale.append(name)
             continue
         if name.endswith(".json"):
             ok = close_json(json.load(open(a, encoding="utf-8")), json.load(open(b, encoding="utf-8")))
@@ -207,11 +289,14 @@ def verify():
         else:
             differ.append(f"{name}: {problem}")
     say(f"\nverify: {same} result files match the published ones" + (f"; {len(differ)} differ" if differ else "")
-        + (f"; {len(missing)} were not rebuilt" if missing else ""))
+        + (f"; {len(missing)} are missing" if missing else "")
+        + (f"; {len(stale)} were not rebuilt by {cmd}, so they were not compared" if stale else ""))
     for d in differ:
         say("  differs  " + d)
     for m in missing:
         say("  missing  " + m)
+    for s in stale:
+        say("  not rebuilt by this command  " + s)
     if differ:
         sys.exit("verify: differences found. After `quick` this should not happen; after `all` small differences are"
                  " normal, because agencies keep correcting their reports.")
@@ -239,6 +324,8 @@ def close_json(x, y):
     if isinstance(x, list) and isinstance(y, list):
         return len(x) == len(y) and all(close_json(p, q) for p, q in zip(x, y))
     if isinstance(x, (int, float)) and isinstance(y, (int, float)) and not isinstance(x, bool):
+        if math.isnan(x) or math.isnan(y):
+            return math.isnan(x) and math.isnan(y)          # NaN matches NaN only
         return abs(x - y) <= 1e-9 * max(1.0, abs(y))
     return x == y
 
@@ -284,14 +371,16 @@ def check(online=False):
 
 
 def export_data():
-    """Write the public snapshot to dist/: the processed tables minus office names and company identifiers."""
+    """Write the public snapshot to dist/: the processed tables minus office names and company identifiers (left out to keep
+    the tables small, not to hide anything: contract numbers stay, and every award is public on USAspending.gov)."""
     import pandas as pd
     os.makedirs(DIST, exist_ok=True)
     plan = {"base_awards_five.parquet": ("base_awards.parquet", ["awarding_office_name", "recipient_uei", "recipient_parent_uei"]),
             "base_awards_civilian.parquet": ("base_awards_civilian.parquet", []),
             "threshold_base_actions.parquet": ("threshold_base_actions.parquet", [])}
     meta = {"snapshot": SNAPSHOT, "source": "USAspending.gov contract transactions (Advanced Search download), civilian agencies, FY2024-FY2026",
-            "left_out": "buying-office names and company identifiers", "files": {}}
+            "left_out": "buying-office names and company identifiers, only to keep the tables small and focused",
+            "note": "Not anonymous: contract numbers are kept, and every award is public on USAspending.gov.", "files": {}}
     manifests = [json.load(open(os.path.join(DATA, "usaspending_civilian", m), encoding="utf-8"))
                  for m in os.listdir(os.path.join(DATA, "usaspending_civilian")) if m.startswith("manifest_")]
     stamps = [m.get("downloaded_utc", "") for m in manifests if m.get("downloaded_utc")]
@@ -319,7 +408,9 @@ def publish_data():
         sys.exit("publish-data needs dist/ (run export-data) and the GitHub CLI `gh` on PATH (or GH_BIN set to it).")
     files = [os.path.join(DIST, n) for n in sorted(os.listdir(DIST))]
     notes = (f"Processed tables behind the published results (snapshot {SNAPSHOT}). `python run.py quick` downloads them. "
-             "Buying-office names and company identifiers are left out. See snapshot.json and docs/data-dictionary.md.")
+             "Buying-office names and company identifiers are left out, only to keep the tables small and focused. "
+             "The tables are not anonymous: contract numbers are kept, and every award is public on USAspending.gov. "
+             "See snapshot.json and docs/data-dictionary.md.")
     subprocess.run([gh, "release", "create", SNAPSHOT, *files, "--title", f"Data snapshot {SNAPSHOT[5:]}", "--notes", notes,
                     "--repo", DATA_REPO], check=True)
 
@@ -346,7 +437,7 @@ def main():
             say(f"\n  {p}: " + " -> ".join(names))
     elif cmd in PIPELINES:
         if cmd in ("quick", "all"):
-            keep_published_copy()
+            keep_published_copy(cmd)
         for name in PIPELINES[cmd]:
             run_step(name)
         if cmd == "quick":
@@ -355,7 +446,7 @@ def main():
     elif cmd == "verify":
         verify()
     elif cmd in STEPS or cmd in ("get-snapshot", "get-history"):
-        run_step(cmd)
+        run_step(cmd, args[1:])
     elif cmd == "export-data":
         export_data()
     elif cmd == "publish-data":

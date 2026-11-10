@@ -2,7 +2,7 @@
 
 The public data snapshot (a GitHub release, for example `data-2026-11-09`) holds the processed tables behind every published result. `python run.py quick` downloads them into `data/processed/` and checks each file against its SHA-256 fingerprint in `SHA256SUMS`. `snapshot.json` records the download date and the columns of each table.
 
-Source: USAspending.gov contract transactions (the Advanced Search download), every civilian top-tier agency (the Department of Defense is not included), actions dated October 1, 2023 to September 30, 2026. Buying-office names and company identifiers are left out.
+Source: USAspending.gov contract transactions (the Advanced Search download), every civilian top-tier agency (the Department of Defense is not included), actions dated October 1, 2023 to September 30, 2026. Buying-office names and company identifiers are left out, only to keep the tables small and focused. The tables are not anonymous: contract numbers are kept, so any award can be looked up on USAspending.gov, where every record is public.
 
 Each table has **one row per award**, described by its **base action** (modification 0, the original award). Codes follow the Federal Procurement Data System (FPDS) data dictionary.
 
@@ -60,13 +60,13 @@ The 110 civilian top-tier agencies requested, with USAspending's abbreviation an
 
 ## History tables (release `history-v1`)
 
-Built on GitHub by `.github/workflows/history.yml` (scripts `17_history_download.py` and `18_history_build.py`), one pair of files per fiscal year from FY2008, covering civilian agencies and the Department of Defense. `python run.py history` downloads them into `data/history/processed/` and rebuilds the history results. Defense data are published 90 days late, so the latest Defense year is incomplete until its last quarter is out.
+Built on GitHub by `.github/workflows/history.yml` (scripts `17_history_download.py` and `18_history_build.py`), one pair of files per fiscal year from FY2008, covering civilian agencies and the Department of Defense (every year is always built from both). Buying-office names, company names and raw company identifiers are left out, only to keep the tables small; contract numbers are kept, and every award is public on USAspending.gov. `python run.py history` downloads them into `data/history/processed/` and rebuilds the history results. Defense data are published 90 days late, so the latest Defense year is incomplete until its last quarter is out.
 
 **base_actions_FY<year>.parquet**: one row per award whose base action is dated in that fiscal year (purchase orders, definitive contracts and contract vehicles). Columns as in `base_awards_five.parquet`, with the original USAspending names (`awarding_agency_name`, `base_and_all_options_value`, `federal_action_obligation`, `base_and_exercised_options_value`, `period_of_performance_start_date`, `period_of_performance_potential_end_date`, ...), plus:
 
 | Column | Meaning |
 |---|---|
-| vendor_id | Pseudonymous company id: the first 16 hex digits of SHA-256("fcc-v1:" + UEI, or "duns:" + DUNS before 2022). It links awards to the same company without publishing the identifier. Companies may get a new id when their identifier changed from DUNS to UEI in 2022. |
+| vendor_id | A short code derived from the company's public identifier, so the same company can be followed across awards: the first 16 hex digits of SHA-256("fcc-v1:" + UEI, or "duns:" + DUNS when there is no UEI). It is not anonymous: anyone with the identifier can compute the same code, contract numbers are kept, and the underlying records are public on USAspending.gov. Company names and raw identifiers are left out only to keep the tables small and focused. Known limit: a company whose records carry a UEI in some years and only a DUNS in others (the switch to UEI came in 2022) gets two codes. |
 | is_dod | Awarded by the Department of Defense |
 
 **award_year_FY<year>.parquet**: one row per award with any action in that fiscal year.

@@ -6,7 +6,8 @@ reading, so the dashboard can show how the forecast is tracking:
   1. Downloads the civilian purchase-order + definitive-contract base actions from the start of the forecast period to yesterday
      (same request as 12_resolve_threshold.py).
   2. Computes the same three quantities with the same estimator (bunching_lib.py), with a 300-resample bootstrap interval.
-  3. Writes results/tracking_<forecast id>.json and adds one row per quantity to results/tracking_<forecast id>_history.csv.
+  3. Writes results/tracking_<forecast id>.json and puts one row per quantity in results/tracking_<forecast id>_history.csv
+     (a second run on the same day replaces that day's rows).
   4. On or after the forecast's resolution date, runs 12_resolve_threshold.py once to produce the official score
      (skipped if results/threshold_resolution_<forecast id>.json already exists).
 
@@ -78,17 +79,34 @@ def main():
            "period": per, "provisional": True, "n_base_actions": int(len(base)), "n_values_used": int(len(v)), "quantities": out_q}
     json.dump(out, open(os.path.join(RESULTS, f"tracking_{fid}.json"), "w", encoding="utf-8"), indent=1)
 
-    hist = os.path.join(RESULTS, f"tracking_{fid}_history.csv")
-    new = not os.path.exists(hist)
-    with open(hist, "a", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        if new:
-            w.writerow(["as_of", "data_to", "n_base_actions", "name", "so_far", "lo95", "hi95"])
-        for q in out_q:
-            ci = q["so_far_95ci"] or [None, None]
-            r4 = lambda x: None if x is None else round(x, 4)
-            w.writerow([out["as_of"], out["data_to"], out["n_base_actions"], q["name"], r4(q["so_far"]), r4(ci[0]), r4(ci[1])])
+    rows = []
+    for q in out_q:
+        ci = q["so_far_95ci"] or [None, None]
+        r4 = lambda x: None if x is None else round(x, 4)
+        rows.append([out["as_of"], out["data_to"], out["n_base_actions"], q["name"], r4(q["so_far"]), r4(ci[0]), r4(ci[1])])
+    update_history(os.path.join(RESULTS, f"tracking_{fid}_history.csv"), out["as_of"], rows)
     print(json.dumps(out, indent=1))
+
+
+HEADER = ["as_of", "data_to", "n_base_actions", "name", "so_far", "lo95", "hi95"]
+
+
+def update_history(hist, as_of, rows):
+    """Put today's rows in the history CSV, replacing any rows with the same as_of date (so a second run on the same day
+    does not add a duplicate block).  The file is written to a temporary name first and then renamed."""
+    kept = []
+    if os.path.exists(hist):
+        with open(hist, newline="", encoding="utf-8") as f:
+            r = csv.reader(f)
+            next(r, None)                                   # header
+            kept = [row for row in r if row and row[0] != as_of]
+    tmp = hist + ".tmp"
+    with open(tmp, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(HEADER)
+        w.writerows(kept)
+        w.writerows(rows)                                   # None is written as an empty field
+    os.replace(tmp, hist)
 
 
 if __name__ == "__main__":
