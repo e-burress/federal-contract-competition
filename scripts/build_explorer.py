@@ -178,6 +178,8 @@ def build_agencies(rd):
     meta = {"history_years": sorted(hist_years), "recent_years": sorted(recent_years)}
     if live_tot:
         meta["sofar"] = {"fy": live_tot.get("fiscal_year"), "from": live_tot.get("data_from"), "to": live_tot.get("data_to")}
+        if isinstance(live_tot.get("verified"), bool):  # absent in tables written before the download check: no record
+            meta["sofar"]["verified"] = live_tot["verified"]
     return out, meta
 
 

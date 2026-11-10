@@ -207,6 +207,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <div class="chart" id="ag-count"></div>
   <details id="ag-details"><summary>Show the numbers</summary><div class="tablewrap" id="ag-table"></div></details>
   <p class="note" id="ag-note"></p>
+  <p class="banner" id="ag-verify" role="note" hidden><b>Not verified:</b> USAspending's count could not be reached when this table was downloaded. Treat these numbers with care.</p>
 </div>
 <div class="card warn" id="gsa-note" hidden></div>
 
@@ -1048,6 +1049,7 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
     : "The long history (FY2008 onward) is still being built, so this shows FY" + (ry[0] || 2024) + " to FY" + (ry[ry.length - 1] || 2026) + ". ";
   if (meta.sofar) note += "The hollow dot is FY" + meta.sofar.fy + " so far (awards dated " + niceDate(meta.sofar.from) + " to " + niceDate(meta.sofar.to) + "). It rests on few awards, the newest weeks are always incomplete, and it is left out of the award counts.";
   $("ag-note").textContent = note;
+  $("ag-verify").hidden = !(meta.sofar && meta.sofar.verified === false);
   var g = D.gsa;
   if (g) {
     var gn = $("gsa-note"); gn.hidden = false;

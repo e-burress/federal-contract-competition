@@ -550,3 +550,49 @@ class DailyScoreboard(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LiveVerifiedFlag(unittest.TestCase):
+    """the verified flag of the live table goes into agency_meta.sofar; nothing else changes."""
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.res = os.path.join(self.tmp, "results")
+        os.makedirs(self.res)
+        base_files(self.res)
+        self.out = os.path.join(self.tmp, "docs", "data", "explorer-data.js")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def build(self, **flag):
+        tot = {"fiscal_year": 2027, "data_from": "2026-10-01", "data_to": "2026-11-08"}
+        tot.update(flag)
+        with open(os.path.join(self.res, "live_fy2027_totals.json"), "w") as f:
+            json.dump(tot, f)
+        write_csv(self.res, "live_fy2027_by_agency.csv", [
+            dict(agency="Department of Veterans Affairs", abbreviation="VA", **share_row())])
+        bx.build(self.res, self.out, repo="someone/project", today=date(2026, 11, 10))
+        return load_js(self.out)
+
+    def test_flag_false_true_absent(self):
+        absent = self.build()
+        self.assertNotIn("verified", absent["agency_meta"]["sofar"])
+        f = self.build(verified=False)
+        self.assertIs(f["agency_meta"]["sofar"]["verified"], False)
+        t = self.build(verified=True)
+        self.assertIs(t["agency_meta"]["sofar"]["verified"], True)
+
+    def test_no_other_change(self):
+        absent = self.build()
+        for flag in (True, False):
+            d = self.build(verified=flag)
+            del d["agency_meta"]["sofar"]["verified"]
+            self.assertEqual(d, absent)
+
+    def test_page_shows_note_only_for_false(self):
+        with open(os.path.join(REPO, "docs", "explorer.html"), encoding="utf-8") as f:
+            page = f.read()
+        self.assertIn("verified === false", page)
+        self.assertIn('id="ag-verify"', page)
+        self.assertIn("Not verified", page)
+        self.assertNotIn("—", page.split('id="ag-verify"')[1][:300])
