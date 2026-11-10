@@ -15,7 +15,7 @@ Method
   * Cluster: same company + same office + same 4-character product code, linked when consecutive awards are at most 30 days apart.
     Clusters are followed across fiscal-year boundaries when the next year's file is present (a cluster belongs to the fiscal year of
     its LAST award; one with a missing neighbor year is cut at the edge).
-  * Line L for a cluster: the threshold in force on the date of its first award for its agency (table THRESHOLDS below), times a
+  * Line L for a cluster: the threshold in force on the date of its first award for its agency (THRESHOLDS, read from reference/thresholds.csv), times a
     multiple m.  Split-like at L: two or more awards, every award at or under L, cluster total above L.
   * Measures per sector and fiscal year: awards at or under L, the share of them in split-like clusters (and of their dollars), and
     the number of split-like clusters.
@@ -34,7 +34,8 @@ Method
 Privacy: company ids and office codes are used only inside the computation.  Outputs are counts and dollar totals at sector level by
 fiscal year.  Dollar totals of split-like clusters are left blank when fewer than 3 clusters stand behind them.
 
-Input : <DATA>/history/processed/base_actions_FY*.parquet (whatever years are present), reference/threshold_adoption_2018.csv
+Input : <DATA>/history/processed/base_actions_FY*.parquet (whatever years are present), reference/thresholds.csv,
+        reference/threshold_adoption_2018.csv
 Output: results/split_screen.csv, results/split_screen_summary.json, figures/split_screen.png, a printed summary
 Usage : python -I scripts/26_split_screen.py
 """
@@ -54,23 +55,74 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA, PROJECT, RESULTS  # noqa: E402
 
 # ---- thresholds by date ---------------------------------------------------------------------------------------------------------
-# Provisional.  reference/thresholds.csv (being compiled separately) is the source of truth; reconcile this table with it later.
-# (kind, dollars, start, scope).  start "adoption" = each agency's own date in reference/threshold_adoption_2018.csv, or the FAR rule
-# date 2020-08-31 where no date is known.  scope: "all", "civilian" (not DoD) or "dod".  Later rows override earlier ones.
-THRESHOLDS = [
-    ("SAT", 100_000, "1990-01-01", "all"),
-    ("SAT", 150_000, "2010-10-01", "all"),
-    ("SAT", 250_000, "adoption", "all"),
+# Read at run time from reference/thresholds.csv (rows simplified_acquisition and micro_purchase: value, effective date, and whom it
+# applies to) and reference/threshold_adoption_2018.csv (each civilian agency's own date for the 2018 increase).  Each row becomes
+# (kind, dollars, start, scope).  start "adoption" = each agency's own date in the adoption file, or the FAR rule date where no date is
+# known (GSA, for example); a civilian row gets it when its value and date are those of the adoption file's "FAR (government-wide)" row.
+# A blank effective date means "in force before FY2008".  scope: "all", "civilian" (not DoD) or "dod".  Rows are sorted by start date
+# and later rows override earlier ones (end dates are implied by the next row).  FALLBACK_THRESHOLDS is the same table as read on
+# 2026-11-10, used only when the reference files cannot be read.
+REF_KINDS = {"simplified_acquisition": "SAT", "micro_purchase": "MPT"}
+REF_SCOPES = {"all": "all", "civilian": "civilian", "dod": "dod"}
+BEFORE = "1900-01-01"                                          # start of a row with a blank effective date
+FALLBACK_FAR_DATE = "2020-08-31"
+FALLBACK_THRESHOLDS = [
+    ("SAT", 100_000, BEFORE, "all"),
+    ("SAT", 150_000, "2010-10-01", "civilian"),
+    ("SAT", 150_000, "2010-10-01", "dod"),
+    ("SAT", 250_000, "2018-04-13", "dod"),
+    ("SAT", 250_000, "adoption", "civilian"),
     ("SAT", 350_000, "2025-10-01", "all"),
-    ("MPT", 3_000, "1990-01-01", "all"),
-    ("MPT", 3_500, "2015-10-01", "all"),
-    ("MPT", 5_000, "2018-04-13", "dod"),        # DoD class deviation 2018-O0013: interim $5,000 before $10,000 on 2018-08-31
-    ("MPT", 10_000, "adoption", "all"),
-    ("MPT", 15_000, "2025-10-01", "civilian"),  # as briefed: civilian agencies only (DoD stays at $10,000 here); check vs thresholds.csv
+    ("MPT", 2_500, BEFORE, "all"),
+    ("MPT", 3_000, "2006-09-28", "all"),
+    ("MPT", 3_500, "2015-10-01", "civilian"),
+    ("MPT", 3_500, "2015-10-01", "dod"),
+    ("MPT", 5_000, "2017-07-13", "dod"),        # DoD class deviation 2017-O0006; kept by 2018-O0013 until $10,000 on 2018-08-31
+    ("MPT", 10_000, "2018-08-31", "dod"),
+    ("MPT", 10_000, "adoption", "civilian"),
+    ("MPT", 15_000, "2025-10-01", "civilian"),
+    ("MPT", 15_000, "2025-10-01", "dod"),
 ]
-FAR_DATE = "2020-08-31"
 # names in the adoption file that differ from USAspending's top-tier agency names
 AGENCY_ALIAS = {"Chemical Safety and Hazard Investigation Board": "United States Chemical Safety Board"}
+
+
+def read_thresholds(path=None, adoption_path=None):
+    """(rows, FAR date) from reference/thresholds.csv and the adoption file; see the comment above.  Raises on a missing or odd file."""
+    t = pd.read_csv(path or os.path.join(PROJECT, "reference", "thresholds.csv"), dtype=str)
+    a = pd.read_csv(adoption_path or os.path.join(PROJECT, "reference", "threshold_adoption_2018.csv"), dtype=str)
+    far = a[a.agency == "FAR (government-wide)"].iloc[0]
+    adoption = {"SAT": (float(far.sat_new), str(far.sat_effective_date)), "MPT": (float(far.mpt_new), str(far.mpt_effective_date))}
+    if adoption["SAT"][1] != adoption["MPT"][1]:
+        raise ValueError("the FAR row of the adoption file has two different dates")
+    rows = []
+    for r in t[t.threshold.isin(list(REF_KINDS))].itertuples():
+        kind, dollars = REF_KINDS[r.threshold], float(r.value_usd)
+        scope = REF_SCOPES[str(r.applies_to).strip().lower()]
+        start = str(r.effective_date) if isinstance(r.effective_date, str) and r.effective_date.strip() else BEFORE
+        pd.Timestamp(start)                                       # a bad date raises here
+        if scope == "civilian" and (dollars, start) == adoption[kind]:
+            start = "adoption"
+        rows.append((kind, int(dollars), start, scope))
+    far_date = adoption["SAT"][1]
+    rows.sort(key=lambda x: (x[0] == "MPT", far_date if x[2] == "adoption" else x[2], x[1]))
+    for kind in ("SAT", "MPT"):
+        if not any(k == kind for k, *_ in rows) or not any(k == kind and s == "adoption" for k, _, s, _ in rows):
+            raise ValueError(f"reference/thresholds.csv: no usable {kind} rows")
+    return rows, far_date
+
+
+def load_thresholds(path=None, adoption_path=None):
+    """(rows, FAR date, source) from the reference files, or the built-in fallback when they cannot be read"""
+    try:
+        rows, far = read_thresholds(path, adoption_path)
+        return rows, far, "reference/thresholds.csv and reference/threshold_adoption_2018.csv"
+    except (OSError, KeyError, ValueError, IndexError, TypeError, AttributeError) as e:
+        print(f"note: reference threshold files not usable ({e}); using the built-in fallback table", file=sys.stderr)
+        return list(FALLBACK_THRESHOLDS), FALLBACK_FAR_DATE, "built-in fallback (reference files not usable)"
+
+
+THRESHOLDS, FAR_DATE, THRESHOLDS_SOURCE = load_thresholds()
 GSA = "General Services Administration"
 SECTORS = ["civilian_ex_gsa", "gsa", "defense"]
 
@@ -89,7 +141,7 @@ CHANGES = [
     ("SAT", 250_000, 350_000, "FY2026", (2023, 2025), (2026, 2026)),
     ("MPT", 3_000, 3_500, "FY2016", (2013, 2015), (2016, 2017)),
     ("MPT", 3_500, 10_000, "2018-2020", (2016, 2017), (2021, 2023)),
-    ("MPT", 10_000, 15_000, "FY2026 (civilian only)", (2023, 2025), (2026, 2026)),
+    ("MPT", 10_000, 15_000, "FY2026", (2023, 2025), (2026, 2026)),
 ]
 COLS = ["awarding_agency_name", "awarding_office_code", "award_type_code", "action_date", "product_or_service_code",
         "base_and_all_options_value", "vendor_id", "is_dod"]
@@ -108,17 +160,18 @@ def load_adoption(path=None):
     return out
 
 
-def thresholds_at(kind, agency, date, is_dod, adopt):
+def thresholds_at(kind, agency, date, is_dod, adopt, table=None, far_date=None):
     """threshold of `kind` in force for each (agency, date, is_dod); arrays of equal length; date as datetime64[D]"""
     date = np.asarray(date, dtype="datetime64[D]")
     is_dod = np.asarray(is_dod, dtype=bool)
+    far_date = far_date or FAR_DATE
     T = np.full(len(date), np.nan)
-    for k, dollars, start, scope in THRESHOLDS:
+    for k, dollars, start, scope in (THRESHOLDS if table is None else table):
         if k != kind:
             continue
         if start == "adoption":
             inv, uniq = pd.factorize(pd.Series(agency, dtype="str"))
-            s_u = np.array([adopt[kind].get(str(u), np.datetime64(FAR_DATE, "D")) for u in uniq], dtype="datetime64[D]")
+            s_u = np.array([adopt[kind].get(str(u), np.datetime64(far_date, "D")) for u in uniq], dtype="datetime64[D]")
             s = s_u[inv]
         else:
             s = np.datetime64(start, "D")
@@ -467,7 +520,7 @@ def summarize(out, boots, years, missing, universe):
         design=dict(gap_days=GAP_DAYS, multiples=MULTIPLES, donut_cap=DONUT, near_other_line=NEAR, bootstrap=B,
                     bootstrap_unit="company within sector and fiscal year", baseline="straight line in log(share) on log(multiple)",
                     thresholds=[dict(kind=k, dollars=d, start=s, scope=sc) for k, d, s, sc in THRESHOLDS],
-                    thresholds_source_note="provisional; reconcile with reference/thresholds.csv"),
+                    thresholds_source=THRESHOLDS_SOURCE, far_rule_date=FAR_DATE),
         excess_ratio_pooled=head,
         natural_experiment=nat,
     )

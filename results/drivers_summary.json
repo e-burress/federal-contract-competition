@@ -1,0 +1,288 @@
+{
+ "question": "Which measurable circumstances go with single offers on competed federal awards, and how much do they explain?",
+ "years_present": [
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021
+ ],
+ "years_in_shares": [
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021
+ ],
+ "years_in_model": [
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021
+ ],
+ "defense_years_left_out_incomplete": [],
+ "incumbency_years": [
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021
+ ],
+ "incumbency_rate_by_year": {
+  "2011": 0.5395,
+  "2012": 0.5179,
+  "2013": 0.4591,
+  "2014": 0.4666,
+  "2015": 0.5578,
+  "2016": 0.6299,
+  "2017": 0.6743,
+  "2018": 0.7463,
+  "2019": 0.7733,
+  "2020": 0.7738,
+  "2021": 0.7223
+ },
+ "market_depth": "reference/market_depth_naics.csv: column 'n_any' (companies registered in SAM.gov listing the code) by 'naics', 1085 NAICS codes; codes not in the table (often retired codes in older years) form their own 'no match' level",
+ "single_offer_share": {
+  "Department of Defense": {
+   "share": 0.245,
+   "n_eval": 4832104
+  },
+  "GSA": {
+   "share": 0.3467,
+   "n_eval": 444130
+  },
+  "all sectors": {
+   "share": 0.273,
+   "n_eval": 7106783
+  },
+  "civilian except GSA": {
+   "share": 0.3291,
+   "n_eval": 1830549
+  }
+ },
+ "sample": {
+  "design": "equal random quota per fiscal year x sector (each sector-year counts equally), competed purchase orders and definitive contracts with usable offers, with a known incumbency status",
+  "quota_per_stratum": 12121,
+  "seed": 20261109
+ },
+ "model": {
+  "controls": "agency (Defense: its component) and sector x fiscal year; their effects are not reported",
+  "standard_errors": "clustered by buying office",
+  "fit": {
+   "all sectors": {
+    "n": 350528,
+    "single_share": 0.29569677743290124,
+    "n_clusters_offices": 4745,
+    "n_parameters": 200,
+    "log_loss": 0.5400752078151362,
+    "mcfadden_r2": 0.11050995894921045,
+    "auc_in_sample": 0.716998456131653
+   },
+   "civilian except GSA": {
+    "n": 133331,
+    "single_share": 0.3124629681019418,
+    "n_clusters_offices": 3457,
+    "n_parameters": 145,
+    "log_loss": 0.5319749446954775,
+    "mcfadden_r2": 0.14343643778159365,
+    "auc_in_sample": 0.750577295529755
+   },
+   "GSA": {
+    "n": 83866,
+    "single_share": 0.36944649798488066,
+    "n_clusters_offices": 328,
+    "n_parameters": 79,
+    "log_loss": 0.5329561985962272,
+    "mcfadden_r2": 0.190848324911836,
+    "auc_in_sample": 0.7783872943109882
+   },
+   "Department of Defense": {
+    "n": 133331,
+    "single_share": 0.23254156947746585,
+    "n_clusters_offices": 964,
+    "n_parameters": 115,
+    "log_loss": 0.5139946865437421,
+    "mcfadden_r2": 0.052245893740647364,
+    "auc_in_sample": 0.6492786171335749
+   }
+  }
+ },
+ "top_five_factors_ranking": "one level per factor; ranked by the end of the 95% interval nearest zero (large and precise)",
+ "top_five_factors": [
+  {
+   "factor": "set-aside",
+   "level": "SDVOSB",
+   "versus": "no set-aside",
+   "marginal_effect_points": -23.22,
+   "ci_95_points": [
+    -25.55,
+    -20.9
+   ],
+   "n_sampled": 7947
+  },
+  {
+   "factor": "product/service category",
+   "level": "product group 37: agricultural machinery",
+   "versus": "product group 53: hardware and abrasives",
+   "marginal_effect_points": -26.17,
+   "ci_95_points": [
+    -34.2,
+    -18.14
+   ],
+   "n_sampled": 2501
+  },
+  {
+   "factor": "industry (NAICS sector)",
+   "level": "51: information",
+   "versus": "31-33: manufacturing",
+   "marginal_effect_points": 16.29,
+   "ci_95_points": [
+    12.72,
+    19.85
+   ],
+   "n_sampled": 6078
+  },
+  {
+   "factor": "competition route",
+   "level": "full and open after exclusion of sources; sealed bid",
+   "versus": "competed under simplified acquisition; simplified acquisition",
+   "marginal_effect_points": -15.75,
+   "ci_95_points": [
+    -19.87,
+    -11.63
+   ],
+   "n_sampled": 1833
+  },
+  {
+   "factor": "solicitation number",
+   "level": "has a solicitation number",
+   "versus": "no solicitation number",
+   "marginal_effect_points": -8.84,
+   "ci_95_points": [
+    -10.89,
+    -6.79
+   ],
+   "n_sampled": 152603
+  }
+ ],
+ "blocks": {
+  "split": "train FY2011-FY2020, test FY2021",
+  "n_train": 314165,
+  "n_test": 36363,
+  "auc_full_model": 0.7289,
+  "ranked_by_log_loss_increase_when_dropped": [
+   {
+    "block": "what is bought",
+    "log_loss_increase": 0.03103,
+    "share_of_gain_lost": 0.41,
+    "auc_drop": 0.0438,
+    "share_of_gain_alone": 0.514
+   },
+   {
+    "block": "set-aside",
+    "log_loss_increase": 0.01535,
+    "share_of_gain_lost": 0.203,
+    "auc_drop": 0.0301,
+    "share_of_gain_alone": 0.177
+   },
+   {
+    "block": "agency or Defense component",
+    "log_loss_increase": 0.01165,
+    "share_of_gain_lost": 0.154,
+    "auc_drop": 0.0192,
+    "share_of_gain_alone": 0.16
+   },
+   {
+    "block": "competition route and solicitation number",
+    "log_loss_increase": 0.00303,
+    "share_of_gain_lost": 0.04,
+    "auc_drop": 0.0052,
+    "share_of_gain_alone": 0.224
+   },
+   {
+    "block": "award type and size",
+    "log_loss_increase": 0.00038,
+    "share_of_gain_lost": 0.005,
+    "auc_drop": 0.0009,
+    "share_of_gain_alone": 0.023
+   },
+   {
+    "block": "buying-office workload",
+    "log_loss_increase": 0.00018,
+    "share_of_gain_lost": 0.002,
+    "auc_drop": 0.0004,
+    "share_of_gain_alone": 0.028
+   },
+   {
+    "block": "timing (September rush)",
+    "log_loss_increase": 0.00018,
+    "share_of_gain_lost": 0.002,
+    "auc_drop": 0.0,
+    "share_of_gain_alone": 0.003
+   },
+   {
+    "block": "incumbency",
+    "log_loss_increase": 7e-05,
+    "share_of_gain_lost": 0.001,
+    "auc_drop": -0.0004,
+    "share_of_gain_alone": -0.005
+   },
+   {
+    "block": "contract terms",
+    "log_loss_increase": 6e-05,
+    "share_of_gain_lost": 0.001,
+    "auc_drop": 0.0012,
+    "share_of_gain_alone": -0.007
+   },
+   {
+    "block": "market depth",
+    "log_loss_increase": -0.00059,
+    "share_of_gain_lost": -0.008,
+    "auc_drop": -0.0005,
+    "share_of_gain_alone": 0.001
+   }
+  ]
+ },
+ "caveats": [
+  "Associations, not causes: the factors travel together and with things the data do not record.",
+  "Coding differences between agencies and over time (results/quality_summary.json) can look like drivers; agency and sector x year controls absorb level differences but not coding that differs within an agency.",
+  "Company ids changed when identifiers moved from DUNS to UEI in 2022, so incumbency is undercounted around that switch.",
+  "Defense data arrive 90 days late; an incomplete Defense year is left out.",
+  "Market depth is a count of companies registered in SAM.gov on one recent date, applied to every year; older years and retired NAICS codes fit it less well.",
+  "Out-of-time log loss also moves with shifts in the overall single-offer rate between years; AUC (ranking only) is the steadier measure of how much a block explains.",
+  "The sample gives each sector-year the same weight, so pooled effects are not dominated by the very many small Defense and GSA purchase orders; they describe that balanced mix, not every award equally."
+ ],
+ "runtime_seconds": 116.6,
+ "peak_memory_mb": 521
+}

@@ -93,16 +93,17 @@ def plot(out):
         d = out[(out.dates == dates) & (out.sector == "civilian")]
         for T, color in colors.items():
             e = d[d.line == T].sort_values("event_quarter")
-            ax.plot(e.event_quarter, e.ratio, color=color, lw=2, marker="o", ms=3, label=f"under ${T // 1000}K")
+            ax.plot(e.event_quarter, e.ratio, color=color, lw=2, marker="o", ms=3, label=f"under \\${T // 1000}K")
             ax.fill_between(e.event_quarter, e.ci_lo, e.ci_hi, color=color, alpha=0.12, lw=0)
         ax.axvline(-0.5, color="#555555", lw=1)
         ax.axhline(1, color="#999999", lw=1)
         ax.set_title("Each agency's own adoption date" if dates == "actual" else "Placebo: dates moved one year earlier", fontsize=10)
-        ax.set_xlabel("quarters from the agency's switch to $250K")
+        ax.set_xlabel("quarters from the agency's switch to \\$250K")
         ax.spines[["top", "right"]].set_visible(False)
     axes[0].set_ylabel("bunching ratio (1.0 = no pile-up)")
     axes[0].legend(frameon=False, fontsize=8)
-    fig.suptitle("Civilian agencies, 2018 change: pile-ups under $150K and $250K around each agency's own switch date", fontsize=10)
+    # "\\$" keeps matplotlib from reading the text between two dollar signs as math
+    fig.suptitle("Civilian agencies, 2018 change: pile-ups under \\$150K and \\$250K around each agency's own switch date", fontsize=10)
     fig.tight_layout()
     fig.savefig(os.path.join(PROJECT, "figures", "threshold_staggered.png"), dpi=150)
     plt.close(fig)

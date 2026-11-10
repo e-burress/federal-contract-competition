@@ -87,6 +87,12 @@ def main():
     print(piv.to_string())
 
 
+def year_ticks(years):
+    """tick positions on a fiscal-year axis: whole years only (every year up to 10 years, then every other one)"""
+    years = sorted({int(y) for y in years})
+    return years if len(years) <= 10 else years[::2]
+
+
 def plot(out):
     import matplotlib
     matplotlib.use("Agg")
@@ -98,13 +104,17 @@ def plot(out):
         d = out[out.sector == sector]
         for T in LINES:
             e = d[d.line == T].sort_values("fy")
-            ax.plot(e.fy, e.ratio, color=colors[T], lw=2, label=f"${T // 1000}K line")
+            ax.plot(e.fy, e.ratio, color=colors[T], lw=2, label=f"\\${T // 1000}K line")
             act = e[e.active]
             ax.scatter(act.fy, act.ratio, color=colors[T], s=18, zorder=3)
+        years = sorted(int(y) for y in d.fy.unique())
         for x in (2010.5, 2017.5, 2025.5):
-            ax.axvline(x, color="#555555", lw=1)
+            if years[0] < x < years[-1]:                                  # only changes inside the years shown
+                ax.axvline(x, color="#555555", lw=1)
         ax.axhline(1, color="#999999", lw=1)
         ax.set_title({"civilian": "Civilian agencies", "defense": "Department of Defense"}[sector], fontsize=10)
+        ax.set_xticks(year_ticks(years))
+        ax.set_xlim(years[0] - 0.5, years[-1] + 0.5)
         ax.set_xlabel("fiscal year (dots: years the line was the limit)")
         ax.spines[["top", "right"]].set_visible(False)
     axes[0][0].set_ylabel("bunching ratio (1.0 = no pile-up)")

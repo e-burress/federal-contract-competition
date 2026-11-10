@@ -1,0 +1,1000 @@
+factor,factor_name,scope,level,label,k_single,n_eval,share,ci_lo,ci_hi
+award_kind,award kind,all sectors,PO,purchase order,1793705,6502320,0.27585615595664315,0.27551275606886944,0.2761998206849163
+award_kind,award kind,all sectors,DEF,definitive contract,91284,360023,0.25355046760901384,0.2521320325852938,0.2549741618279995
+award_kind,award kind,all sectors,IDV,contract vehicle,55329,244440,0.22635002454590084,0.22469541610439334,0.2280132338595409
+award_kind,award kind,civilian except GSA,PO,purchase order,551319,1568618,0.3514679800945801,0.35072121137565665,0.35221547630514366
+award_kind,award kind,civilian except GSA,DEF,definitive contract,34113,175693,0.19416254489364973,0.19231964203627938,0.19601882149160482
+award_kind,award kind,civilian except GSA,IDV,contract vehicle,16983,86238,0.19693174702567315,0.1942910762028774,0.19959941690586303
+award_kind,award kind,GSA,PO,purchase order,147587,401461,0.3676247505984392,0.36613454803532164,0.369117486454722
+award_kind,award kind,GSA,DEF,definitive contract,5550,30253,0.18345288070604568,0.1791318537159343,0.18785428639168164
+award_kind,award kind,GSA,IDV,contract vehicle,852,12416,0.06862113402061856,0.06430642756951611,0.07320269156724775
+award_kind,award kind,Department of Defense,PO,purchase order,1094799,4532241,0.241557984228994,0.24116414236049996,0.24195226420019247
+award_kind,award kind,Department of Defense,DEF,definitive contract,51621,154077,0.3350337818103935,0.33268111748638657,0.33739467182849675
+award_kind,award kind,Department of Defense,IDV,contract vehicle,37494,145786,0.25718518924999656,0.2549479663339255,0.25943520816182714
+size_band,initial value,all sectors,<25K,<25K,1512382,5564429,0.2717946441584572,0.27142515651201327,0.2721644468923511
+size_band,initial value,all sectors,25-100K,25-100K,258536,894274,0.2891015505314926,0.2881628606988639,0.2900420522343734
+size_band,initial value,all sectors,100-250K,100-250K,89148,281268,0.3169503818422288,0.31523336200778873,0.31867240166221056
+size_band,initial value,all sectors,250K-1M,250K-1M,51334,183661,0.27950408633297213,0.27745637370367565,0.2815610225672411
+size_band,initial value,all sectors,1-10M,1-10M,23770,114282,0.20799425981344394,0.20565094723874697,0.21035720260675786
+size_band,initial value,all sectors,>10M,>10M,5148,68869,0.07475061348357026,0.07281010133465284,0.07673856314115517
+size_band,initial value,civilian except GSA,<25K,<25K,468242,1315519,0.35593708642748606,0.355119325486603,0.35675568872472213
+size_band,initial value,civilian except GSA,25-100K,25-100K,86736,286163,0.30309998147908707,0.301418721272357,0.304786527995783
+size_band,initial value,civilian except GSA,100-250K,100-250K,23474,89479,0.2623408844533354,0.2594687698458587,0.26523340426231995
+size_band,initial value,civilian except GSA,250K-1M,250K-1M,14756,70593,0.20902922386072273,0.20604558187475752,0.21204453163318682
+size_band,initial value,civilian except GSA,1-10M,1-10M,7381,46335,0.15929642818603648,0.15599259110815675,0.16265675345826816
+size_band,initial value,civilian except GSA,>10M,>10M,1826,22460,0.08130008904719502,0.07779710488716172,0.0849462738676409
+size_band,initial value,GSA,<25K,<25K,150479,426704,0.3526542989988376,0.35122203308465555,0.3540892178871991
+size_band,initial value,GSA,25-100K,25-100K,1925,5938,0.32418322667564836,0.31239497135403627,0.33619881653635686
+size_band,initial value,GSA,>10M,>10M,120,3803,0.03155403628714173,0.026453618036278274,0.03759986605502738
+size_band,initial value,GSA,100-250K,100-250K,702,2817,0.24920127795527156,0.23357685887915816,0.26550877899616887
+size_band,initial value,GSA,250K-1M,250K-1M,438,2463,0.17783191230207065,0.16323619122083632,0.19343101804575102
+size_band,initial value,GSA,1-10M,1-10M,325,2405,0.13513513513513514,0.12205241550767033,0.14938157879961705
+size_band,initial value,Department of Defense,<25K,<25K,893661,3822206,0.2338076492999069,0.23338360105801556,0.234232232607635
+size_band,initial value,Department of Defense,25-100K,25-100K,169875,602173,0.2821033158245222,0.28096806971089766,0.2832413419890614
+size_band,initial value,Department of Defense,100-250K,100-250K,64972,188972,0.3438181317867197,0.3416797876495735,0.3459628255843372
+size_band,initial value,Department of Defense,250K-1M,250K-1M,36140,110605,0.3267483386826997,0.3239902820944722,0.3295184293744182
+size_band,initial value,Department of Defense,1-10M,1-10M,16064,65542,0.24509474840560252,0.24181667643747343,0.24840269894437425
+size_band,initial value,Department of Defense,>10M,>10M,3202,42606,0.07515373421583814,0.07268849888804793,0.07769557294693893
+setaside_grp,set-aside,all sectors,no set-aside,no set-aside,1643640,5473529,0.3002888995381225,0.29990502904331645,0.3006730503571691
+setaside_grp,set-aside,all sectors,small business,small business,251751,1454713,0.17305887828045807,0.1724449987297335,0.17367448453265483
+setaside_grp,set-aside,all sectors,SDVOSB,SDVOSB,34614,123640,0.27995794241345845,0.2774621940850109,0.28246736360248786
+setaside_grp,set-aside,all sectors,HUBZone,HUBZone,1991,18044,0.11034138771890933,0.10585251945654223,0.11499613260609298
+setaside_grp,set-aside,all sectors,8(a),8(a),2467,13188,0.18706399757355172,0.1804999509392857,0.19381029787885926
+setaside_grp,set-aside,all sectors,other/blank,other/blank,2617,9217,0.28393186503200607,0.27481806647451495,0.2932256941966061
+setaside_grp,set-aside,all sectors,WOSB/EDWOSB,WOSB/EDWOSB,1235,6719,0.18380711415389195,0.17472734233810172,0.19324823375924838
+setaside_grp,set-aside,all sectors,other,other,1089,4593,0.23709993468321358,0.22502297236158214,0.24961629426660364
+setaside_grp,set-aside,all sectors,VOSB,VOSB,914,3140,0.2910828025477707,0.2754570026881419,0.3072191541139404
+setaside_grp,set-aside,civilian except GSA,no set-aside,no set-aside,464878,1239897,0.3749327565112263,0.3740810358404108,0.37578525214831277
+setaside_grp,set-aside,civilian except GSA,small business,small business,98495,487886,0.20188117716023826,0.20075718357958525,0.20300986528906304
+setaside_grp,set-aside,civilian except GSA,SDVOSB,SDVOSB,32350,75229,0.4300203379016071,0.42648622940484615,0.4335615928515666
+setaside_grp,set-aside,civilian except GSA,other/blank,other/blank,2251,7203,0.3125086769401638,0.30190675707169534,0.3233104736065021
+setaside_grp,set-aside,civilian except GSA,HUBZone,HUBZone,714,5241,0.13623354321694334,0.127212431444351,0.14578751909040635
+setaside_grp,set-aside,civilian except GSA,8(a),8(a),1032,4814,0.21437474034067303,0.20301203301664594,0.22619292868561358
+setaside_grp,set-aside,civilian except GSA,other,other,1088,4573,0.2379182156133829,0.22580007209304728,0.25047630287720773
+setaside_grp,set-aside,civilian except GSA,VOSB,VOSB,914,3140,0.2910828025477707,0.2754570026881419,0.3072191541139404
+setaside_grp,set-aside,civilian except GSA,WOSB/EDWOSB,WOSB/EDWOSB,693,2566,0.2700701480904131,0.2532442274374434,0.2875834777309895
+setaside_grp,set-aside,GSA,no set-aside,no set-aside,146764,383011,0.38318481714624386,0.3816463384530922,0.3847256390421439
+setaside_grp,set-aside,GSA,small business,small business,6625,48479,0.13665710926380495,0.13362829523230657,0.13974350105727262
+setaside_grp,set-aside,GSA,SDVOSB,SDVOSB,117,9151,0.01278548792481696,0.010679491601655378,0.015300363963351028
+setaside_grp,set-aside,GSA,8(a),8(a),183,1737,0.10535405872193437,0.09177683402595498,0.12067298841292319
+setaside_grp,set-aside,GSA,other/blank,other/blank,160,1306,0.1225114854517611,0.10582798049400778,0.14140916155848332
+setaside_grp,set-aside,GSA,HUBZone,HUBZone,74,263,0.2813688212927757,0.23047190692572206,0.33856057959926344
+setaside_grp,set-aside,GSA,WOSB/EDWOSB,WOSB/EDWOSB,66,183,0.36065573770491804,0.2946076955660875,0.43243361356357907
+setaside_grp,set-aside,Department of Defense,no set-aside,no set-aside,1031998,3850621,0.2680081991969607,0.2675660361611395,0.26845082511191765
+setaside_grp,set-aside,Department of Defense,small business,small business,146631,918348,0.1596682303440526,0.15892048637487294,0.1604188215236792
+setaside_grp,set-aside,Department of Defense,SDVOSB,SDVOSB,2147,39260,0.054686704024452366,0.05248089680107053,0.056979647535331274
+setaside_grp,set-aside,Department of Defense,HUBZone,HUBZone,1203,12540,0.09593301435406698,0.09090159492682645,0.10121191884260333
+setaside_grp,set-aside,Department of Defense,8(a),8(a),1252,6637,0.18863944553262016,0.17940847898872597,0.19823063111074124
+setaside_grp,set-aside,Department of Defense,WOSB/EDWOSB,WOSB/EDWOSB,476,3970,0.1198992443324937,0.11016009710634718,0.1303732680834046
+setaside_grp,set-aside,Department of Defense,other/blank,other/blank,206,708,0.2909604519774011,0.2587031244459126,0.3254739471025998
+setaside_grp,set-aside,Department of Defense,other,other,1,20,0.05,0.008881448800795402,0.2361311934467421
+prod_serv,product or service,all sectors,product,product,1525892,5853129,0.2606967999509322,0.2603412985947446,0.26105261542040353
+prod_serv,product or service,all sectors,service,service,407977,1236507,0.32994313821110594,0.3291149145151015,0.3307724185358269
+prod_serv,product or service,all sectors,unknown,unknown,6449,17147,0.37610077564588557,0.3688788624354335,0.38337819094577336
+prod_serv,product or service,civilian except GSA,product,product,326658,1058308,0.30866061675807044,0.30778122012456316,0.3095414024384215
+prod_serv,product or service,civilian except GSA,service,service,269333,755158,0.35665781200755337,0.35557816485673827,0.35773891750300996
+prod_serv,product or service,civilian except GSA,unknown,unknown,6424,17083,0.3760463618802318,0.36881120894869673,0.38333724925486584
+prod_serv,product or service,GSA,product,product,138964,396472,0.35050142254686334,0.34901770870255316,0.35198803337792023
+prod_serv,product or service,GSA,service,service,15000,47594,0.31516577719880656,0.31100701125361213,0.3193543778185907
+prod_serv,product or service,GSA,unknown,unknown,25,64,0.390625,0.28055569188240076,0.5130808211972754
+prod_serv,product or service,Department of Defense,product,product,1060270,4398349,0.24106090717221393,0.2406614003445888,0.2414608663072814
+prod_serv,product or service,Department of Defense,service,service,123644,433755,0.2850549273207225,0.28371337020325055,0.2864002916350353
+psc_cat,product/service category,all sectors,P53,product group 53: hardware and abrasives,214760,1033976,0.20770308014886227,0.20692225400884773,0.20848607818147274
+psc_cat,product/service category,all sectors,P59,product group 59: electrical and electronic components,128221,627802,0.20423796037604214,0.20324253864264752,0.20523700156507385
+psc_cat,product/service category,all sectors,P65,"product group 65: medical, dental, veterinary supplies",164536,342540,0.48034098207508613,0.4786680941866503,0.4820143108957395
+psc_cat,product/service category,all sectors,P47,"product group 47: pipe, tubing, hose, fittings",61070,283124,0.21570054110566395,0.21418935606974443,0.2172194408520723
+psc_cat,product/service category,all sectors,P66,product group 66: instruments and laboratory equipment,71815,232089,0.3094287105377678,0.3075512389471851,0.31131249056730353
+psc_cat,product/service category,all sectors,P61,product group 61: electric wire and power distribution,48640,202383,0.24033639189062322,0.23847975250110162,0.24220288851246882
+psc_cat,product/service category,all sectors,SR,"service R: professional, administrative, management support",80141,190602,0.42046253449596543,0.4182480621953242,0.4226802127833288
+psc_cat,product/service category,all sectors,P25,product group 25: vehicle equipment components,56337,173145,0.325374685956857,0.32317176430069167,0.3275853560443405
+psc_cat,product/service category,all sectors,P70,product group 70: IT equipment and software (pre-2020 codes),47547,166234,0.2860245196530192,0.28385712548100583,0.28820180300536813
+psc_cat,product/service category,all sectors,P48,product group 48: valves,42699,164551,0.2594879399092075,0.25737558876083494,0.2616115203494869
+psc_cat,product/service category,all sectors,P89,product group 89: food (subsistence),12132,157028,0.07726010647782561,0.07594980672533355,0.07859108914249321
+psc_cat,product/service category,all sectors,SJ,service J: maintenance and repair of equipment,66041,155263,0.4253492461178774,0.42289195065010093,0.4278102354560807
+psc_cat,product/service category,all sectors,P51,product group 51: hand tools,30059,142551,0.2108648834452231,0.20875510442511414,0.21299024524922766
+psc_cat,product/service category,all sectors,P15,product group 15: aircraft and airframe parts,28019,128103,0.21872243429115634,0.21646719268016903,0.22099454488702455
+psc_cat,product/service category,all sectors,SS,service S: utilities and housekeeping,41435,113633,0.3646387933082819,0.3618448332868382,0.36744190501846935
+psc_cat,product/service category,all sectors,SZ,service Z: maintenance and repair of real property,21024,108337,0.19406112408503096,0.19171704767549297,0.1964268959434441
+psc_cat,product/service category,all sectors,P30,product group 30: mechanical power transmission,21754,100018,0.21750084984702753,0.21495501591049362,0.22006838322113162
+psc_cat,product/service category,all sectors,SA,service A: research and development,24694,99701,0.24768056488901816,0.24501087165688576,0.2503697010028694
+psc_cat,product/service category,all sectors,SV,"service V: transportation, travel, relocation",20183,98249,0.20542702724709666,0.20291229783969408,0.20796479089814487
+psc_cat,product/service category,all sectors,P16,product group 16: aircraft components,29792,92598,0.3217348106870559,0.31873343998555004,0.3247509715562975
+psc_cat,product/service category,all sectors,P31,product group 31: bearings,20195,90431,0.22331943691875575,0.22061682150059264,0.22604555781273805
+psc_cat,product/service category,all sectors,P43,product group 43: pumps and compressors,20800,90373,0.23015723722793313,0.22742437494255865,0.2329130387938693
+psc_cat,product/service category,all sectors,P99,product group 99: miscellaneous,54364,84807,0.641031990283821,0.6377971752490602,0.6442540293910292
+psc_cat,product/service category,all sectors,P58,product group 58: communication and detection equipment,25219,83294,0.30277090786851396,0.2996598361896762,0.30590017083352194
+psc_cat,product/service category,all sectors,P29,product group 29: engine accessories,15504,80018,0.19375640480891798,0.19103261549345021,0.1965095966509606
+psc_cat,product/service category,all sectors,P79,product group 79: cleaning equipment and supplies,30378,73241,0.41476768476672904,0.41120414120885407,0.4183401686519401
+psc_cat,product/service category,all sectors,P75,product group 75: office supplies,22177,72130,0.3074587550256481,0.30410159229334416,0.3108364251716402
+psc_cat,product/service category,all sectors,P71,product group 71: furniture,22641,70493,0.3211808264650391,0.31774376444060237,0.3246373766389382
+psc_cat,product/service category,all sectors,P62,product group 62: lighting fixtures,17221,68963,0.24971361454693097,0.24649707884071592,0.2529580321982304
+psc_cat,product/service category,all sectors,P80,"product group 80: brushes, paints, sealers",18255,68479,0.2665780750303013,0.26327947792081796,0.2699028591581243
+psc_cat,product/service category,all sectors,SD,service D: IT and telecom services,26832,66996,0.400501522478954,0.3967969373525299,0.4042175171638425
+psc_cat,product/service category,all sectors,SY,service Y: construction of structures and facilities,11427,58877,0.1940825789357474,0.1909079989704667,0.1972970757618078
+psc_cat,product/service category,all sectors,P41,product group 41: refrigeration and air conditioning,16534,58276,0.2837188551033015,0.28007313652958293,0.28739308559781535
+psc_cat,product/service category,all sectors,SU,service U: education and training,18069,58158,0.31068812545135666,0.3069396438753537,0.3144616142744517
+psc_cat,product/service category,all sectors,P84,product group 84: clothing and individual equipment,14015,51546,0.27189306638730454,0.26806914418276556,0.27575098533625203
+psc_cat,product/service category,all sectors,P95,"product group 95: metal bars, sheets, shapes",5896,50306,0.1172027193575319,0.11442105444776637,0.12004284201423607
+psc_cat,product/service category,all sectors,P73,product group 73: food preparation equipment,20886,50215,0.41593149457333467,0.4116271238226564,0.42024872685933845
+psc_cat,product/service category,all sectors,P91,product group 91: fuels and lubricants,11830,49991,0.2366425956672201,0.2329371789943485,0.24038848358049772
+psc_cat,product/service category,all sectors,P49,product group 49: repair shop equipment,12146,49203,0.24685486657317643,0.24306483605382956,0.2506844219462586
+psc_cat,product/service category,all sectors,P10,product group 10: weapons,14300,47973,0.2980843391074146,0.29400745018595065,0.3021935624082577
+psc_cat,product/service category,all sectors,P20,product group 20: ship and marine equipment,17674,47808,0.3696870816599732,0.36537065159292687,0.3740244517993672
+psc_cat,product/service category,all sectors,P42,"product group 42: fire fighting, rescue, safety",10343,47172,0.2192614262698211,0.2155506644557728,0.22301790833546492
+psc_cat,product/service category,all sectors,P81,product group 81: containers and packaging,13321,46602,0.28584610102570707,0.2817617683881423,0.2899657366793081
+psc_cat,product/service category,all sectors,P56,product group 56: construction materials,12198,45834,0.26613431077366145,0.2621081526113765,0.2701996673530684
+psc_cat,product/service category,all sectors,P28,product group 28: engines and turbines,10789,44679,0.2414780993307818,0.23753199792803958,0.24546865185629257
+psc_cat,product/service category,all sectors,SF,service F: natural resources management,10712,44229,0.24219403558751046,0.23822394064333519,0.24620890952228897
+psc_cat,product/service category,all sectors,SW,service W: lease or rental of equipment,13228,43836,0.30176110959029107,0.2974816241990137,0.30607533628120953
+psc_cat,product/service category,all sectors,SQ,service Q: medical services,22782,43556,0.5230507851960694,0.5183583188714582,0.5277391859116631
+psc_cat,product/service category,all sectors,P34,product group 34: metalworking machinery,7631,38925,0.196043673731535,0.1921298435540798,0.20001749211654496
+psc_cat,product/service category,all sectors,P45,"product group 45: plumbing, heating, waste disposal",7458,35944,0.20748942799910972,0.2033286573013014,0.21171271523595675
+psc_cat,product/service category,all sectors,P23,"product group 23: motor vehicles, trailers, cycles",5674,35746,0.15873104683041458,0.1549795449615087,0.16255589003885576
+psc_cat,product/service category,all sectors,P93,product group 93: nonmetal fabricated materials,7756,30817,0.25167926793652856,0.24686512300823238,0.256555313437385
+psc_cat,product/service category,all sectors,P68,product group 68: chemicals,13087,29637,0.4415764078685427,0.4359308618939296,0.4472370972609728
+psc_cat,product/service category,all sectors,P76,"product group 76: books, maps, publications",10426,29427,0.3543004723553199,0.34885498913377766,0.35978399042112064
+psc_cat,product/service category,all sectors,P39,product group 39: materials handling equipment,6816,29158,0.23376088894985939,0.2289383796825322,0.2386535410154733
+psc_cat,product/service category,all sectors,P72,product group 72: household and commercial furnishings,7428,26624,0.2789963942307692,0.27364116867414,0.2844153858461006
+psc_cat,product/service category,all sectors,P40,"product group 40: rope, cable, chain",5312,25975,0.20450433108758423,0.19964317713921315,0.20945287418651615
+psc_cat,product/service category,all sectors,P83,"product group 83: textiles, leather, tents",8974,25761,0.34835604207911186,0.34256090924465177,0.35419639421140403
+psc_cat,product/service category,all sectors,P17,product group 17: other products,4712,24923,0.1890623119207158,0.1842491612554341,0.19397129938317303
+psc_cat,product/service category,all sectors,SX,service X: lease or rental of facilities,8826,23606,0.37388799457764976,0.3677368716523968,0.38008015581961224
+psc_cat,product/service category,all sectors,SN,service N: installation of equipment,6598,22687,0.2908273460572134,0.284953619150624,0.2967718969689851
+psc_cat,product/service category,all sectors,P36,product group 36: special industry machinery,5862,22341,0.2623875386061501,0.25665997894513315,0.2681967975253524
+psc_cat,product/service category,all sectors,SC,service C: architect and engineering services,4590,21827,0.2102900077885188,0.20493499577709995,0.21574697729957165
+psc_cat,product/service category,all sectors,SH,"service H: quality control, testing, inspection",7523,21802,0.34506008623062107,0.338777607196739,0.35139715570987073
+psc_cat,product/service category,all sectors,P37,product group 37: agricultural machinery,1413,21171,0.06674224174578433,0.06345837577673089,0.070183307648572
+psc_cat,product/service category,all sectors,SB,service B: special studies and analyses,7195,20672,0.34805534055727555,0.3415905005806393,0.35457664151553
+psc_cat,product/service category,all sectors,P78,product group 78: recreational and athletic equipment,4721,17832,0.26474876626289817,0.258324290224845,0.2712745784704845
+psc_cat,product/service category,all sectors,P74,product group 74: office machines,3623,17549,0.20645051000056983,0.20052658034931178,0.2125029269147379
+psc_cat,product/service category,all sectors,P38,product group 38: construction and mining equipment,4249,17339,0.2450545014129996,0.23870929149705147,0.25151265275629897
+psc_cat,product/service category,all sectors,P54,product group 54: prefabricated structures,4553,17251,0.263926728885282,0.25740257618742163,0.27055599593633045
+psc_cat,product/service category,all sectors,unknown,unknown,6449,17147,0.37610077564588557,0.3688788624354335,0.38337819094577336
+psc_cat,product/service category,all sectors,SG,service G: social services,7814,15817,0.494025415691977,0.4862362412662082,0.5018174914956085
+psc_cat,product/service category,all sectors,P63,"product group 63: alarm, signal, security detection",4119,15708,0.2622230710466005,0.25540342989076625,0.2691589825051207
+psc_cat,product/service category,all sectors,P67,product group 67: photographic equipment,3468,14580,0.23786008230452674,0.2310185920093249,0.2448396706038698
+psc_cat,product/service category,all sectors,P13,product group 13: ammunition and explosives,5440,14206,0.38293678727298325,0.37497588592063585,0.3909609818735223
+psc_cat,product/service category,all sectors,P69,product group 69: training aids and devices,4652,13816,0.33671105964099596,0.3288772175258057,0.34463567960514097
+psc_cat,product/service category,all sectors,P44,"product group 44: furnaces, steam plants, drying",3500,13418,0.26084364286778955,0.25348329006826004,0.2683408933203644
+psc_cat,product/service category,all sectors,P35,product group 35: service and trade equipment,4485,13231,0.3389766457561787,0.3309586631660949,0.3470881035248542
+psc_cat,product/service category,all sectors,P60,product group 60: fiber optics,2602,10144,0.256506309148265,0.24810131019573545,0.2650956568591588
+psc_cat,product/service category,all sectors,P12,product group 12: other products,2819,9365,0.3010144153764015,0.29180741734058824,0.3103845915239596
+psc_cat,product/service category,all sectors,ST,"service T: photo, mapping, printing, publication",2992,9304,0.32158211521926056,0.3121665140336828,0.33114498684563665
+psc_cat,product/service category,all sectors,P55,product group 55: lumber and millwork,1340,9207,0.14554143586401652,0.13848601150862402,0.15289252006413837
+psc_cat,product/service category,all sectors,P14,product group 14: other products,1841,8263,0.22280043567711486,0.2139581114027036,0.23190037967648763
+psc_cat,product/service category,all sectors,P26,product group 26: other products,1900,7854,0.24191494779730074,0.23257165514203484,0.25151058025999823
+psc_cat,product/service category,all sectors,P46,product group 46: water purification,2214,7636,0.2899423782084861,0.2798730567250241,0.30022294169439917
+psc_cat,product/service category,all sectors,P87,product group 87: agricultural supplies,1705,7372,0.23128052088985349,0.22179678262348254,0.24104416615235044
+psc_cat,product/service category,all sectors,SM,service M: operation of facilities,2006,6944,0.2888824884792627,0.2783410982729404,0.2996573322644097
+psc_cat,product/service category,all sectors,P52,product group 52: measuring tools,2903,6893,0.4211518932250109,0.40954307913867166,0.43284854223029795
+psc_cat,product/service category,all sectors,P85,product group 85: toiletries,1721,6113,0.28153116309504334,0.2703968087993851,0.29293992013474035
+psc_cat,product/service category,all sectors,P77,product group 77: musical instruments,1278,6080,0.21019736842105263,0.20014032096086154,0.2206203902028544
+psc_cat,product/service category,all sectors,P19,product group 19: ships and small craft,1550,5466,0.28357116721551406,0.27177741414258094,0.2956689153694789
+psc_cat,product/service category,all sectors,P96,product group 96: ores and minerals,990,4504,0.21980461811722912,0.2079522162494637,0.2321345696198182
+psc_cat,product/service category,all sectors,SL,service L: technical representative services,1770,4419,0.40054310930074677,0.3861881095985568,0.41507087556199734
+psc_cat,product/service category,all sectors,SK,service K: modification of equipment,1134,3363,0.33719892952720787,0.3214148305625511,0.3533545301594277
+psc_cat,product/service category,all sectors,P24,product group 24: other products,483,2974,0.16240753194351043,0.14958889785206117,0.1760971644290307
+psc_cat,product/service category,all sectors,SP,service P: salvage services,521,2792,0.18660458452722062,0.17258755004779042,0.2014828234782669
+psc_cat,product/service category,all sectors,P88,product group 88: live animals,671,2487,0.2698029754724568,0.2527235328620919,0.28759245314927473
+psc_cat,product/service category,all sectors,SE,service E: purchase of structures and facilities,440,1837,0.23952095808383234,0.2205605101016221,0.259568538810017
+psc_cat,product/service category,all sectors,P7E,product group 7E: IT and telecom (2020 codes),335,1648,0.2032766990291262,0.1845473464632147,0.22338614813606272
+psc_cat,product/service category,all sectors,P32,product group 32: other products,305,1525,0.2,0.1806890573990617,0.2208185386169402
+psc_cat,product/service category,all sectors,P7A,product group 7A: IT and telecom (2020 codes),569,1178,0.4830220713073005,0.4545874968022605,0.5115670159697706
+psc_cat,product/service category,all sectors,P94,product group 94: nonmetal crude materials,157,1063,0.14769520225776106,0.12763585882294048,0.17029168813613804
+psc_cat,product/service category,all sectors,P7B,product group 7B: IT and telecom (2020 codes),248,997,0.24874623871614845,0.22291161902738088,0.27650959740550407
+psc_cat,product/service category,all sectors,P22,product group 22: other products,174,768,0.2265625,0.1983602088018715,0.25748659082233755
+psc_cat,product/service category,all sectors,P7G,product group 7G: IT and telecom (2020 codes),179,560,0.3196428571428571,0.2823600168290958,0.35938324833892804
+psc_cat,product/service category,all sectors,P7K,product group 7K: IT and telecom (2020 codes),110,406,0.270935960591133,0.23000094319189457,0.3161650290472021
+psc_cat,product/service category,all sectors,P18,product group 18: other products,83,366,0.226775956284153,0.1868428552354699,0.2723848888964727
+psc_cat,product/service category,all sectors,P11,product group 11: other products,89,263,0.33840304182509506,0.2839096068194844,0.3975491875685484
+psc_cat,product/service category,all sectors,P7C,product group 7C: IT and telecom (2020 codes),54,233,0.2317596566523605,0.1821959148515158,0.2900248668375806
+psc_cat,product/service category,all sectors,P7F,product group 7F: IT and telecom (2020 codes),63,204,0.3088235294117647,0.24944725036619203,0.3752667001488927
+psc_cat,product/service category,all sectors,P7J,product group 7J: IT and telecom (2020 codes),45,109,0.41284403669724773,0.3249213116747,0.5067008580617696
+psc_cat,product/service category,all sectors,P7H,product group 7H: IT and telecom (2020 codes),17,50,0.34,0.22436949222500085,0.47846173949767395
+psc_cat,product/service category,all sectors,P7D,product group 7D: IT and telecom (2020 codes),21,46,0.45652173913043476,0.32154733782284584,0.5981981894019873
+psc_cat,product/service category,civilian except GSA,P65,"product group 65: medical, dental, veterinary supplies",111725,190913,0.585214207518608,0.5830024766589431,0.5874225091693396
+psc_cat,product/service category,civilian except GSA,SR,"service R: professional, administrative, management support",67443,147840,0.4561891233766234,0.4536513773453966,0.45872914610300086
+psc_cat,product/service category,civilian except GSA,P89,product group 89: food (subsistence),8672,145601,0.059560030494296055,0.0583559600331603,0.0607873410069149
+psc_cat,product/service category,civilian except GSA,P70,product group 70: IT equipment and software (pre-2020 codes),24901,82095,0.3033193251720568,0.3001840514488063,0.3064730045317268
+psc_cat,product/service category,civilian except GSA,SJ,service J: maintenance and repair of equipment,35945,77617,0.46310730896581936,0.4596012643837225,0.46661700518968485
+psc_cat,product/service category,civilian except GSA,SS,service S: utilities and housekeeping,28898,69739,0.41437359296806664,0.4107223193334525,0.4180342992644336
+psc_cat,product/service category,civilian except GSA,P66,product group 66: instruments and laboratory equipment,28062,69257,0.40518647934504815,0.4015356003248306,0.40884787577243464
+psc_cat,product/service category,civilian except GSA,SZ,service Z: maintenance and repair of real property,12592,63005,0.19985715419411157,0.19675298199068325,0.20299792400371047
+psc_cat,product/service category,civilian except GSA,SV,"service V: transportation, travel, relocation",11522,52685,0.21869602353611084,0.21518692427664665,0.2222461416379623
+psc_cat,product/service category,civilian except GSA,SU,service U: education and training,13087,45364,0.2884886694295036,0.28433756507716723,0.29267559263679843
+psc_cat,product/service category,civilian except GSA,SD,service D: IT and telecom services,16871,39902,0.42281088667234723,0.417971434415505,0.4276651998512707
+psc_cat,product/service category,civilian except GSA,SF,service F: natural resources management,9148,36281,0.2521429949560376,0.24770110646942542,0.2566373644479411
+psc_cat,product/service category,civilian except GSA,P75,product group 75: office supplies,14905,35896,0.4152273233786494,0.4101391083577719,0.42033368058250764
+psc_cat,product/service category,civilian except GSA,SQ,service Q: medical services,19635,35566,0.5520722037901367,0.5468987368812973,0.5572344233490661
+psc_cat,product/service category,civilian except GSA,P71,product group 71: furniture,12195,35117,0.34726770510009397,0.34230511603718805,0.35226370536826035
+psc_cat,product/service category,civilian except GSA,P59,product group 59: electrical and electronic components,7181,35075,0.20473271560940842,0.20054236804101816,0.2089877321957545
+psc_cat,product/service category,civilian except GSA,SA,service A: research and development,8706,34996,0.24877128814721683,0.24426978914980396,0.2533279350945022
+psc_cat,product/service category,civilian except GSA,SY,service Y: construction of structures and facilities,4284,30660,0.13972602739726028,0.13589036153330958,0.14365196098789357
+psc_cat,product/service category,civilian except GSA,P58,product group 58: communication and detection equipment,7840,27816,0.2818521714121369,0.27659546294201454,0.28716912507823456
+psc_cat,product/service category,civilian except GSA,P23,"product group 23: motor vehicles, trailers, cycles",3560,24073,0.14788352095708884,0.14345543071564668,0.15242397153089812
+psc_cat,product/service category,civilian except GSA,P99,product group 99: miscellaneous,8877,23873,0.3718426674485821,0.36573306795760036,0.37799350448066954
+psc_cat,product/service category,civilian except GSA,P91,product group 91: fuels and lubricants,5121,19452,0.26326341764343,0.25712163944039723,0.2694986807604305
+psc_cat,product/service category,civilian except GSA,P84,product group 84: clothing and individual equipment,4546,19148,0.23741382912053477,0.23144011334886835,0.2434928834795622
+psc_cat,product/service category,civilian except GSA,P56,product group 56: construction materials,3497,19086,0.1832233050403437,0.1777989977270954,0.18877510263491964
+psc_cat,product/service category,civilian except GSA,P53,product group 53: hardware and abrasives,4411,17760,0.24836711711711712,0.24206755803883254,0.2547755082134951
+psc_cat,product/service category,civilian except GSA,SB,service B: special studies and analyses,6227,17518,0.35546295239182557,0.34840729382882435,0.3625819870694615
+psc_cat,product/service category,civilian except GSA,P61,product group 61: electric wire and power distribution,3848,17421,0.2208828425463521,0.21478456065387816,0.22710419207981905
+psc_cat,product/service category,civilian except GSA,unknown,unknown,6424,17083,0.3760463618802318,0.36881120894869673,0.38333724925486584
+psc_cat,product/service category,civilian except GSA,SX,service X: lease or rental of facilities,6557,16991,0.385910187746454,0.37861698383514675,0.3932549686397171
+psc_cat,product/service category,civilian except GSA,SH,"service H: quality control, testing, inspection",5589,16204,0.34491483584300175,0.33763353575685273,0.3522696501319301
+psc_cat,product/service category,civilian except GSA,SN,service N: installation of equipment,4736,15643,0.3027552259796714,0.2956044715602157,0.3100028315980085
+psc_cat,product/service category,civilian except GSA,SW,service W: lease or rental of equipment,5281,15105,0.349619331347236,0.3420539612831379,0.3572611706955783
+psc_cat,product/service category,civilian except GSA,SC,service C: architect and engineering services,3491,14594,0.23920789365492667,0.23235588784386813,0.24619715566788503
+psc_cat,product/service category,civilian except GSA,P41,product group 41: refrigeration and air conditioning,2535,13276,0.19094606809279904,0.1843499576039006,0.19772097860073035
+psc_cat,product/service category,civilian except GSA,P72,product group 72: household and commercial furnishings,2351,11828,0.19876564085221507,0.1916720582214432,0.20605482775812398
+psc_cat,product/service category,civilian except GSA,P76,"product group 76: books, maps, publications",4966,11802,0.4207761396373496,0.41189658401614265,0.42970725197279197
+psc_cat,product/service category,civilian except GSA,P36,product group 36: special industry machinery,3143,11728,0.2679911323328786,0.26005211275627416,0.27608208926975286
+psc_cat,product/service category,civilian except GSA,P73,product group 73: food preparation equipment,1624,11009,0.14751566899809246,0.14101438982345393,0.1542628527465046
+psc_cat,product/service category,civilian except GSA,P74,product group 74: office machines,2625,10778,0.2435516793468176,0.23554063520119414,0.2517454632715758
+psc_cat,product/service category,civilian except GSA,P68,product group 68: chemicals,4078,10635,0.3834508697696286,0.3742535453800279,0.39273236097120795
+psc_cat,product/service category,civilian except GSA,P20,product group 20: ship and marine equipment,4536,9947,0.4560168895144265,0.4462479409779266,0.46581979684897085
+psc_cat,product/service category,civilian except GSA,P13,product group 13: ammunition and explosives,3768,9911,0.38018363434567654,0.37067488355725076,0.389785229711924
+psc_cat,product/service category,civilian except GSA,P81,product group 81: containers and packaging,2367,9285,0.25492730210016157,0.2461651950684453,0.2638921118437784
+psc_cat,product/service category,civilian except GSA,P49,product group 49: repair shop equipment,2089,7837,0.2665560801327038,0.2568828974115249,0.2764580049371964
+psc_cat,product/service category,civilian except GSA,P42,"product group 42: fire fighting, rescue, safety",2102,7763,0.2707716089140796,0.2610020073746619,0.28076796194045867
+psc_cat,product/service category,civilian except GSA,P45,"product group 45: plumbing, heating, waste disposal",1603,7737,0.20718624789970272,0.19830179738247372,0.21636132107773937
+psc_cat,product/service category,civilian except GSA,ST,"service T: photo, mapping, printing, publication",2360,7281,0.3241313006455157,0.3134755896903751,0.3349724905490283
+psc_cat,product/service category,civilian except GSA,P25,product group 25: vehicle equipment components,1513,7073,0.21391205994627457,0.20451217337459343,0.22362253565499052
+psc_cat,product/service category,civilian except GSA,SG,service G: social services,3389,6982,0.4853910054425666,0.47367915303777464,0.4971189245878749
+psc_cat,product/service category,civilian except GSA,P87,product group 87: agricultural supplies,1456,6403,0.22739340933937216,0.21729208864731828,0.23782163276470056
+psc_cat,product/service category,civilian except GSA,P34,product group 34: metalworking machinery,1449,6309,0.2296718972895863,0.21945915215982695,0.24021363983878427
+psc_cat,product/service category,civilian except GSA,P83,"product group 83: textiles, leather, tents",1318,5991,0.2199966616591554,0.2096884144903767,0.23066375778208306
+psc_cat,product/service category,civilian except GSA,P67,product group 67: photographic equipment,1428,5969,0.23923605294019099,0.22858324656958853,0.2502242822318464
+psc_cat,product/service category,civilian except GSA,P38,product group 38: construction and mining equipment,1316,5823,0.22600034346556758,0.2154406473435999,0.23692131881742334
+psc_cat,product/service category,civilian except GSA,P43,product group 43: pumps and compressors,1363,5641,0.24162382556284348,0.23063132645299908,0.2529679878474961
+psc_cat,product/service category,civilian except GSA,P62,product group 62: lighting fixtures,1156,5536,0.20881502890173412,0.19831169937038912,0.21972218770653168
+psc_cat,product/service category,civilian except GSA,P93,product group 93: nonmetal fabricated materials,1419,5410,0.2622920517560074,0.2507421371144324,0.27417930368441534
+psc_cat,product/service category,civilian except GSA,P39,product group 39: materials handling equipment,1179,5145,0.2291545189504373,0.21787483153961526,0.2408383523310059
+psc_cat,product/service category,civilian except GSA,P54,product group 54: prefabricated structures,1041,4983,0.20891029500301023,0.19784920786425675,0.22041984601377873
+psc_cat,product/service category,civilian except GSA,P63,"product group 63: alarm, signal, security detection",1389,4790,0.2899791231732777,0.2773015811292002,0.30299325813839606
+psc_cat,product/service category,civilian except GSA,P69,product group 69: training aids and devices,1715,4651,0.36873790582670396,0.3549859304683107,0.38270653214257705
+psc_cat,product/service category,civilian except GSA,P37,product group 37: agricultural machinery,956,4642,0.2059457130547178,0.19455798229143137,0.21781972706480082
+psc_cat,product/service category,civilian except GSA,P79,product group 79: cleaning equipment and supplies,1372,4508,0.30434782608695654,0.29108719785215303,0.31794161752180866
+psc_cat,product/service category,civilian except GSA,P47,"product group 47: pipe, tubing, hose, fittings",1079,4469,0.24144103826359364,0.22911942927047457,0.2542067692375055
+psc_cat,product/service category,civilian except GSA,P85,product group 85: toiletries,903,4305,0.2097560975609756,0.19785568454220553,0.22217403252147072
+psc_cat,product/service category,civilian except GSA,P78,product group 78: recreational and athletic equipment,898,4234,0.21209258384506377,0.2000431189160184,0.22466400529092484
+psc_cat,product/service category,civilian except GSA,P16,product group 16: aircraft components,1072,4125,0.2598787878787879,0.24672295761246235,0.27348143392021096
+psc_cat,product/service category,civilian except GSA,P55,product group 55: lumber and millwork,673,3778,0.17813658020116463,0.16626438825169332,0.19066264677045175
+psc_cat,product/service category,civilian except GSA,P35,product group 35: service and trade equipment,987,3710,0.2660377358490566,0.25206601444138815,0.28049346090270605
+psc_cat,product/service category,civilian except GSA,P95,"product group 95: metal bars, sheets, shapes",577,3512,0.16429384965831434,0.15240699455216497,0.1769142994771353
+psc_cat,product/service category,civilian except GSA,P19,product group 19: ships and small craft,989,3450,0.2866666666666667,0.2718210196112942,0.3019868642912255
+psc_cat,product/service category,civilian except GSA,P80,"product group 80: brushes, paints, sealers",945,3446,0.2742309924550203,0.25959330840810896,0.2893714719815648
+psc_cat,product/service category,civilian except GSA,P51,product group 51: hand tools,737,3374,0.21843509187907528,0.20481773944594628,0.23269286513306586
+psc_cat,product/service category,civilian except GSA,SM,service M: operation of facilities,1006,3035,0.3314662273476112,0.31494100414740134,0.3484175442129981
+psc_cat,product/service category,civilian except GSA,P28,product group 28: engines and turbines,969,2948,0.32869742198100405,0.3119732095064005,0.34586749295344277
+psc_cat,product/service category,civilian except GSA,P46,product group 46: water purification,806,2894,0.27850725639253626,0.262477297913182,0.2951244486910912
+psc_cat,product/service category,civilian except GSA,P10,product group 10: weapons,972,2869,0.33879400487974903,0.32170095364849915,0.35631817366536467
+psc_cat,product/service category,civilian except GSA,SL,service L: technical representative services,1117,2745,0.4069216757741348,0.38868655477079533,0.42541694750276654
+psc_cat,product/service category,civilian except GSA,P96,product group 96: ores and minerals,538,2721,0.19772142594634326,0.1831871758949215,0.21310797563585687
+psc_cat,product/service category,civilian except GSA,P44,"product group 44: furnaces, steam plants, drying",601,2492,0.2411717495987159,0.22478220441711078,0.25835804255613426
+psc_cat,product/service category,civilian except GSA,P48,product group 48: valves,716,2333,0.30690098585512215,0.28851621014694145,0.32592062013135353
+psc_cat,product/service category,civilian except GSA,P77,product group 77: musical instruments,419,2262,0.1852343059239611,0.16976309008206786,0.20177281572612082
+psc_cat,product/service category,civilian except GSA,SK,service K: modification of equipment,738,2234,0.3303491495076097,0.3111512280491798,0.3501295132597004
+psc_cat,product/service category,civilian except GSA,P29,product group 29: engine accessories,636,2222,0.28622862286228623,0.2678164654225028,0.3053786531088353
+psc_cat,product/service category,civilian except GSA,P88,product group 88: live animals,520,2141,0.24287716020551145,0.22518390478335631,0.26149144109261957
+psc_cat,product/service category,civilian except GSA,P15,product group 15: aircraft and airframe parts,478,2097,0.2279446828803052,0.21049657250084305,0.24638771773945925
+psc_cat,product/service category,civilian except GSA,P26,product group 26: other products,298,1978,0.1506572295247725,0.13557092367116713,0.16709781713599775
+psc_cat,product/service category,civilian except GSA,P24,product group 24: other products,334,1777,0.1879572312886888,0.17047296520971492,0.20678771428142848
+psc_cat,product/service category,civilian except GSA,P60,product group 60: fiber optics,425,1656,0.25664251207729466,0.2361856697524425,0.2782257845965424
+psc_cat,product/service category,civilian except GSA,SP,service P: salvage services,345,1637,0.21075137446548564,0.1916833073368043,0.23117379143456138
+psc_cat,product/service category,civilian except GSA,P30,product group 30: mechanical power transmission,542,1588,0.3413098236775819,0.3183972868307161,0.36498826817713925
+psc_cat,product/service category,civilian except GSA,SE,service E: purchase of structures and facilities,366,1534,0.23859191655801826,0.21793247799314164,0.2605573264012463
+psc_cat,product/service category,civilian except GSA,P12,product group 12: other products,362,1453,0.24913971094287682,0.2275816259467231,0.2720207531686256
+psc_cat,product/service category,civilian except GSA,P40,"product group 40: rope, cable, chain",187,1007,0.18570009930486595,0.16289275144307885,0.21089628888922585
+psc_cat,product/service category,civilian except GSA,P94,product group 94: nonmetal crude materials,116,926,0.12526997840172785,0.10548516053716053,0.1481510444130992
+psc_cat,product/service category,civilian except GSA,P31,product group 31: bearings,252,846,0.2978723404255319,0.26802546155727675,0.3295465367839366
+psc_cat,product/service category,civilian except GSA,P52,product group 52: measuring tools,214,669,0.31988041853512705,0.2856503452934932,0.3561672079494258
+psc_cat,product/service category,civilian except GSA,P7A,product group 7A: IT and telecom (2020 codes),326,620,0.5258064516129032,0.486463852908823,0.5648312310384551
+psc_cat,product/service category,civilian except GSA,P32,product group 32: other products,137,612,0.2238562091503268,0.192612971690363,0.2585444728778327
+psc_cat,product/service category,civilian except GSA,P17,product group 17: other products,119,591,0.20135363790186125,0.17099876451260787,0.23556580027102048
+psc_cat,product/service category,civilian except GSA,P7B,product group 7B: IT and telecom (2020 codes),130,516,0.25193798449612403,0.2164072374488463,0.29113492630862237
+psc_cat,product/service category,civilian except GSA,P7E,product group 7E: IT and telecom (2020 codes),132,443,0.2979683972911964,0.257262962171319,0.34214753014866944
+psc_cat,product/service category,civilian except GSA,P18,product group 18: other products,63,320,0.196875,0.15701364377984478,0.24392779001163678
+psc_cat,product/service category,civilian except GSA,P7G,product group 7G: IT and telecom (2020 codes),72,230,0.3130434782608696,0.25659878659594665,0.37563067162880986
+psc_cat,product/service category,civilian except GSA,P22,product group 22: other products,46,146,0.3150684931506849,0.24527826405551967,0.39434083452374336
+psc_cat,product/service category,civilian except GSA,P7F,product group 7F: IT and telecom (2020 codes),39,131,0.29770992366412213,0.22608043569395486,0.38086537708847046
+psc_cat,product/service category,civilian except GSA,P7C,product group 7C: IT and telecom (2020 codes),27,105,0.2571428571428571,0.183159093075072,0.3482694585762099
+psc_cat,product/service category,civilian except GSA,P11,product group 11: other products,31,101,0.3069306930693069,0.2254362719999442,0.4025734825504953
+psc_cat,product/service category,civilian except GSA,P7K,product group 7K: IT and telecom (2020 codes),21,75,0.28,0.19103158881178944,0.39040690188064525
+psc_cat,product/service category,civilian except GSA,P7J,product group 7J: IT and telecom (2020 codes),32,61,0.5245901639344263,0.40157156924985693,0.6446951257715474
+psc_cat,product/service category,civilian except GSA,P7D,product group 7D: IT and telecom (2020 codes),19,40,0.475,0.329354701126789,0.6250263789330753
+psc_cat,product/service category,civilian except GSA,P7H,product group 7H: IT and telecom (2020 codes),12,27,0.4444444444444444,0.27585858177023004,0.6268697548677552
+psc_cat,product/service category,civilian except GSA,P14,product group 14: other products,9,15,0.6,0.35746830120624595,0.8017550385865843
+psc_cat,product/service category,GSA,P51,product group 51: hand tools,25735,123431,0.20849705503479676,0.20623987124971693,0.21077238274983928
+psc_cat,product/service category,GSA,P79,product group 79: cleaning equipment and supplies,28213,66243,0.4259016046978549,0.42214048001373683,0.42967132287648413
+psc_cat,product/service category,GSA,P53,product group 53: hardware and abrasives,15475,29450,0.5254668930390493,0.5197608373654762,0.531166305774652
+psc_cat,product/service category,GSA,P75,product group 75: office supplies,3509,24673,0.1422202407489969,0.13791773435635166,0.14663413872425887
+psc_cat,product/service category,GSA,SJ,service J: maintenance and repair of equipment,7762,22011,0.35264186088773797,0.3463560657784423,0.35897908223367964
+psc_cat,product/service category,GSA,P99,product group 99: miscellaneous,13444,20887,0.6436539474314167,0.6371331786849427,0.6501218853022578
+psc_cat,product/service category,GSA,P73,product group 73: food preparation equipment,15318,20242,0.7567434048018971,0.7507844985146271,0.7626048817756917
+psc_cat,product/service category,GSA,P80,"product group 80: brushes, paints, sealers",5143,20086,0.256048989345813,0.2500602299178368,0.2621310424678798
+psc_cat,product/service category,GSA,P37,product group 37: agricultural machinery,4,13939,0.00028696463160915415,0.00011160042128462443,0.0007376854904620688
+psc_cat,product/service category,GSA,SZ,service Z: maintenance and repair of real property,3483,10267,0.33924223239505213,0.33014583651303864,0.3484588802246469
+psc_cat,product/service category,GSA,P81,product group 81: containers and packaging,1000,9602,0.10414496979795876,0.09819295213513748,0.11041359914003887
+psc_cat,product/service category,GSA,P45,"product group 45: plumbing, heating, waste disposal",672,8040,0.08358208955223881,0.07772957692783233,0.08983233558881501
+psc_cat,product/service category,GSA,P83,"product group 83: textiles, leather, tents",2116,6960,0.3040229885057471,0.29332680960313334,0.3149353807222078
+psc_cat,product/service category,GSA,P78,product group 78: recreational and athletic equipment,2581,6366,0.4054351240967641,0.39343488439482066,0.41754942223454594
+psc_cat,product/service category,GSA,P68,product group 68: chemicals,5122,5855,0.8748078565328778,0.8660845707406464,0.8830396427832072
+psc_cat,product/service category,GSA,P72,product group 72: household and commercial furnishings,3108,5551,0.5598991172761665,0.5468036384569919,0.5729117494491791
+psc_cat,product/service category,GSA,P71,product group 71: furniture,2123,4973,0.42690528855821436,0.41321958542855636,0.44070383045371914
+psc_cat,product/service category,GSA,SR,"service R: professional, administrative, management support",904,4820,0.187551867219917,0.17678222588247375,0.19881914374952966
+psc_cat,product/service category,GSA,P84,product group 84: clothing and individual equipment,2580,3683,0.7005158837903883,0.6855206385352908,0.7150932789594004
+psc_cat,product/service category,GSA,P56,product group 56: construction materials,1241,3351,0.3703372127723068,0.35414452964954113,0.38682683645922467
+psc_cat,product/service category,GSA,P66,product group 66: instruments and laboratory equipment,2822,3214,0.8780336029869322,0.8662664587529206,0.8888981542639588
+psc_cat,product/service category,GSA,SS,service S: utilities and housekeeping,1068,2734,0.39063643013899046,0.37251376358221977,0.4090659922238069
+psc_cat,product/service category,GSA,P52,product group 52: measuring tools,1776,2453,0.7240114145943742,0.7059819380764705,0.7413403732815973
+psc_cat,product/service category,GSA,SD,service D: IT and telecom services,193,2266,0.0851721094439541,0.0743693665741287,0.09737895413159935
+psc_cat,product/service category,GSA,P35,product group 35: service and trade equipment,1607,2129,0.754814466885862,0.7360924624937535,0.7726185790667037
+psc_cat,product/service category,GSA,P74,product group 74: office machines,10,2056,0.0048638132295719845,0.002644086727027388,0.008930327759388427
+psc_cat,product/service category,GSA,P70,product group 70: IT equipment and software (pre-2020 codes),758,1992,0.38052208835341367,0.3594504020487613,0.40205370044580285
+psc_cat,product/service category,GSA,P42,"product group 42: fire fighting, rescue, safety",59,1953,0.030209933435739886,0.02349255419735855,0.038771794440329674
+psc_cat,product/service category,GSA,P62,product group 62: lighting fixtures,1393,1548,0.8998708010335917,0.8839135423203712,0.9138483636805197
+psc_cat,product/service category,GSA,SV,"service V: transportation, travel, relocation",250,1057,0.23651844843897823,0.21188335206392914,0.2630617536644987
+psc_cat,product/service category,GSA,P85,product group 85: toiletries,565,1025,0.551219512195122,0.5206360984618902,0.5814204420281829
+psc_cat,product/service category,GSA,P23,"product group 23: motor vehicles, trailers, cycles",111,970,0.11443298969072165,0.09590258145399129,0.13600524786987458
+psc_cat,product/service category,GSA,SC,service C: architect and engineering services,245,933,0.26259378349410506,0.23537241035389056,0.2917620948187851
+psc_cat,product/service category,GSA,SY,service Y: construction of structures and facilities,226,784,0.288265306122449,0.2576519758585367,0.32094344294949995
+psc_cat,product/service category,GSA,SA,service A: research and development,110,721,0.15256588072122051,0.12816620414168053,0.18064816636201655
+psc_cat,product/service category,GSA,P65,"product group 65: medical, dental, veterinary supplies",365,698,0.5229226361031518,0.4858446385551558,0.5597497041526256
+psc_cat,product/service category,GSA,P59,product group 59: electrical and electronic components,73,693,0.10533910533910534,0.0846179520163526,0.13041153126708993
+psc_cat,product/service category,GSA,P36,product group 36: special industry machinery,52,564,0.09219858156028368,0.0710026265352971,0.11891210608155284
+psc_cat,product/service category,GSA,P41,product group 41: refrigeration and air conditioning,414,497,0.8329979879275654,0.7976793299410376,0.8632084503545252
+psc_cat,product/service category,GSA,SU,service U: education and training,144,493,0.2920892494929006,0.25368046624480595,0.3337130647085303
+psc_cat,product/service category,GSA,P40,"product group 40: rope, cable, chain",155,490,0.3163265306122449,0.27671504306234845,0.3587955104058748
+psc_cat,product/service category,GSA,P93,product group 93: nonmetal fabricated materials,296,475,0.6231578947368421,0.5787545062528004,0.6655852388648243
+psc_cat,product/service category,GSA,P91,product group 91: fuels and lubricants,106,359,0.29526462395543174,0.2504459161233849,0.34441846217070865
+psc_cat,product/service category,GSA,P58,product group 58: communication and detection equipment,104,314,0.33121019108280253,0.28146844278901645,0.3850319552606967
+psc_cat,product/service category,GSA,SN,service N: installation of equipment,122,304,0.40131578947368424,0.34777804303737553,0.45731643569250974
+psc_cat,product/service category,GSA,SF,service F: natural resources management,90,265,0.33962264150943394,0.2852577402891652,0.39857078685518654
+psc_cat,product/service category,GSA,P61,product group 61: electric wire and power distribution,70,249,0.28112449799196787,0.2289386835399016,0.33996113016787016
+psc_cat,product/service category,GSA,SX,service X: lease or rental of facilities,187,230,0.8130434782608695,0.7576664047255236,0.858135432665582
+psc_cat,product/service category,GSA,P67,product group 67: photographic equipment,157,172,0.9127906976744186,0.8611071368861124,0.9464384837675336
+psc_cat,product/service category,GSA,P96,product group 96: ores and minerals,135,158,0.8544303797468354,0.7910355643591988,0.9009997201477581
+psc_cat,product/service category,GSA,SH,"service H: quality control, testing, inspection",53,158,0.33544303797468356,0.26650325646792505,0.4121946471538449
+psc_cat,product/service category,GSA,SB,service B: special studies and analyses,39,154,0.2532467532467532,0.19114491379640933,0.327359282960065
+psc_cat,product/service category,GSA,P54,product group 54: prefabricated structures,47,153,0.30718954248366015,0.2395592112216947,0.3842647416819151
+psc_cat,product/service category,GSA,ST,"service T: photo, mapping, printing, publication",30,120,0.25,0.18109821656809566,0.33441136664125615
+psc_cat,product/service category,GSA,P63,"product group 63: alarm, signal, security detection",30,113,0.26548672566371684,0.19275639331543282,0.3536374934526686
+psc_cat,product/service category,GSA,P39,product group 39: materials handling equipment,51,110,0.4636363636363636,0.3732508107907901,0.556476020867258
+psc_cat,product/service category,GSA,SM,service M: operation of facilities,29,105,0.2761904761904762,0.1997213229274203,0.36845793055513376
+psc_cat,product/service category,GSA,P49,product group 49: repair shop equipment,87,103,0.8446601941747572,0.7624742780120963,0.9020617624322336
+psc_cat,product/service category,GSA,P76,"product group 76: books, maps, publications",24,88,0.2727272727272727,0.19065479899453314,0.3738120494895087
+psc_cat,product/service category,GSA,P77,product group 77: musical instruments,75,80,0.9375,0.8618985123272557,0.973010624329158
+psc_cat,product/service category,GSA,unknown,unknown,25,64,0.390625,0.28055569188240076,0.5130808211972754
+psc_cat,product/service category,GSA,P7B,product group 7B: IT and telecom (2020 codes),0,52,0.0,0.0,0.06879223612386236
+psc_cat,product/service category,GSA,SW,service W: lease or rental of equipment,24,52,0.46153846153846156,0.33340474681756815,0.5949638867304213
+psc_cat,product/service category,GSA,P43,product group 43: pumps and compressors,22,47,0.46808510638297873,0.33331687076560734,0.607676167798052
+psc_cat,product/service category,GSA,P34,product group 34: metalworking machinery,36,45,0.8,0.6617703088385799,0.8910387319216871
+psc_cat,product/service category,GSA,P55,product group 55: lumber and millwork,28,38,0.7368421052631579,0.5799115381253364,0.8502837874520186
+psc_cat,product/service category,GSA,SK,service K: modification of equipment,12,33,0.36363636363636365,0.2218717823524236,0.5338382169773361
+psc_cat,product/service category,GSA,P69,product group 69: training aids and devices,9,30,0.3,0.16664748268243793,0.4787578745871496
+psc_cat,product/service category,GSA,P25,product group 25: vehicle equipment components,25,29,0.8620689655172413,0.6944100627964798,0.9450256003588804
+psc_cat,product/service category,GSA,P89,product group 89: food (subsistence),10,29,0.3448275862068966,0.19940718526674997,0.5265489590952387
+psc_cat,product/service category,GSA,P16,product group 16: aircraft components,22,26,0.8461538461538461,0.6646880067178652,0.9384996627642165
+psc_cat,product/service category,GSA,P44,"product group 44: furnaces, steam plants, drying",9,21,0.42857142857142855,0.24469968925375948,0.6345344563069328
+psc_cat,product/service category,GSA,SE,service E: purchase of structures and facilities,4,19,0.21052631578947367,0.0850767663291625,0.4333427844381418
+psc_cat,product/service category,GSA,SL,service L: technical representative services,5,19,0.2631578947368421,0.11806412346782508,0.4879155089781511
+psc_cat,product/service category,GSA,SP,service P: salvage services,7,19,0.3684210526315789,0.19149512745135072,0.5896046683519693
+psc_cat,product/service category,GSA,P38,product group 38: construction and mining equipment,8,18,0.4444444444444444,0.2455951812700563,0.6628358435795723
+psc_cat,product/service category,GSA,SQ,service Q: medical services,10,17,0.5882352941176471,0.3600544264299978,0.7838894320978518
+psc_cat,product/service category,GSA,P47,"product group 47: pipe, tubing, hose, fittings",10,16,0.625,0.38641040545502714,0.8151876744113636
+psc_cat,product/service category,GSA,P60,product group 60: fiber optics,6,15,0.4,0.19824496141341577,0.642531698793754
+psc_cat,product/service category,GSA,P46,product group 46: water purification,9,14,0.6428571428571429,0.38764423103907397,0.8365526824644587
+psc_cat,product/service category,GSA,P7C,product group 7C: IT and telecom (2020 codes),0,13,0.0,0.0,0.22809537235419847
+psc_cat,product/service category,GSA,SG,service G: social services,3,13,0.23076923076923078,0.08179528718498563,0.502563759467275
+psc_cat,product/service category,GSA,P87,product group 87: agricultural supplies,12,12,1.0,0.7575059933447589,0.9999999999999999
+psc_cat,product/service category,GSA,P29,product group 29: engine accessories,2,11,0.18181818181818182,0.051367689746085105,0.47698056196084426
+psc_cat,product/service category,GSA,P13,product group 13: ammunition and explosives,4,10,0.4,0.1681803297062361,0.6873262302663417
+psc_cat,product/service category,GSA,P12,product group 12: other products,7,9,0.7777777777777778,0.45258896910698887,0.9367748928821533
+psc_cat,product/service category,GSA,P95,"product group 95: metal bars, sheets, shapes",0,9,0.0,2.7755575615628914e-17,0.29914504841954415
+psc_cat,product/service category,GSA,P28,product group 28: engines and turbines,3,7,0.42857142857142855,0.15821985525146964,0.7495416354723428
+psc_cat,product/service category,GSA,P10,product group 10: weapons,3,5,0.6,0.2307242812760129,0.8823792257673522
+psc_cat,product/service category,GSA,P48,product group 48: valves,3,5,0.6,0.2307242812760129,0.8823792257673522
+psc_cat,product/service category,GSA,P7A,product group 7A: IT and telecom (2020 codes),1,5,0.2,0.036224108632430196,0.6244653702374748
+psc_cat,product/service category,GSA,P17,product group 17: other products,3,3,1.0,0.43850296824495444,1.0
+psc_cat,product/service category,GSA,P19,product group 19: ships and small craft,2,3,0.6666666666666666,0.2076596008020477,0.9385080552796037
+psc_cat,product/service category,GSA,P30,product group 30: mechanical power transmission,0,2,0.0,0.0,0.657619772493347
+psc_cat,product/service category,GSA,P32,product group 32: other products,1,2,0.5,0.09453120573423068,0.9054687942657693
+psc_cat,product/service category,GSA,P7E,product group 7E: IT and telecom (2020 codes),0,2,0.0,0.0,0.657619772493347
+psc_cat,product/service category,GSA,P15,product group 15: aircraft and airframe parts,1,1,1.0,0.2065493143772374,1.0
+psc_cat,product/service category,GSA,P24,product group 24: other products,0,1,0.0,0.0,0.7934506856227627
+psc_cat,product/service category,GSA,P31,product group 31: bearings,0,1,0.0,0.0,0.7934506856227627
+psc_cat,product/service category,GSA,P7F,product group 7F: IT and telecom (2020 codes),1,1,1.0,0.2065493143772374,1.0
+psc_cat,product/service category,GSA,P7J,product group 7J: IT and telecom (2020 codes),1,1,1.0,0.2065493143772374,1.0
+psc_cat,product/service category,GSA,P94,product group 94: nonmetal crude materials,0,1,0.0,0.0,0.7934506856227627
+psc_cat,product/service category,Department of Defense,P53,product group 53: hardware and abrasives,194874,986766,0.1974875502398745,0.19670324562292066,0.19827421019658367
+psc_cat,product/service category,Department of Defense,P59,product group 59: electrical and electronic components,120967,592034,0.20432441380055874,0.2032992570553313,0.20535340754913
+psc_cat,product/service category,Department of Defense,P47,"product group 47: pipe, tubing, hose, fittings",59981,278639,0.21526419489016255,0.21374205469987317,0.21679418599716216
+psc_cat,product/service category,Department of Defense,P61,product group 61: electric wire and power distribution,44722,184713,0.24211614775354198,0.24016802760654418,0.2440749940497214
+psc_cat,product/service category,Department of Defense,P25,product group 25: vehicle equipment components,54799,166043,0.3300289683997519,0.32777118771108316,0.3322946135766923
+psc_cat,product/service category,Department of Defense,P48,product group 48: valves,41980,162213,0.25879553426667407,0.25666992415893214,0.2609325683056693
+psc_cat,product/service category,Department of Defense,P66,product group 66: instruments and laboratory equipment,40931,159618,0.2564309789622724,0.2542946928174694,0.2585789885699269
+psc_cat,product/service category,Department of Defense,P65,"product group 65: medical, dental, veterinary supplies",52446,150929,0.34748789165766686,0.34508950833538227,0.34989403828683946
+psc_cat,product/service category,Department of Defense,P15,product group 15: aircraft and airframe parts,27540,126005,0.21856275544621245,0.2162894921131216,0.22085317836228258
+psc_cat,product/service category,Department of Defense,P30,product group 30: mechanical power transmission,21212,98428,0.21550778233835902,0.21295020428545822,0.21808756591180592
+psc_cat,product/service category,Department of Defense,P31,product group 31: bearings,19943,89584,0.22261787819253437,0.21990565994768724,0.22535388430817216
+psc_cat,product/service category,Department of Defense,P16,product group 16: aircraft components,28698,88447,0.3244654991124628,0.3213877582707177,0.32755848703486073
+psc_cat,product/service category,Department of Defense,P43,product group 43: pumps and compressors,19415,84685,0.2292613804097538,0.2264425422322926,0.23210477982197542
+psc_cat,product/service category,Department of Defense,P70,product group 70: IT equipment and software (pre-2020 codes),21888,82147,0.2664491703896673,0.26343688917094693,0.26948329376797003
+psc_cat,product/service category,Department of Defense,P29,product group 29: engine accessories,14866,77785,0.19111653917850485,0.18836874646288937,0.19389483917698735
+psc_cat,product/service category,Department of Defense,SA,service A: research and development,15878,63984,0.2481557889472368,0.24482410692009288,0.2515177095054495
+psc_cat,product/service category,Department of Defense,P62,product group 62: lighting fixtures,14672,61879,0.23710790413549024,0.23377323690777332,0.24047521010883502
+psc_cat,product/service category,Department of Defense,SJ,service J: maintenance and repair of equipment,22334,55635,0.40143794374045116,0.3973716638697544,0.40551783360267446
+psc_cat,product/service category,Department of Defense,P58,product group 58: communication and detection equipment,17275,55164,0.31315713146254803,0.3093000844104954,0.31704019907898917
+psc_cat,product/service category,Department of Defense,P95,"product group 95: metal bars, sheets, shapes",5319,46785,0.1136902853478679,0.11084554585830975,0.1165984584602558
+psc_cat,product/service category,Department of Defense,P10,product group 10: weapons,13325,45099,0.29546109669837467,0.29126783497005465,0.29968920003528726
+psc_cat,product/service category,Department of Defense,P80,"product group 80: brushes, paints, sealers",12167,44947,0.27069659821567627,0.26660867472989663,0.27482371382987053
+psc_cat,product/service category,Department of Defense,SV,"service V: transportation, travel, relocation",8411,44507,0.1889815085267486,0.1853712773623311,0.1926454239032956
+psc_cat,product/service category,Department of Defense,P41,product group 41: refrigeration and air conditioning,13585,44503,0.3052603195290205,0.30099869927086137,0.30955555639257165
+psc_cat,product/service category,Department of Defense,P28,product group 28: engines and turbines,9817,41724,0.23528424887354998,0.23123866586979352,0.2393785712619279
+psc_cat,product/service category,Department of Defense,P49,product group 49: repair shop equipment,9970,41263,0.24162082252865763,0.23751473035051274,0.2457750188473325
+psc_cat,product/service category,Department of Defense,SS,service S: utilities and housekeeping,11469,41160,0.27864431486880464,0.2743339050153739,0.28299603907575643
+psc_cat,product/service category,Department of Defense,P99,product group 99: miscellaneous,32043,40047,0.8001348415611657,0.7961895000931923,0.8040226084268326
+psc_cat,product/service category,Department of Defense,SR,"service R: professional, administrative, management support",11794,37942,0.3108428654261768,0.30620508974933397,0.3155189398633144
+psc_cat,product/service category,Department of Defense,P20,product group 20: ship and marine equipment,13138,37861,0.34700615408996066,0.34222704196287046,0.35181630923935026
+psc_cat,product/service category,Department of Defense,P42,"product group 42: fire fighting, rescue, safety",8182,37456,0.21844297308842375,0.21428752689768174,0.22265616590501555
+psc_cat,product/service category,Department of Defense,SZ,service Z: maintenance and repair of real property,4949,35065,0.14113788678169115,0.13753304727671875,0.14482134616533018
+psc_cat,product/service category,Department of Defense,P34,product group 34: metalworking machinery,6146,32571,0.18869546529120998,0.1844830875427802,0.1929812655643382
+psc_cat,product/service category,Department of Defense,P71,product group 71: furniture,8323,30403,0.27375587935401113,0.268772675720718,0.2787962482455942
+psc_cat,product/service category,Department of Defense,P91,product group 91: fuels and lubricants,6603,30180,0.2187872763419483,0.21415895031654092,0.22348718153326547
+psc_cat,product/service category,Department of Defense,P84,product group 84: clothing and individual equipment,6889,28715,0.23990945498868188,0.235005327631742,0.24488316224979342
+psc_cat,product/service category,Department of Defense,SW,service W: lease or rental of equipment,7923,28679,0.2762648627915897,0.2711199872024538,0.28146966754203717
+psc_cat,product/service category,Department of Defense,P81,product group 81: containers and packaging,9954,27715,0.35915569186361174,0.35352739173428566,0.364823030248605
+psc_cat,product/service category,Department of Defense,SY,service Y: construction of structures and facilities,6917,27433,0.2521415813071848,0.24703794384097252,0.25731462456926457
+psc_cat,product/service category,Department of Defense,P93,product group 93: nonmetal fabricated materials,6041,24932,0.24229905342531685,0.2370204517522175,0.24765705467079116
+psc_cat,product/service category,Department of Defense,SD,service D: IT and telecom services,9768,24828,0.39342677622039635,0.3873672484892108,0.3995192774748074
+psc_cat,product/service category,Department of Defense,P40,"product group 40: rope, cable, chain",4970,24478,0.20303946400849743,0.19804695700758745,0.20812516348206522
+psc_cat,product/service category,Department of Defense,P17,product group 17: other products,4590,24329,0.1886637346376752,0.1837968158899507,0.19362895554586065
+psc_cat,product/service category,Department of Defense,P39,product group 39: materials handling equipment,5586,23903,0.23369451533280342,0.2283728462094123,0.2391017667824785
+psc_cat,product/service category,Department of Defense,P56,product group 56: construction materials,7460,23397,0.3188442962773005,0.3129029907031421,0.32484507853115085
+psc_cat,product/service category,Department of Defense,P45,"product group 45: plumbing, heating, waste disposal",5183,20167,0.2570040164625378,0.2510196727865838,0.2630809154308685
+psc_cat,product/service category,Department of Defense,P73,product group 73: food preparation equipment,3944,18964,0.20797300147648176,0.20225603525545,0.21380825313255303
+psc_cat,product/service category,Department of Defense,P76,"product group 76: books, maps, publications",5436,17537,0.3099731995210127,0.30317056403921605,0.3168590670564805
+psc_cat,product/service category,Department of Defense,P51,product group 51: hand tools,3587,15746,0.2278038867013845,0.2213197430479946,0.2344208101244151
+psc_cat,product/service category,Department of Defense,P68,product group 68: chemicals,3887,13147,0.2956568038335742,0.28791693336247715,0.30351605464635045
+psc_cat,product/service category,Department of Defense,P83,"product group 83: textiles, leather, tents",5540,12810,0.43247462919594065,0.4239169408860859,0.4410728043390576
+psc_cat,product/service category,Department of Defense,SU,service U: education and training,4838,12301,0.3933013576132022,0.3847036394952299,0.40196569640927493
+psc_cat,product/service category,Department of Defense,P54,product group 54: prefabricated structures,3465,12115,0.28600907965332234,0.27803111108226997,0.29412271091314046
+psc_cat,product/service category,Department of Defense,P75,product group 75: office supplies,3763,11561,0.32549087449182595,0.31700896441449333,0.33408871691840214
+psc_cat,product/service category,Department of Defense,P38,product group 38: construction and mining equipment,2925,11498,0.2543920681857714,0.24651443804551598,0.26243375775242017
+psc_cat,product/service category,Department of Defense,P89,product group 89: food (subsistence),3450,11398,0.3026846815230742,0.2943181249843153,0.3111841952991985
+psc_cat,product/service category,Department of Defense,P44,"product group 44: furnaces, steam plants, drying",2890,10905,0.2650160476845484,0.2568164093557539,0.27338118134660105
+psc_cat,product/service category,Department of Defense,P63,"product group 63: alarm, signal, security detection",2700,10805,0.24988431281813975,0.2418108034900075,0.2581356042178065
+psc_cat,product/service category,Department of Defense,P23,"product group 23: motor vehicles, trailers, cycles",2003,10703,0.18714379146033822,0.17986744059289222,0.19464463883247718
+psc_cat,product/service category,Department of Defense,P36,product group 36: special industry machinery,2667,10049,0.26539954224300927,0.2568573613034724,0.2741210173654855
+psc_cat,product/service category,Department of Defense,P72,product group 72: household and commercial furnishings,1969,9245,0.21297998918334235,0.20475449560623277,0.22144390733658426
+psc_cat,product/service category,Department of Defense,P69,product group 69: training aids and devices,2928,9135,0.32052545155993434,0.3110326126351638,0.33016917264855505
+psc_cat,product/service category,Department of Defense,SG,service G: social services,4422,8822,0.5012468827930174,0.4908150341073267,0.5116776460640367
+psc_cat,product/service category,Department of Defense,P60,product group 60: fiber optics,2171,8473,0.25622565797238284,0.24704232245960236,0.2656299364156146
+psc_cat,product/service category,Department of Defense,P67,product group 67: photographic equipment,1883,8439,0.22313070268989216,0.2143748746935086,0.2321384795140534
+psc_cat,product/service category,Department of Defense,P14,product group 14: other products,1832,8248,0.22211445198836083,0.2132744009755029,0.23121322970964617
+psc_cat,product/service category,Department of Defense,SQ,service Q: medical services,3137,7973,0.3934529035494795,0.38278368485858705,0.4042247433807298
+psc_cat,product/service category,Department of Defense,P12,product group 12: other products,2450,7903,0.3100088573959256,0.2999064923196868,0.320295833015935
+psc_cat,product/service category,Department of Defense,SF,service F: natural resources management,1474,7683,0.19185214109071977,0.18320235360298756,0.20080991914051224
+psc_cat,product/service category,Department of Defense,P35,product group 35: service and trade equipment,1891,7392,0.2558170995670996,0.24599917150357414,0.2658886887081247
+psc_cat,product/service category,Department of Defense,P78,product group 78: recreational and athletic equipment,1242,7232,0.1717367256637168,0.1632192594072478,0.1806027373817981
+psc_cat,product/service category,Department of Defense,SN,service N: installation of equipment,1740,6740,0.258160237388724,0.24785243077314137,0.26874355981972153
+psc_cat,product/service category,Department of Defense,SX,service X: lease or rental of facilities,2082,6385,0.3260767423649178,0.3146860227501685,0.33767661383809794
+psc_cat,product/service category,Department of Defense,SC,service C: architect and engineering services,854,6300,0.13555555555555557,0.12732441396478136,0.14423087022235317
+psc_cat,product/service category,Department of Defense,P26,product group 26: other products,1602,5876,0.27263444520081687,0.2613996680434861,0.28416631044194113
+psc_cat,product/service category,Department of Defense,SH,"service H: quality control, testing, inspection",1881,5440,0.3457720588235294,0.3332460148063009,0.35851576541947605
+psc_cat,product/service category,Department of Defense,P55,product group 55: lumber and millwork,639,5391,0.11853088480801335,0.11017286177205551,0.12743216677328809
+psc_cat,product/service category,Department of Defense,P46,product group 46: water purification,1399,4728,0.2958967851099831,0.2830560997844208,0.30906886534891875
+psc_cat,product/service category,Department of Defense,P74,product group 74: office machines,988,4715,0.2095440084835631,0.19816605655551262,0.22139486238993655
+psc_cat,product/service category,Department of Defense,P13,product group 13: ammunition and explosives,1668,4285,0.38926487747957994,0.3747713100460243,0.4039568128953756
+psc_cat,product/service category,Department of Defense,SM,service M: operation of facilities,971,3804,0.25525762355415355,0.24165387934483162,0.2693551739111121
+psc_cat,product/service category,Department of Defense,P52,product group 52: measuring tools,913,3771,0.2421108459294617,0.2287057957507334,0.25604077672978576
+psc_cat,product/service category,Department of Defense,P77,product group 77: musical instruments,784,3738,0.20973782771535582,0.1969878558720972,0.22308377894165762
+psc_cat,product/service category,Department of Defense,SB,service B: special studies and analyses,929,3000,0.30966666666666665,0.2933739664435088,0.32644618197126524
+psc_cat,product/service category,Department of Defense,P37,product group 37: agricultural machinery,453,2590,0.1749034749034749,0.16075766726970966,0.1900122133360075
+psc_cat,product/service category,Department of Defense,P79,product group 79: cleaning equipment and supplies,793,2490,0.3184738955823293,0.3004665081527947,0.3370405206911759
+psc_cat,product/service category,Department of Defense,P19,product group 19: ships and small craft,559,2013,0.2776949826130154,0.25856787994235203,0.2976689298050375
+psc_cat,product/service category,Department of Defense,ST,"service T: photo, mapping, printing, publication",602,1903,0.3163426169206516,0.29583613431186767,0.33758907953244227
+psc_cat,product/service category,Department of Defense,SL,service L: technical representative services,648,1655,0.3915407854984894,0.36830239852267044,0.41528150089637306
+psc_cat,product/service category,Department of Defense,P96,product group 96: ores and minerals,317,1625,0.19507692307692306,0.17653891057438664,0.2150531964207908
+psc_cat,product/service category,Department of Defense,P7E,product group 7E: IT and telecom (2020 codes),203,1203,0.16874480465502908,0.14864263544504638,0.19095578970450436
+psc_cat,product/service category,Department of Defense,P24,product group 24: other products,149,1196,0.1245819397993311,0.10705905624194823,0.14450872931979553
+psc_cat,product/service category,Department of Defense,SP,service P: salvage services,169,1136,0.1487676056338028,0.1292586796914005,0.17064395692121323
+psc_cat,product/service category,Department of Defense,SK,service K: modification of equipment,384,1096,0.35036496350364965,0.32268736638056217,0.3790878327906909
+psc_cat,product/service category,Department of Defense,P87,product group 87: agricultural supplies,237,957,0.2476489028213166,0.2213462009903302,0.2759694117301922
+psc_cat,product/service category,Department of Defense,P32,product group 32: other products,167,911,0.18331503841931943,0.15953685087048433,0.20975277364675124
+psc_cat,product/service category,Department of Defense,P85,product group 85: toiletries,253,783,0.3231162196679438,0.29129147515638754,0.3566681018400212
+psc_cat,product/service category,Department of Defense,P22,product group 22: other products,128,622,0.2057877813504823,0.1758688856356541,0.23931846758048955
+psc_cat,product/service category,Department of Defense,P7A,product group 7A: IT and telecom (2020 codes),242,553,0.4376130198915009,0.39683662002254794,0.47925019264737867
+psc_cat,product/service category,Department of Defense,P7B,product group 7B: IT and telecom (2020 codes),118,429,0.27505827505827507,0.23493970141035928,0.3191695548382415
+psc_cat,product/service category,Department of Defense,P88,product group 88: live animals,151,346,0.43641618497109824,0.38514094816579697,0.48908779491021587
+psc_cat,product/service category,Department of Defense,P7K,product group 7K: IT and telecom (2020 codes),89,331,0.2688821752265861,0.2239695960479853,0.31909773934452146
+psc_cat,product/service category,Department of Defense,P7G,product group 7G: IT and telecom (2020 codes),107,330,0.3242424242424242,0.27601203108351213,0.3765176445002999
+psc_cat,product/service category,Department of Defense,SE,service E: purchase of structures and facilities,70,284,0.24647887323943662,0.19996126606767706,0.2997633372261719
+psc_cat,product/service category,Department of Defense,P11,product group 11: other products,58,162,0.35802469135802467,0.28827381722981005,0.43435283881200226
+psc_cat,product/service category,Department of Defense,P94,product group 94: nonmetal crude materials,41,136,0.3014705882352941,0.2306709328856929,0.3831774890673471
+psc_cat,product/service category,Department of Defense,P7C,product group 7C: IT and telecom (2020 codes),27,115,0.23478260869565218,0.1666688025686412,0.32004231150447265
+psc_cat,product/service category,Department of Defense,P7F,product group 7F: IT and telecom (2020 codes),23,72,0.3194444444444444,0.22325610278261976,0.43392348732165664
+psc_cat,product/service category,Department of Defense,P7J,product group 7J: IT and telecom (2020 codes),12,47,0.2553191489361702,0.152531540350547,0.3950817553041746
+psc_cat,product/service category,Department of Defense,P18,product group 18: other products,20,46,0.43478260869565216,0.3020926277801995,0.5775256630570502
+psc_cat,product/service category,Department of Defense,P7H,product group 7H: IT and telecom (2020 codes),5,23,0.21739130434782608,0.09663978026586204,0.4190348301626401
+psc_cat,product/service category,Department of Defense,P7D,product group 7D: IT and telecom (2020 codes),2,6,0.3333333333333333,0.09677141110578041,0.700006684861608
+naics2,industry (NAICS sector),all sectors,31-33,31-33: manufacturing,1241143,5001492,0.24815455068207648,0.2477761938092558,0.2485332944207283
+naics2,industry (NAICS sector),all sectors,42,42: wholesale trade,127226,455049,0.2795874729974135,0.27828536517274144,0.28089330217296576
+naics2,industry (NAICS sector),all sectors,54,"54: professional, scientific, technical services",113967,316358,0.3602469354339072,0.35857576082507187,0.36192150397698014
+naics2,industry (NAICS sector),all sectors,23,23: construction,47199,226141,0.20871491679969575,0.2070449223752208,0.21039480717974487
+naics2,industry (NAICS sector),all sectors,56,56: administrative support and waste services,55927,166777,0.3353400049167451,0.3330780157871676,0.33760957926516416
+naics2,industry (NAICS sector),all sectors,81,81: other services,55862,133930,0.4170984842828343,0.4144601563466355,0.4197415677424368
+naics2,industry (NAICS sector),all sectors,44-45,44-45: retail trade,30121,125795,0.23944512897968917,0.23709488603475518,0.2418112848026107
+naics2,industry (NAICS sector),all sectors,51,51: information,48282,101774,0.47440407176685595,0.47133727562967304,0.47747280006732457
+naics2,industry (NAICS sector),all sectors,48-49,48-49: transportation and warehousing,27840,94134,0.2957486136783734,0.29284158333540794,0.2986723136895077
+naics2,industry (NAICS sector),all sectors,unknown,unknown,57883,91785,0.6306368142942747,0.6275090783014966,0.6337536157129889
+naics2,industry (NAICS sector),all sectors,72,72: accommodation and food services,18051,88413,0.20416680804859014,0.20152267514205252,0.20683664716688388
+naics2,industry (NAICS sector),all sectors,53,53: real estate and rental,32800,75032,0.43714681735792726,0.4336008789160441,0.4406991913353672
+naics2,industry (NAICS sector),all sectors,61,61: educational services,19129,59568,0.32112879398334676,0.3173909182375605,0.32488973856015446
+naics2,industry (NAICS sector),all sectors,62,62: health care and social assistance,27487,54308,0.5061316933048537,0.5019265290232577,0.5103359902011173
+naics2,industry (NAICS sector),all sectors,11,"11: agriculture, forestry, fishing",9018,37166,0.24264112360759835,0.2383096544763935,0.2470257882051813
+naics2,industry (NAICS sector),all sectors,92,92: public administration,7554,20248,0.3730738838403793,0.36643719225824156,0.3797587272362166
+naics2,industry (NAICS sector),all sectors,22,22: utilities,5587,18181,0.3072988284472801,0.3006336715440254,0.3140453997106101
+naics2,industry (NAICS sector),all sectors,52,52: finance and insurance,6694,14799,0.4523278599905399,0.44432228658491385,0.4603581760191618
+naics2,industry (NAICS sector),all sectors,21,"21: mining, oil and gas",2780,13925,0.19964093357271095,0.19308493878877722,0.2063626014298164
+naics2,industry (NAICS sector),all sectors,71,71: arts and recreation,5725,11848,0.48320391627278864,0.4742127256409629,0.49220599491121014
+naics2,industry (NAICS sector),all sectors,55,55: management of companies,43,60,0.7166666666666667,0.5923271483560882,0.8149317157156729
+naics2,industry (NAICS sector),civilian except GSA,31-33,31-33: manufacturing,189797,608346,0.3119885722927413,0.3108255295001327,0.3131539895025293
+naics2,industry (NAICS sector),civilian except GSA,42,42: wholesale trade,58465,235479,0.24828116307611295,0.24654037454002473,0.25003016424918517
+naics2,industry (NAICS sector),civilian except GSA,54,"54: professional, scientific, technical services",57472,169657,0.33875407439716604,0.3365056566930501,0.3410097939580673
+naics2,industry (NAICS sector),civilian except GSA,23,23: construction,25771,130697,0.19718126659372442,0.19503314681302433,0.19934718680602895
+naics2,industry (NAICS sector),civilian except GSA,56,56: administrative support and waste services,40258,110356,0.3648011888796259,0.3619658441077312,0.36764594578293847
+naics2,industry (NAICS sector),civilian except GSA,unknown,unknown,57821,91636,0.6309856388319002,0.6278559542150222,0.6341043418510437
+naics2,industry (NAICS sector),civilian except GSA,44-45,44-45: retail trade,15303,73678,0.2077010776622601,0.20478719367495726,0.2106454401026325
+naics2,industry (NAICS sector),civilian except GSA,81,81: other services,28576,67287,0.4246882755955831,0.42095786268539953,0.4284272872060278
+naics2,industry (NAICS sector),civilian except GSA,51,51: information,28960,57557,0.5031533957641989,0.4990686195631703,0.5072377510665865
+naics2,industry (NAICS sector),civilian except GSA,61,61: educational services,13354,45018,0.29663690079523747,0.2924349321341722,0.3008735730999536
+naics2,industry (NAICS sector),civilian except GSA,53,53: real estate and rental,24110,43901,0.5491902234573245,0.544531665006215,0.553840174100661
+naics2,industry (NAICS sector),civilian except GSA,72,72: accommodation and food services,7327,42647,0.1718057542148334,0.1682553054388458,0.17541532232527027
+naics2,industry (NAICS sector),civilian except GSA,48-49,48-49: transportation and warehousing,10368,37399,0.2772266638145405,0.2727130545932216,0.28178603290671034
+naics2,industry (NAICS sector),civilian except GSA,62,62: health care and social assistance,20293,35925,0.5648712595685456,0.5597379470501922,0.5699907002078091
+naics2,industry (NAICS sector),civilian except GSA,11,"11: agriculture, forestry, fishing",8116,34597,0.23458681388559702,0.23015135748301752,0.23908120375811198
+naics2,industry (NAICS sector),civilian except GSA,92,92: public administration,5889,13536,0.43506205673758863,0.42672986804630475,0.4434310931919282
+naics2,industry (NAICS sector),civilian except GSA,52,52: finance and insurance,2995,10868,0.2755796834744203,0.2672598405705808,0.28405811982495893
+naics2,industry (NAICS sector),civilian except GSA,22,22: utilities,3356,9136,0.36733800350262696,0.3575104042692443,0.3772771179299901
+naics2,industry (NAICS sector),civilian except GSA,21,"21: mining, oil and gas",1134,6895,0.16446700507614212,0.15590439911097972,0.1734032784724748
+naics2,industry (NAICS sector),civilian except GSA,71,71: arts and recreation,3013,5881,0.5123278354021424,0.4995489690244627,0.5250906072520845
+naics2,industry (NAICS sector),civilian except GSA,55,55: management of companies,37,53,0.6981132075471698,0.5646316733114987,0.8048169727242109
+naics2,industry (NAICS sector),GSA,31-33,31-33: manufacturing,126568,358207,0.35333759530104103,0.35177381371121774,0.3549045225108344
+naics2,industry (NAICS sector),GSA,42,42: wholesale trade,9354,32503,0.2877888194935852,0.2828922816565412,0.29273551295785244
+naics2,industry (NAICS sector),GSA,81,81: other services,7630,21360,0.35720973782771537,0.35080989468275076,0.36366093156083973
+naics2,industry (NAICS sector),GSA,23,23: construction,3853,11360,0.3391725352112676,0.33052231089275896,0.34793149249397004
+naics2,industry (NAICS sector),GSA,54,"54: professional, scientific, technical services",939,6307,0.14888219438718883,0.14031077145961252,0.15788107365328208
+naics2,industry (NAICS sector),GSA,44-45,44-45: retail trade,2091,4313,0.48481335497333644,0.4699183398419547,0.49973539860324007
+naics2,industry (NAICS sector),GSA,56,56: administrative support and waste services,1561,3605,0.4330097087378641,0.41691492519215306,0.4492471089367068
+naics2,industry (NAICS sector),GSA,53,53: real estate and rental,756,2317,0.32628398791540786,0.3074944821489024,0.34564856347341655
+naics2,industry (NAICS sector),GSA,22,22: utilities,182,1144,0.1590909090909091,0.13904163788530502,0.18142200802500977
+naics2,industry (NAICS sector),GSA,48-49,48-49: transportation and warehousing,225,853,0.2637749120750293,0.23530832493577652,0.29435962489164497
+naics2,industry (NAICS sector),GSA,51,51: information,249,758,0.32849604221635886,0.295998897488843,0.3627227472973681
+naics2,industry (NAICS sector),GSA,61,61: educational services,162,496,0.32661290322580644,0.28681068028197015,0.3690802087895168
+naics2,industry (NAICS sector),GSA,72,72: accommodation and food services,70,279,0.25089605734767023,0.20364252724613588,0.3049160815958645
+naics2,industry (NAICS sector),GSA,unknown,unknown,62,148,0.4189189189189189,0.3424675039004941,0.49947289771049785
+naics2,industry (NAICS sector),GSA,11,"11: agriculture, forestry, fishing",138,142,0.971830985915493,0.9298136909719413,0.9889922581974736
+naics2,industry (NAICS sector),GSA,71,71: arts and recreation,27,125,0.216,0.15290810140879452,0.29602704221753495
+naics2,industry (NAICS sector),GSA,92,92: public administration,54,89,0.6067415730337079,0.5028653953994611,0.7017845556175188
+naics2,industry (NAICS sector),GSA,21,"21: mining, oil and gas",29,53,0.5471698113207547,0.4145397548710581,0.6734242084707776
+naics2,industry (NAICS sector),GSA,62,62: health care and social assistance,29,48,0.6041666666666666,0.4631040849254724,0.7297917213940863
+naics2,industry (NAICS sector),GSA,52,52: finance and insurance,9,22,0.4090909090909091,0.2325581619647187,0.6126518152368489
+naics2,industry (NAICS sector),GSA,55,55: management of companies,1,1,1.0,0.2065493143772374,1.0
+naics2,industry (NAICS sector),Department of Defense,31-33,31-33: manufacturing,924778,4034939,0.22919256028405882,0.22878270590435373,0.2296029303070674
+naics2,industry (NAICS sector),Department of Defense,42,42: wholesale trade,59407,187067,0.31757070995953324,0.31546488205200635,0.31968403015821484
+naics2,industry (NAICS sector),Department of Defense,54,"54: professional, scientific, technical services",55556,140394,0.39571491659187713,0.39315988921094164,0.3982756507108844
+naics2,industry (NAICS sector),Department of Defense,23,23: construction,17575,84084,0.20901717330288758,0.20628218586777208,0.21177874718681405
+naics2,industry (NAICS sector),Department of Defense,48-49,48-49: transportation and warehousing,17247,55882,0.30863247557352996,0.3048158388921787,0.3124754205449782
+naics2,industry (NAICS sector),Department of Defense,56,56: administrative support and waste services,14108,52816,0.26711602544683427,0.26335966106781555,0.27090626399788903
+naics2,industry (NAICS sector),Department of Defense,44-45,44-45: retail trade,12727,47804,0.2662329512174713,0.26228974456613574,0.27021372519935893
+naics2,industry (NAICS sector),Department of Defense,72,72: accommodation and food services,10654,45487,0.2342207663728098,0.23035134454785924,0.23813507547390797
+naics2,industry (NAICS sector),Department of Defense,81,81: other services,19656,45283,0.43407018086257537,0.4295109532686845,0.4386405934575446
+naics2,industry (NAICS sector),Department of Defense,51,51: information,19073,43459,0.43887342092547,0.43421341822520704,0.4435442289586787
+naics2,industry (NAICS sector),Department of Defense,53,53: real estate and rental,7934,28814,0.2753522593183869,0.27022478539860184,0.2805396249581139
+naics2,industry (NAICS sector),Department of Defense,62,62: health care and social assistance,7165,18335,0.3907826561221707,0.3837436888351432,0.3978673791817158
+naics2,industry (NAICS sector),Department of Defense,61,61: educational services,5613,14054,0.3993880745695176,0.391319282709651,0.4075118530458637
+naics2,industry (NAICS sector),Department of Defense,22,22: utilities,2049,7901,0.25933426148588784,0.24978905211610594,0.2691133800438223
+naics2,industry (NAICS sector),Department of Defense,21,"21: mining, oil and gas",1617,6977,0.23176150207825713,0.2220096576127174,0.24180856228532877
+naics2,industry (NAICS sector),Department of Defense,92,92: public administration,1611,6623,0.24324324324324326,0.23306117412876967,0.2537229867518139
+naics2,industry (NAICS sector),Department of Defense,71,71: arts and recreation,2685,5842,0.4596028757274906,0.4468540544524643,0.4724047890647839
+naics2,industry (NAICS sector),Department of Defense,52,52: finance and insurance,3690,3909,0.9439754412893323,0.9363207711136688,0.950758359622729
+naics2,industry (NAICS sector),Department of Defense,11,"11: agriculture, forestry, fishing",764,2427,0.31479192418623814,0.29661969124844656,0.3335495257780954
+naics2,industry (NAICS sector),Department of Defense,55,55: management of companies,5,6,0.8333333333333334,0.43649717781352965,0.9699466302516933
+naics2,industry (NAICS sector),Department of Defense,unknown,unknown,0,1,0.0,0.0,0.7934506856227627
+extent_competed,extent competed,all sectors,F,F: competed under simplified acquisition,1438914,5412781,0.2658363602739516,0.2654643564457978,0.26620869647444445
+extent_competed,extent competed,all sectors,A,A: full and open,365278,1135331,0.3217370088546864,0.3208783298753003,0.32259689415649795
+extent_competed,extent competed,all sectors,D,D: full and open after exclusion of sources,129500,551370,0.2348695068647188,0.23375241436229804,0.23599029373127112
+extent_competed,extent competed,all sectors,E,E: follow-on to a competed action,6591,7258,0.9081014053458253,0.9012377611456284,0.9145332844759106
+extent_competed,extent competed,all sectors,CDO,CDO: competitive delivery order,35,43,0.813953488372093,0.6738299634272562,0.9025824857100377
+extent_competed,extent competed,civilian except GSA,F,F: competed under simplified acquisition,463946,1382425,0.3356030164385048,0.3348163304647979,0.33639061605669546
+extent_competed,extent competed,civilian except GSA,A,A: full and open,75497,258753,0.2917724625414971,0.2900240487690735,0.29352705893313935
+extent_competed,extent competed,civilian except GSA,D,D: full and open after exclusion of sources,56688,182423,0.31075028916309894,0.3086305479560819,0.3128780006333205
+extent_competed,extent competed,civilian except GSA,E,E: follow-on to a competed action,6249,6905,0.9049963794351918,0.8978533741442106,0.9116890119904825
+extent_competed,extent competed,civilian except GSA,CDO,CDO: competitive delivery order,35,43,0.813953488372093,0.6738299634272562,0.9025824857100377
+extent_competed,extent competed,GSA,F,F: competed under simplified acquisition,146392,399922,0.3660513800191037,0.3645596777720502,0.36754565553377044
+extent_competed,extent competed,GSA,A,A: full and open,5880,24164,0.24333719582850522,0.2379679960962121,0.248787988250382
+extent_competed,extent competed,GSA,D,D: full and open after exclusion of sources,1381,19697,0.07011219982738488,0.06662956015475348,0.07376248678405069
+extent_competed,extent competed,GSA,E,E: follow-on to a competed action,336,347,0.968299711815562,0.944135790483196,0.9822085506116203
+extent_competed,extent competed,Department of Defense,F,F: competed under simplified acquisition,828576,3630434,0.22823056416946294,0.22779913451320447,0.2286625689580564
+extent_competed,extent competed,Department of Defense,A,A: full and open,283901,852414,0.33305529942023476,0.3320555334663683,0.3340565700615008
+extent_competed,extent competed,Department of Defense,D,D: full and open after exclusion of sources,71431,349250,0.20452684323550466,0.2031923686030899,0.20586781771318716
+extent_competed,extent competed,Department of Defense,E,E: follow-on to a competed action,6,6,1.0,0.6096657120978346,1.0
+sol_procedure,solicitation procedure,all sectors,SP1,SP1: simplified acquisition,1461250,5496508,0.2658506091503915,0.2654814419320232,0.26622010365823684
+sol_procedure,solicitation procedure,all sectors,NP,NP: negotiated proposal or quote,453365,1479595,0.3064115518097858,0.3056692410847941,0.30715486775596457
+sol_procedure,solicitation procedure,all sectors,SB,SB: sealed bid,4206,60912,0.06905043341213554,0.06706403021924688,0.07109118946215291
+sol_procedure,solicitation procedure,all sectors,MAFO,MAFO: multiple-award fair opportunity,4654,19590,0.2375701888718734,0.23166226886749888,0.2435810099143
+sol_procedure,solicitation procedure,all sectors,SSS,SSS: only one source,8791,16676,0.5271647877188774,0.519581826449281,0.5347352365897616
+sol_procedure,solicitation procedure,all sectors,BR,BR: basic research,4141,13192,0.31390236506973923,0.3060382763954971,0.3218748040001501
+sol_procedure,solicitation procedure,all sectors,AE,AE: architect-engineer selection,1506,10734,0.1403018446059251,0.1338603414779927,0.14700071149865607
+sol_procedure,solicitation procedure,all sectors,TS,TS: two-step,590,4907,0.12023639698390055,0.11143218139973224,0.12963474546965725
+sol_procedure,solicitation procedure,all sectors,AS,AS: alternative sources,1813,4664,0.3887221269296741,0.37482948199876404,0.4027979269102255
+sol_procedure,solicitation procedure,all sectors,blank,blank,2,5,0.4,0.11762077423264788,0.7692757187239871
+sol_procedure,solicitation procedure,civilian except GSA,SP1,SP1: simplified acquisition,485796,1464787,0.3316495845471048,0.3308875921550441,0.33241245994740126
+sol_procedure,solicitation procedure,civilian except GSA,NP,NP: negotiated proposal or quote,97615,275159,0.3547585214366966,0.3529729051098448,0.356548193101515
+sol_procedure,solicitation procedure,civilian except GSA,SB,SB: sealed bid,3080,47262,0.06516863442088781,0.06297853867445202,0.06742941067287533
+sol_procedure,solicitation procedure,civilian except GSA,SSS,SSS: only one source,8459,16151,0.5237446597733887,0.5160374909934815,0.5314405360707342
+sol_procedure,solicitation procedure,civilian except GSA,MAFO,MAFO: multiple-award fair opportunity,4056,14807,0.2739244951712028,0.2668005758610504,0.28116568799948477
+sol_procedure,solicitation procedure,civilian except GSA,AE,AE: architect-engineer selection,1186,6101,0.19439436158006884,0.1846578933208783,0.20451543326697527
+sol_procedure,solicitation procedure,civilian except GSA,AS,AS: alternative sources,1229,3086,0.398250162022035,0.3811151989359328,0.41563812696458435
+sol_procedure,solicitation procedure,civilian except GSA,BR,BR: basic research,667,1658,0.402291917973462,0.3789407822791484,0.4260947713350196
+sol_procedure,solicitation procedure,civilian except GSA,TS,TS: two-step,325,1533,0.21200260926288322,0.1922751867234223,0.23316977708073217
+sol_procedure,solicitation procedure,civilian except GSA,blank,blank,2,5,0.4,0.11762077423264788,0.7692757187239871
+sol_procedure,solicitation procedure,GSA,SP1,SP1: simplified acquisition,146876,401283,0.3660160036682341,0.3645268617896622,0.36750771076425826
+sol_procedure,solicitation procedure,GSA,NP,NP: negotiated proposal or quote,6318,36886,0.1712844981835927,0.1674739291308361,0.17516352765873203
+sol_procedure,solicitation procedure,GSA,MAFO,MAFO: multiple-award fair opportunity,358,3280,0.10914634146341463,0.09892867211765322,0.12027845704722626
+sol_procedure,solicitation procedure,GSA,TS,TS: two-step,65,944,0.06885593220338983,0.05438907570749872,0.08681751277325826
+sol_procedure,solicitation procedure,GSA,SB,SB: sealed bid,52,757,0.06869220607661823,0.05276620715593496,0.08897351742196674
+sol_procedure,solicitation procedure,GSA,AE,AE: architect-engineer selection,34,479,0.0709812108559499,0.051236566607096544,0.09755235262979287
+sol_procedure,solicitation procedure,GSA,SSS,SSS: only one source,236,377,0.6259946949602122,0.5761112382292909,0.6733363935862552
+sol_procedure,solicitation procedure,GSA,AS,AS: alternative sources,47,115,0.40869565217391307,0.32321454709223985,0.5000794429985044
+sol_procedure,solicitation procedure,GSA,BR,BR: basic research,3,9,0.3333333333333333,0.1205838183869109,0.6457978644196039
+sol_procedure,solicitation procedure,Department of Defense,SP1,SP1: simplified acquisition,828578,3630438,0.22823086360378556,0.22779943398527314,0.22866286835336563
+sol_procedure,solicitation procedure,Department of Defense,NP,NP: negotiated proposal or quote,349432,1167550,0.29928654019099826,0.2984565400100193,0.3001178611376041
+sol_procedure,solicitation procedure,Department of Defense,SB,SB: sealed bid,1074,12893,0.08330101605522376,0.07865432597780964,0.08819594241476328
+sol_procedure,solicitation procedure,Department of Defense,BR,BR: basic research,3471,11525,0.3011713665943601,0.29286307575176956,0.3096121585230885
+sol_procedure,solicitation procedure,Department of Defense,AE,AE: architect-engineer selection,286,4154,0.06884930187770823,0.061541186644741404,0.07695410340511595
+sol_procedure,solicitation procedure,Department of Defense,TS,TS: two-step,200,2430,0.0823045267489712,0.07202540850627832,0.09390218606118934
+sol_procedure,solicitation procedure,Department of Defense,MAFO,MAFO: multiple-award fair opportunity,240,1503,0.1596806387225549,0.14203253955861328,0.17906392084762285
+sol_procedure,solicitation procedure,Department of Defense,AS,AS: alternative sources,537,1463,0.367053998632946,0.3427333634478316,0.3920709689080682
+sol_procedure,solicitation procedure,Department of Defense,SSS,SSS: only one source,96,148,0.6486486486486487,0.5688622587289639,0.720913671650884
+route,competition route,all sectors,F / SP1,competed under simplified acquisition; simplified acquisition,1430618,5394981,0.26517572536400036,0.26480340511411765,0.26554838002363873
+route,competition route,all sectors,A / NP,full and open; negotiated proposal or quote,335746,1004863,0.3341211687563379,0.33319956377592364,0.33504404199772586
+route,competition route,all sectors,D / NP,full and open after exclusion of sources; negotiated proposal or quote,112214,465776,0.2409183813678678,0.2396924071423558,0.24214862907746215
+route,competition route,all sectors,A / SP1,full and open; simplified acquisition,17380,56274,0.3088460034829584,0.30504189184196884,0.31267621101487053
+route,competition route,all sectors,D / SP1,full and open after exclusion of sources; simplified acquisition,10991,42749,0.25710542936676883,0.2529844839217171,0.26127002428441787
+route,competition route,all sectors,A / SB,full and open; sealed bid,2554,33352,0.07657711681458383,0.07377174016611113,0.07948002130216109
+route,competition route,all sectors,D / SB,full and open after exclusion of sources; sealed bid,1444,26962,0.05355685779986648,0.050932529253124983,0.05630838378260583
+route,competition route,all sectors,A / MAFO,full and open; multiple-award fair opportunity,4549,19069,0.2385547223241911,0.23255856631688118,0.24465619365855643
+route,competition route,all sectors,A / BR,full and open; basic research,3772,12335,0.3057965139845967,0.2977271247792372,0.31398682616264423
+route,competition route,all sectors,F / SSS,competed under simplified acquisition; only one source,3787,9365,0.404378003203417,0.39447947011003637,0.41435495110713705
+route,competition route,all sectors,F / NP,competed under simplified acquisition; negotiated proposal or quote,4074,7455,0.5464788732394367,0.5351570070011237,0.5577528643007353
+route,competition route,all sectors,A / AE,full and open; architect-engineer selection,624,5327,0.11713910268443777,0.10877787578608196,0.1260521165314218
+route,competition route,all sectors,D / AE,full and open after exclusion of sources; architect-engineer selection,810,5311,0.15251365091319902,0.14309605943391113,0.16243355445997293
+route,competition route,all sectors,D / SSS,full and open after exclusion of sources; only one source,2141,4289,0.4991839589647937,0.4842276685716848,0.5141417098302088
+route,competition route,all sectors,D / AS,full and open after exclusion of sources; alternative sources,1349,3326,0.4055923030667468,0.38902365127707916,0.42237878101096904
+route,competition route,all sectors,A / TS,full and open; two-step,443,3169,0.1397917324076996,0.12815388191947413,0.1523018138250707
+route,competition route,all sectors,E / SSS,follow-on to a competed action; only one source,2835,2991,0.9478435305917753,0.9392852664528073,0.9552529042104685
+route,competition route,all sectors,E / SP1,follow-on to a competed action; simplified acquisition,2253,2493,0.9037304452466908,0.8915230805593913,0.9146955092868291
+route,competition route,all sectors,D / TS,full and open after exclusion of sources; two-step,96,1646,0.0583232077764277,0.047996600428276484,0.07070659846010732
+route,competition route,all sectors,E / NP,follow-on to a competed action; negotiated proposal or quote,1328,1496,0.8877005347593583,0.8706977919133155,0.9027172868458041
+route,competition route,all sectors,A / AS,full and open; alternative sources,204,933,0.21864951768488747,0.19331058788397446,0.24629576700463654
+route,competition route,all sectors,D / BR,full and open after exclusion of sources; basic research,350,790,0.4430379746835443,0.4087572344394063,0.4778700020194943
+route,competition route,all sectors,D / MAFO,full and open after exclusion of sources; multiple-award fair opportunity,105,521,0.20153550863723607,0.16933135912839437,0.23810874535799775
+route,competition route,all sectors,F / SB,competed under simplified acquisition; sealed bid,146,473,0.3086680761099366,0.26871881436785555,0.35170009709248135
+route,competition route,all sectors,F / AS,competed under simplified acquisition; alternative sources,201,317,0.6340694006309149,0.5797324586803838,0.6851958966276603
+route,competition route,all sectors,E / SB,follow-on to a competed action; sealed bid,62,125,0.496,0.4097862690163362,0.5824522541333305
+route,competition route,all sectors,E / AS,follow-on to a competed action; alternative sources,59,88,0.6704545454545454,0.5669282357899313,0.7597216278470372
+route,competition route,all sectors,F / TS,competed under simplified acquisition; two-step,49,87,0.5632183908045977,0.45851554321048027,0.662574542118424
+route,competition route,all sectors,F / BR,competed under simplified acquisition; basic research,15,63,0.23809523809523808,0.14993783678290612,0.3563566010969687
+route,competition route,all sectors,E / AE,follow-on to a competed action; architect-engineer selection,48,56,0.8571428571428571,0.7426407877129466,0.9257921146307937
+route,competition route,all sectors,F / AE,competed under simplified acquisition; architect-engineer selection,24,40,0.6,0.44595893660346186,0.7365167431570808
+route,competition route,all sectors,CDO / SSS,competitive delivery order; only one source,24,27,0.8888888888888888,0.7194219918172017,0.9614796517169016
+route,competition route,all sectors,CDO / SP1,competitive delivery order; simplified acquisition,8,11,0.7272727272727273,0.4343546988238708,0.9025394070997511
+route,competition route,all sectors,A / blank,full and open; blank,2,5,0.4,0.11762077423264788,0.7692757187239871
+route,competition route,all sectors,CDO / NP,competitive delivery order; negotiated proposal or quote,3,5,0.6,0.2307242812760129,0.8823792257673522
+route,competition route,all sectors,E / TS,follow-on to a competed action; two-step,2,5,0.4,0.11762077423264788,0.7692757187239871
+route,competition route,all sectors,A / SSS,full and open; only one source,4,4,1.0,0.5101091635454025,1.0
+route,competition route,all sectors,E / BR,follow-on to a competed action; basic research,4,4,1.0,0.5101091635454025,1.0
+route,competition route,civilian except GSA,F / SP1,competed under simplified acquisition; simplified acquisition,455779,1365031,0.3338964463078128,0.3331057742468193,0.3346880532606378
+route,competition route,civilian except GSA,A / NP,full and open; negotiated proposal or quote,50954,156507,0.32557010229574396,0.3232528910843055,0.32789587604844656
+route,competition route,civilian except GSA,D / NP,full and open after exclusion of sources; negotiated proposal or quote,41496,110152,0.37671581087951195,0.37385860328400267,0.3795816170410069
+route,competition route,civilian except GSA,A / SP1,full and open; simplified acquisition,17137,55343,0.3096507236687567,0.30581203783600464,0.3135158326500498
+route,competition route,civilian except GSA,D / SP1,full and open after exclusion of sources; simplified acquisition,10720,42012,0.25516519089783873,0.251018992246014,0.2593561594652184
+route,competition route,civilian except GSA,A / SB,full and open; sealed bid,1998,27166,0.0735478171243466,0.07050367476568001,0.07671254896101917
+route,competition route,civilian except GSA,D / SB,full and open after exclusion of sources; sealed bid,878,19511,0.04500025626569627,0.0421799056566437,0.04799973851490795
+route,competition route,civilian except GSA,A / MAFO,full and open; multiple-award fair opportunity,3956,14334,0.2759871633877494,0.2687300920443892,0.2833642717798696
+route,competition route,civilian except GSA,F / SSS,competed under simplified acquisition; only one source,3749,9271,0.4043792471146586,0.394430872884856,0.4144068298541147
+route,competition route,civilian except GSA,F / NP,competed under simplified acquisition; negotiated proposal or quote,3988,7160,0.5569832402234637,0.5454497725668016,0.5684555957597511
+route,competition route,civilian except GSA,D / SSS,full and open after exclusion of sources; only one source,1932,3945,0.4897338403041825,0.47415218824169714,0.5053354663413788
+route,competition route,civilian except GSA,D / AE,full and open after exclusion of sources; architect-engineer selection,700,3769,0.1857256566728575,0.17363256866165516,0.19845872490134114
+route,competition route,civilian except GSA,E / SSS,follow-on to a competed action; only one source,2750,2904,0.946969696969697,0.9382128112439632,0.9545456271933359
+route,competition route,civilian except GSA,E / SP1,follow-on to a competed action; simplified acquisition,2152,2390,0.900418410041841,0.8877633228991336,0.9117883737879627
+route,competition route,civilian except GSA,A / AE,full and open; architect-engineer selection,416,2238,0.18588025022341376,0.17030652420044967,0.20253048241837834
+route,competition route,civilian except GSA,D / AS,full and open after exclusion of sources; alternative sources,771,1765,0.4368271954674221,0.4138497595530396,0.460079020842759
+route,competition route,civilian except GSA,A / BR,full and open; basic research,616,1383,0.44540853217642806,0.4194015504418131,0.4717179433982375
+route,competition route,civilian except GSA,E / NP,follow-on to a competed action; negotiated proposal or quote,1174,1335,0.8794007490636704,0.8608340965183651,0.8957902172314433
+route,competition route,civilian except GSA,A / AS,full and open; alternative sources,199,918,0.2167755991285403,0.19133048671618882,0.24458119308042967
+route,competition route,civilian except GSA,A / TS,full and open; two-step,215,855,0.25146198830409355,0.22353656133333621,0.28161075586350404
+route,competition route,civilian except GSA,D / TS,full and open after exclusion of sources; two-step,59,587,0.10051107325383304,0.07872495286294524,0.1274918875461331
+route,competition route,civilian except GSA,D / MAFO,full and open after exclusion of sources; multiple-award fair opportunity,100,473,0.21141649048625794,0.17701932325550404,0.25046334430621964
+route,competition route,civilian except GSA,F / SB,competed under simplified acquisition; sealed bid,142,460,0.30869565217391304,0.26821011086387847,0.35234989589473287
+route,competition route,civilian except GSA,F / AS,competed under simplified acquisition; alternative sources,201,316,0.6360759493670886,0.5816883726013119,0.6871948432178491
+route,competition route,civilian except GSA,D / BR,full and open after exclusion of sources; basic research,32,209,0.15311004784688995,0.11059082654994404,0.20815092233952584
+route,competition route,civilian except GSA,E / SB,follow-on to a competed action; sealed bid,62,125,0.496,0.4097862690163362,0.5824522541333305
+route,competition route,civilian except GSA,E / AS,follow-on to a competed action; alternative sources,58,87,0.6666666666666666,0.5624236002445081,0.7568138974407851
+route,competition route,civilian except GSA,F / TS,competed under simplified acquisition; two-step,49,86,0.5697674418604651,0.4643620337990634,0.6692065898354843
+route,competition route,civilian except GSA,F / BR,competed under simplified acquisition; basic research,15,62,0.24193548387096775,0.15245896205333748,0.36152507516027416
+route,competition route,civilian except GSA,E / AE,follow-on to a competed action; architect-engineer selection,47,55,0.8545454545454545,0.7383908706854772,0.924407108522407
+route,competition route,civilian except GSA,F / AE,competed under simplified acquisition; architect-engineer selection,23,39,0.5897435897435898,0.4341862288289696,0.7292068999927482
+route,competition route,civilian except GSA,CDO / SSS,competitive delivery order; only one source,24,27,0.8888888888888888,0.7194219918172017,0.9614796517169016
+route,competition route,civilian except GSA,CDO / SP1,competitive delivery order; simplified acquisition,8,11,0.7272727272727273,0.4343546988238708,0.9025394070997511
+route,competition route,civilian except GSA,A / blank,full and open; blank,2,5,0.4,0.11762077423264788,0.7692757187239871
+route,competition route,civilian except GSA,CDO / NP,competitive delivery order; negotiated proposal or quote,3,5,0.6,0.2307242812760129,0.8823792257673522
+route,competition route,civilian except GSA,E / TS,follow-on to a competed action; two-step,2,5,0.4,0.11762077423264788,0.7692757187239871
+route,competition route,civilian except GSA,A / SSS,full and open; only one source,4,4,1.0,0.5101091635454025,1.0
+route,competition route,civilian except GSA,E / BR,follow-on to a competed action; basic research,4,4,1.0,0.5101091635454025,1.0
+route,competition route,GSA,F / SP1,competed under simplified acquisition; simplified acquisition,146264,399517,0.36610206824740876,0.36460956658116267,0.36759714481507494
+route,competition route,GSA,A / NP,full and open; negotiated proposal or quote,5155,18234,0.28271361193375016,0.27622368575180273,0.2892950727102865
+route,competition route,GSA,D / NP,full and open after exclusion of sources; negotiated proposal or quote,923,18196,0.050725434161354145,0.04763081783107059,0.05400970815956402
+route,competition route,GSA,A / MAFO,full and open; multiple-award fair opportunity,356,3252,0.10947109471094711,0.09919714838374914,0.12066658511633986
+route,competition route,GSA,A / SP1,full and open; simplified acquisition,240,926,0.2591792656587473,0.23199221390980157,0.2883561252945441
+route,competition route,GSA,A / TS,full and open; two-step,63,896,0.0703125,0.05534131171911647,0.08895239418643333
+route,competition route,GSA,D / SP1,full and open after exclusion of sources; simplified acquisition,271,737,0.3677069199457259,0.33366485166627724,0.4031209374141421
+route,competition route,GSA,A / SB,full and open; sealed bid,36,604,0.059602649006622516,0.04336026438129195,0.08141151240378984
+route,competition route,GSA,F / NP,competed under simplified acquisition; negotiated proposal or quote,86,295,0.29152542372881357,0.24260943127460355,0.34580109086181665
+route,competition route,GSA,D / AE,full and open after exclusion of sources; architect-engineer selection,10,246,0.04065040650406504,0.0222279043323029,0.07319844697556645
+route,competition route,GSA,A / AE,full and open; architect-engineer selection,22,231,0.09523809523809523,0.0637363404567535,0.13998177243924062
+route,competition route,GSA,D / SSS,full and open after exclusion of sources; only one source,120,203,0.5911330049261084,0.5224209402701026,0.6564600259102531
+route,competition route,GSA,E / NP,follow-on to a competed action; negotiated proposal or quote,154,161,0.9565217391304348,0.9129839454170278,0.97878200382696
+route,competition route,GSA,D / SB,full and open after exclusion of sources; sealed bid,12,140,0.08571428571428572,0.04971124458699672,0.14384532143337406
+route,competition route,GSA,E / SP1,follow-on to a competed action; simplified acquisition,101,103,0.9805825242718447,0.9319478168796526,0.9946587747258216
+route,competition route,GSA,D / AS,full and open after exclusion of sources; alternative sources,41,98,0.41836734693877553,0.3255918636134904,0.5173011959982126
+route,competition route,GSA,F / SSS,competed under simplified acquisition; only one source,37,93,0.3978494623655914,0.3043342343812164,0.49946880378677255
+route,competition route,GSA,E / SSS,follow-on to a competed action; only one source,79,81,0.9753086419753086,0.9143727407780347,0.9932024125763359
+route,competition route,GSA,D / TS,full and open after exclusion of sources; two-step,2,47,0.0425531914893617,0.011748275966789345,0.14248527677899453
+route,competition route,GSA,D / MAFO,full and open after exclusion of sources; multiple-award fair opportunity,2,28,0.07142857142857142,0.019812064115305714,0.22645362568399058
+route,competition route,GSA,A / AS,full and open; alternative sources,5,15,0.3333333333333333,0.1517632443971472,0.5828645226148023
+route,competition route,GSA,F / SB,competed under simplified acquisition; sealed bid,4,13,0.3076923076923077,0.12680703655710507,0.5763065681945096
+route,competition route,GSA,A / BR,full and open; basic research,3,6,0.5,0.18761630648265054,0.8123836935173494
+route,competition route,GSA,D / BR,full and open after exclusion of sources; basic research,0,2,0.0,0.0,0.657619772493347
+route,competition route,GSA,E / AE,follow-on to a competed action; architect-engineer selection,1,1,1.0,0.2065493143772374,1.0
+route,competition route,GSA,E / AS,follow-on to a competed action; alternative sources,1,1,1.0,0.2065493143772374,1.0
+route,competition route,GSA,F / AE,competed under simplified acquisition; architect-engineer selection,1,1,1.0,0.2065493143772374,1.0
+route,competition route,GSA,F / AS,competed under simplified acquisition; alternative sources,0,1,0.0,0.0,0.7934506856227627
+route,competition route,GSA,F / BR,competed under simplified acquisition; basic research,0,1,0.0,0.0,0.7934506856227627
+route,competition route,GSA,F / TS,competed under simplified acquisition; two-step,0,1,0.0,0.0,0.7934506856227627
+route,competition route,Department of Defense,F / SP1,competed under simplified acquisition; simplified acquisition,828575,3630433,0.22823035158616065,0.2277989220123497,0.22866235629291498
+route,competition route,Department of Defense,A / NP,full and open; negotiated proposal or quote,279637,830122,0.33686253345893735,0.3358465613281931,0.33788001544717183
+route,competition route,Department of Defense,D / NP,full and open after exclusion of sources; negotiated proposal or quote,69795,337428,0.20684412674703936,0.20548081440722474,0.20821411389389224
+route,competition route,Department of Defense,A / BR,full and open; basic research,3153,10946,0.28805042938059566,0.2796423668094588,0.29660720562044823
+route,competition route,Department of Defense,D / SB,full and open after exclusion of sources; sealed bid,554,7311,0.0757762276022432,0.06993034263538028,0.08206768289666541
+route,competition route,Department of Defense,A / SB,full and open; sealed bid,520,5582,0.09315657470440702,0.08580909681098134,0.10106363606480534
+route,competition route,Department of Defense,A / AE,full and open; architect-engineer selection,186,2858,0.06508047585724283,0.056608152390496914,0.07472038702327294
+route,competition route,Department of Defense,A / MAFO,full and open; multiple-award fair opportunity,237,1483,0.1598111935266352,0.1420438974556305,0.1793363384705991
+route,competition route,Department of Defense,D / AS,full and open after exclusion of sources; alternative sources,537,1463,0.367053998632946,0.3427333634478316,0.3920709689080682
+route,competition route,Department of Defense,A / TS,full and open; two-step,165,1418,0.11636107193229901,0.10069812700461855,0.134097009084316
+route,competition route,Department of Defense,D / AE,full and open after exclusion of sources; architect-engineer selection,100,1296,0.07716049382716049,0.06384987167788353,0.09297037546643602
+route,competition route,Department of Defense,D / TS,full and open after exclusion of sources; two-step,35,1012,0.03458498023715415,0.02497134776164312,0.047718596303465026
+route,competition route,Department of Defense,D / BR,full and open after exclusion of sources; basic research,318,579,0.5492227979274611,0.5085020244237791,0.5892947248248627
+route,competition route,Department of Defense,D / SSS,full and open after exclusion of sources; only one source,89,141,0.6312056737588653,0.5490747806098563,0.7063769408879504
+route,competition route,Department of Defense,D / MAFO,full and open after exclusion of sources; multiple-award fair opportunity,3,20,0.15,0.052368745896216595,0.36041886474075696
+route,competition route,Department of Defense,E / SSS,follow-on to a competed action; only one source,6,6,1.0,0.6096657120978346,1.0
+route,competition route,Department of Defense,A / SP1,full and open; simplified acquisition,3,5,0.6,0.2307242812760129,0.8823792257673522
+route,competition route,Department of Defense,F / SSS,competed under simplified acquisition; only one source,1,1,1.0,0.2065493143772374,1.0
+pricing,pricing type,all sectors,firm fixed price,firm fixed price,1894777,6954718,0.27244483529023034,0.2721140733798699,0.272775848581973
+pricing,pricing type,all sectors,cost reimbursement,cost reimbursement,11653,40181,0.2900126925661382,0.2855961159121805,0.2944694165774123
+pricing,pricing type,all sectors,fixed price with economic price adjustment,fixed price with economic price adjustment,11094,34717,0.31955526111127114,0.31467037236608497,0.32448007809579305
+pricing,pricing type,all sectors,time and materials or labor hours,time and materials or labor hours,14480,33027,0.4384291640173192,0.4330852544145691,0.44378739489197977
+pricing,pricing type,all sectors,"order dependent, combination or other","order dependent, combination or other",3608,31737,0.11368434319563916,0.11023871056951833,0.11722348409811296
+pricing,pricing type,all sectors,blank,blank,3152,7562,0.41682094683946047,0.40575358212231843,0.42797277774828774
+pricing,pricing type,all sectors,other fixed price,other fixed price,1554,4841,0.3210080561867383,0.308003062275237,0.33429689434257204
+pricing,pricing type,civilian except GSA,firm fixed price,firm fixed price,576402,1752027,0.3289915052678983,0.3282961615886487,0.3296875988450091
+pricing,pricing type,civilian except GSA,time and materials or labor hours,time and materials or labor hours,13720,30081,0.45610185831588046,0.4504793331612047,0.4617355939603184
+pricing,pricing type,civilian except GSA,"order dependent, combination or other","order dependent, combination or other",1942,12940,0.1500772797527048,0.1440275820622663,0.15633467679183077
+pricing,pricing type,civilian except GSA,cost reimbursement,cost reimbursement,3009,12884,0.2335454827693263,0.2263200326461731,0.240929776257957
+pricing,pricing type,civilian except GSA,fixed price with economic price adjustment,fixed price with economic price adjustment,3352,12324,0.27198961376176567,0.26420528217575406,0.27991604524618213
+pricing,pricing type,civilian except GSA,blank,blank,3065,7399,0.4142451682659819,0.4030684770788359,0.42551085869932664
+pricing,pricing type,civilian except GSA,other fixed price,other fixed price,925,2894,0.3196268140981341,0.3028854778904727,0.3368463656780619
+pricing,pricing type,GSA,firm fixed price,firm fixed price,149124,430111,0.34671050031271,0.3452895654342917,0.3481341733217109
+pricing,pricing type,GSA,fixed price with economic price adjustment,fixed price with economic price adjustment,4640,10158,0.4567828312659972,0.4471140680661825,0.46648426905037643
+pricing,pricing type,GSA,"order dependent, combination or other","order dependent, combination or other",25,2794,0.00894774516821761,0.006068096821471098,0.013175830903936408
+pricing,pricing type,GSA,time and materials or labor hours,time and materials or labor hours,74,690,0.1072463768115942,0.08629470464942876,0.1325470161649709
+pricing,pricing type,GSA,other fixed price,other fixed price,26,166,0.1566265060240964,0.10918400638520999,0.2196017871921247
+pricing,pricing type,GSA,blank,blank,87,163,0.5337423312883436,0.4572650939775893,0.6086657608456223
+pricing,pricing type,GSA,cost reimbursement,cost reimbursement,13,48,0.2708333333333333,0.16565957627456437,0.40996964982240613
+pricing,pricing type,Department of Defense,firm fixed price,firm fixed price,1169251,4772580,0.24499348360844658,0.24460783399374528,0.2453795437332885
+pricing,pricing type,Department of Defense,cost reimbursement,cost reimbursement,8631,27249,0.3167455686447209,0.31124816544306855,0.32229463356779964
+pricing,pricing type,Department of Defense,"order dependent, combination or other","order dependent, combination or other",1641,16003,0.10254327313628694,0.09793814743238453,0.10733916897472
+pricing,pricing type,Department of Defense,fixed price with economic price adjustment,fixed price with economic price adjustment,3102,12235,0.25353494074376787,0.2459046235776647,0.26131997604705076
+pricing,pricing type,Department of Defense,time and materials or labor hours,time and materials or labor hours,686,2256,0.30407801418439717,0.2854418656702207,0.32338025034613094
+pricing,pricing type,Department of Defense,other fixed price,other fixed price,603,1781,0.3385738349241999,0.3169644178730699,0.3608781170151985
+commercial,commercial-item procedures,all sectors,D,D: commercial procedures not used,1212835,4724344,0.25672029809852964,0.25632659820631765,0.2571143936216258
+commercial,commercial-item procedures,all sectors,A,A: commercial products or services,653848,2241614,0.2916862582050255,0.2910915860992522,0.2922816442850062
+commercial,commercial-item procedures,all sectors,B,B: supplies or services under FAR 12.102(f),65949,118180,0.5580385852090032,0.5552053495650298,0.5608680478695918
+commercial,commercial-item procedures,all sectors,C,C: services under FAR 12.102(g),7686,22645,0.33941267387944357,0.3332731307023265,0.3456066913308002
+commercial,commercial-item procedures,civilian except GSA,A,A: commercial products or services,388669,1273751,0.3051373463102286,0.3043382793648335,0.30593758861030806
+commercial,commercial-item procedures,civilian except GSA,D,D: commercial procedures not used,167518,452417,0.37027344242148286,0.36886747875858866,0.3716816090740858
+commercial,commercial-item procedures,civilian except GSA,B,B: supplies or services under FAR 12.102(f),38977,88020,0.4428198136787094,0.4395409072837373,0.4461037108881578
+commercial,commercial-item procedures,civilian except GSA,C,C: services under FAR 12.102(g),7251,16361,0.4431880691889249,0.4355904151089623,0.45081239516708876
+commercial,commercial-item procedures,GSA,D,D: commercial procedures not used,103169,299930,0.34397692794985496,0.34227888338811713,0.3456789691009969
+commercial,commercial-item procedures,GSA,A,A: commercial products or services,50059,142452,0.35140959761884705,0.3489344671121848,0.3538927418918253
+commercial,commercial-item procedures,GSA,B,B: supplies or services under FAR 12.102(f),632,1407,0.449182658137882,0.42336546161553285,0.47527658699598724
+commercial,commercial-item procedures,GSA,C,C: services under FAR 12.102(g),129,341,0.3782991202346041,0.3284514128826983,0.43085827022835366
+commercial,commercial-item procedures,Department of Defense,D,D: commercial procedures not used,942148,3971997,0.2371975608239382,0.23677949882054056,0.23761613115791697
+commercial,commercial-item procedures,Department of Defense,A,A: commercial products or services,215120,825411,0.2606216781700268,0.2596757902661036,0.2615697941946952
+commercial,commercial-item procedures,Department of Defense,B,B: supplies or services under FAR 12.102(f),26340,28753,0.9160783222620248,0.9128176067742261,0.919227874794501
+commercial,commercial-item procedures,Department of Defense,C,C: services under FAR 12.102(g),306,5943,0.05148914689550732,0.046154667771796366,0.057403071758529094
+has_sol_id,solicitation number,all sectors,has a solicitation number,has a solicitation number,913492,4234158,0.2157434843007748,0.2153519440533694,0.21613554033370772
+has_sol_id,solicitation number,all sectors,no solicitation number,no solicitation number,1026826,2872625,0.35745215612897613,0.3568981422446194,0.3580065512611044
+has_sol_id,solicitation number,civilian except GSA,no solicitation number,no solicitation number,514227,1434391,0.3584984847227848,0.35771406856599025,0.35928365879117835
+has_sol_id,solicitation number,civilian except GSA,has a solicitation number,has a solicitation number,88188,396158,0.2226081512931709,0.2213154430554018,0.22390623909682694
+has_sol_id,solicitation number,GSA,no solicitation number,no solicitation number,149966,423510,0.354102618592241,0.35266361594410617,0.35554426794859567
+has_sol_id,solicitation number,GSA,has a solicitation number,has a solicitation number,4023,20620,0.19510184287099902,0.18974999002093723,0.2005672782190116
+has_sol_id,solicitation number,Department of Defense,has a solicitation number,has a solicitation number,821281,3817380,0.21514258470469275,0.21473065629854268,0.21555508641867663
+has_sol_id,solicitation number,Department of Defense,no solicitation number,no solicitation number,362633,1014724,0.35737106838903976,0.35643918484578957,0.35830403183400344
+fquarter,fiscal quarter,all sectors,Q4,Q4,625330,2265410,0.2760339188049845,0.2754521756040468,0.27661642156381183
+fquarter,fiscal quarter,all sectors,Q3,Q3,472502,1752692,0.26958644188482633,0.26893000285105767,0.27024389093319573
+fquarter,fiscal quarter,all sectors,Q2,Q2,429920,1610594,0.2669325727029903,0.26624996073626317,0.26761629645429996
+fquarter,fiscal quarter,all sectors,Q1,Q1,412566,1478087,0.2791215943310509,0.27839902337293576,0.27984531338544805
+fquarter,fiscal quarter,civilian except GSA,Q4,Q4,230060,739675,0.31102849224321494,0.30997453452530127,0.3120844127758657
+fquarter,fiscal quarter,civilian except GSA,Q3,Q3,137727,437465,0.31482975780919614,0.31345508743589967,0.3162076801803164
+fquarter,fiscal quarter,civilian except GSA,Q2,Q2,116773,348762,0.3348214541721862,0.3332570376421353,0.33638950939907264
+fquarter,fiscal quarter,civilian except GSA,Q1,Q1,117855,304647,0.3868575761455061,0.3851295716232955,0.38858843397979054
+fquarter,fiscal quarter,GSA,Q4,Q4,47785,125178,0.3817364073559252,0.3790488335930615,0.3844312394354239
+fquarter,fiscal quarter,GSA,Q3,Q3,39383,113908,0.3457439337008814,0.34298718711392173,0.34851108426900657
+fquarter,fiscal quarter,GSA,Q2,Q2,36137,110561,0.3268512404916743,0.3240924088184028,0.329622103907057
+fquarter,fiscal quarter,GSA,Q1,Q1,30684,94483,0.3247568345628314,0.32177807540077896,0.3277498431038076
+fquarter,fiscal quarter,Department of Defense,Q4,Q4,347485,1400557,0.24810486113739033,0.24739024321716363,0.24882086085378674
+fquarter,fiscal quarter,Department of Defense,Q3,Q3,295392,1201319,0.24588972620927496,0.24512051154031747,0.24666056601032685
+fquarter,fiscal quarter,Department of Defense,Q2,Q2,277010,1151271,0.24061233193574755,0.2398323798922603,0.2413940149769246
+fquarter,fiscal quarter,Department of Defense,Q1,Q1,264027,1078957,0.24470576677291125,0.2438954798769397,0.24551787153334353
+september,September,all sectors,October-August,October-August,1670875,6137049,0.2722603322867391,0.2719083080446869,0.272612641633899
+september,September,all sectors,September,September,269443,969734,0.2778524832582956,0.27696182243781675,0.278744904081326
+september,September,civilian except GSA,October-August,October-August,493905,1473149,0.33527158488381015,0.3345096813811801,0.3360343474927129
+september,September,civilian except GSA,September,September,108510,357400,0.3036094012311136,0.3021040271980826,0.305118996966938
+september,September,GSA,October-August,October-August,137356,399963,0.3434217665134025,0.34195165784333237,0.34489488287698034
+september,September,GSA,September,September,16633,44167,0.37659338420087396,0.3720855205203112,0.38112271278530263
+september,September,Department of Defense,October-August,October-August,1039614,4263937,0.24381551603600146,0.24340819099179253,0.24422330268236772
+september,September,Department of Defense,September,September,144300,568167,0.253974623658185,0.2528444574483625,0.2551081166714374
+last_week,last 7 days of September,all sectors,rest of year,rest of year,1857605,6806113,0.272931848178248,0.2725973091837025,0.2732666434930934
+last_week,last 7 days of September,all sectors,September 24-30,September 24-30,82713,300670,0.27509561978248576,0.2735023083965029,0.276694677999726
+last_week,last 7 days of September,civilian except GSA,rest of year,rest of year,570943,1721156,0.3317206575115794,0.3310176323432538,0.3324244338456585
+last_week,last 7 days of September,civilian except GSA,September 24-30,September 24-30,31472,109393,0.28769665335076283,0.28502156176777876,0.2903866549540505
+last_week,last 7 days of September,GSA,rest of year,rest of year,149562,431678,0.3464665792558342,0.3450484599689499,0.34788743107513814
+last_week,last 7 days of September,GSA,September 24-30,September 24-30,4427,12452,0.3555252168326373,0.34716345554800865,0.3639760919570657
+last_week,last 7 days of September,Department of Defense,rest of year,rest of year,1137100,4653279,0.2443653174460418,0.24397509760712033,0.24475595935692396
+last_week,last 7 days of September,Department of Defense,September 24-30,September 24-30,46814,178825,0.2617866629386271,0.2597542905385118,0.2638292695573103
+timing,timing in the fiscal year,all sectors,Q3 Apr-Jun,Q3 Apr-Jun,472502,1752692,0.26958644188482633,0.26893000285105767,0.27024389093319573
+timing,timing in the fiscal year,all sectors,Q2 Jan-Mar,Q2 Jan-Mar,429920,1610594,0.2669325727029903,0.26624996073626317,0.26761629645429996
+timing,timing in the fiscal year,all sectors,Q1 Oct-Dec,Q1 Oct-Dec,412566,1478087,0.2791215943310509,0.27839902337293576,0.27984531338544805
+timing,timing in the fiscal year,all sectors,Q4 Jul-Aug,Q4 Jul-Aug,355887,1295676,0.2746728348753855,0.27390494920732095,0.2754420566528782
+timing,timing in the fiscal year,all sectors,September 1-23,September 1-23,186730,669064,0.27909138737101385,0.278017858239382,0.28016745320008046
+timing,timing in the fiscal year,all sectors,September 24-30,September 24-30,82713,300670,0.27509561978248576,0.2735023083965029,0.276694677999726
+timing,timing in the fiscal year,civilian except GSA,Q3 Apr-Jun,Q3 Apr-Jun,137727,437465,0.31482975780919614,0.31345508743589967,0.3162076801803164
+timing,timing in the fiscal year,civilian except GSA,Q4 Jul-Aug,Q4 Jul-Aug,121550,382275,0.3179648159047806,0.31649042469973365,0.3194428655946181
+timing,timing in the fiscal year,civilian except GSA,Q2 Jan-Mar,Q2 Jan-Mar,116773,348762,0.3348214541721862,0.3332570376421353,0.33638950939907264
+timing,timing in the fiscal year,civilian except GSA,Q1 Oct-Dec,Q1 Oct-Dec,117855,304647,0.3868575761455061,0.3851295716232955,0.38858843397979054
+timing,timing in the fiscal year,civilian except GSA,September 1-23,September 1-23,77038,248007,0.3106283290390997,0.3088100499601789,0.31245247450250213
+timing,timing in the fiscal year,civilian except GSA,September 24-30,September 24-30,31472,109393,0.28769665335076283,0.28502156176777876,0.2903866549540505
+timing,timing in the fiscal year,GSA,Q3 Apr-Jun,Q3 Apr-Jun,39383,113908,0.3457439337008814,0.34298718711392173,0.34851108426900657
+timing,timing in the fiscal year,GSA,Q2 Jan-Mar,Q2 Jan-Mar,36137,110561,0.3268512404916743,0.3240924088184028,0.329622103907057
+timing,timing in the fiscal year,GSA,Q1 Oct-Dec,Q1 Oct-Dec,30684,94483,0.3247568345628314,0.32177807540077896,0.3277498431038076
+timing,timing in the fiscal year,GSA,Q4 Jul-Aug,Q4 Jul-Aug,31152,81011,0.38454037106072014,0.3811959049683536,0.3878957865890675
+timing,timing in the fiscal year,GSA,September 1-23,September 1-23,12206,31715,0.3848652057386095,0.3795245084565555,0.3902337908974358
+timing,timing in the fiscal year,GSA,September 24-30,September 24-30,4427,12452,0.3555252168326373,0.34716345554800865,0.3639760919570657
+timing,timing in the fiscal year,Department of Defense,Q3 Apr-Jun,Q3 Apr-Jun,295392,1201319,0.24588972620927496,0.24512051154031747,0.24666056601032685
+timing,timing in the fiscal year,Department of Defense,Q2 Jan-Mar,Q2 Jan-Mar,277010,1151271,0.24061233193574755,0.2398323798922603,0.2413940149769246
+timing,timing in the fiscal year,Department of Defense,Q1 Oct-Dec,Q1 Oct-Dec,264027,1078957,0.24470576677291125,0.2438954798769397,0.24551787153334353
+timing,timing in the fiscal year,Department of Defense,Q4 Jul-Aug,Q4 Jul-Aug,203185,832390,0.24409831929744472,0.2431767183714992,0.24502228217207275
+timing,timing in the fiscal year,Department of Defense,September 1-23,September 1-23,97486,389342,0.25038654961447776,0.24902817821222492,0.25174984661083566
+timing,timing in the fiscal year,Department of Defense,September 24-30,September 24-30,46814,178825,0.2617866629386271,0.2597542905385118,0.2638292695573103
+workload_band,buying-office workload (awards per year),all sectors,"10,000+","10,000+",536890,2210627,0.24286774747616852,0.242302917827454,0.24343347077292316
+workload_band,buying-office workload (awards per year),all sectors,"2,000-9,999","2,000-9,999",509778,1853022,0.2751062858401034,0.27446377587117965,0.2757497282514385
+workload_band,buying-office workload (awards per year),all sectors,100-499,100-499,351531,1336222,0.26307829088280243,0.26233241749517583,0.263825526502712
+workload_band,buying-office workload (awards per year),all sectors,"500-1,999","500-1,999",416998,1263284,0.3300904626354802,0.3292709646982871,0.3309109939088135
+workload_band,buying-office workload (awards per year),all sectors,1-99,1-99,125121,443628,0.2820403581378993,0.28071807828754297,0.2833664126631575
+workload_band,buying-office workload (awards per year),civilian except GSA,100-499,100-499,207386,762878,0.27184687459855966,0.27084964943452583,0.2728463974731652
+workload_band,buying-office workload (awards per year),civilian except GSA,"500-1,999","500-1,999",195068,533636,0.36554505318231906,0.3642539246020222,0.36683811753690154
+workload_band,buying-office workload (awards per year),civilian except GSA,1-99,1-99,87485,293401,0.29817553450738066,0.29652292058695745,0.29983343327838335
+workload_band,buying-office workload (awards per year),civilian except GSA,"2,000-9,999","2,000-9,999",98157,226314,0.43372040616135105,0.431679750236977,0.43576331211010455
+workload_band,buying-office workload (awards per year),civilian except GSA,"10,000+","10,000+",14319,14320,0.9999301675977653,0.999604513537491,0.9999876727599147
+workload_band,buying-office workload (awards per year),GSA,"10,000+","10,000+",131087,367826,0.356383181178057,0.3548369442566188,0.35793241784575436
+workload_band,buying-office workload (awards per year),GSA,"2,000-9,999","2,000-9,999",5517,24028,0.22960712502080904,0.2243327218032001,0.23496797214213813
+workload_band,buying-office workload (awards per year),GSA,1-99,1-99,6252,21977,0.2844792282841152,0.27855243537378604,0.29048135171999334
+workload_band,buying-office workload (awards per year),GSA,"500-1,999","500-1,999",7067,17734,0.39850005638885755,0.39131707571617447,0.40572700045523646
+workload_band,buying-office workload (awards per year),GSA,100-499,100-499,4066,12565,0.32359729407083165,0.3154719298632338,0.33183048742607313
+workload_band,buying-office workload (awards per year),Department of Defense,"10,000+","10,000+",391484,1828481,0.21410340058223193,0.21350943926404917,0.21469856317918798
+workload_band,buying-office workload (awards per year),Department of Defense,"2,000-9,999","2,000-9,999",406104,1602680,0.2533905707939202,0.2527177724688524,0.2540645513109371
+workload_band,buying-office workload (awards per year),Department of Defense,"500-1,999","500-1,999",214863,711914,0.3018103310231292,0.30074508148177553,0.3028777193996341
+workload_band,buying-office workload (awards per year),Department of Defense,100-499,100-499,140079,560779,0.2497935907015063,0.24866229852714375,0.2509283107896599
+workload_band,buying-office workload (awards per year),Department of Defense,1-99,1-99,31384,128250,0.24470955165692007,0.24236432964361165,0.24707006658829583
+incumbent,incumbent winner,all sectors,yes,won from this office for this product code in the previous 3 years,929915,3637222,0.255666274975792,0.25521821768904357,0.25611484836903703
+incumbent,incumbent winner,all sectors,no,not an incumbent,525111,2051436,0.2559724017712471,0.25537567231450137,0.25657004514411225
+incumbent,incumbent winner,civilian except GSA,no,not an incumbent,242547,803631,0.30181389219679183,0.3008112084242143,0.3028184706701282
+incumbent,incumbent winner,civilian except GSA,yes,won from this office for this product code in the previous 3 years,180902,567827,0.3185864708793347,0.31737582305909634,0.3197995732777706
+incumbent,incumbent winner,GSA,yes,won from this office for this product code in the previous 3 years,92783,257969,0.35966724683973655,0.35781744869752863,0.36152122435593925
+incumbent,incumbent winner,GSA,no,not an incumbent,20809,51616,0.40315018598884067,0.39892577640034155,0.4073890103667619
+incumbent,incumbent winner,Department of Defense,yes,won from this office for this product code in the previous 3 years,656230,2811426,0.23341535576607741,0.23292126208196595,0.233910177957739
+incumbent,incumbent winner,Department of Defense,no,not an incumbent,261755,1196189,0.2188241155870853,0.21808410111425214,0.21956593599880048
+depth_band,registered companies in the NAICS code,all sectors,"1,000-9,999","1,000-9,999",1214945,4619480,0.2630047104868946,0.262603426068142,0.2634063890655476
+depth_band,registered companies in the NAICS code,all sectors,100-999,100-999,225286,911043,0.24728360790873757,0.24639875982585108,0.24817058716549867
+depth_band,registered companies in the NAICS code,all sectors,"10,000+","10,000+",220993,714480,0.30930606874930017,0.30823535480293196,0.31037883324696636
+depth_band,registered companies in the NAICS code,all sectors,no match,no match,149476,425345,0.35142296253629407,0.34998956999986885,0.3528590387643883
+depth_band,registered companies in the NAICS code,all sectors,1-9,1-9,114093,404799,0.28185099271490294,0.2804671246817287,0.2832390010867429
+depth_band,registered companies in the NAICS code,all sectors,10-99,10-99,15525,31636,0.4907383992919459,0.48523111149075726,0.49624793603346373
+depth_band,registered companies in the NAICS code,civilian except GSA,"1,000-9,999","1,000-9,999",301854,924076,0.3266549504586203,0.3256994530442948,0.32761188908579286
+depth_band,registered companies in the NAICS code,civilian except GSA,"10,000+","10,000+",124633,413275,0.3015740124614361,0.30017664319042886,0.3029750705022695
+depth_band,registered companies in the NAICS code,civilian except GSA,100-999,100-999,40922,173229,0.23623065422071363,0.2342362542929231,0.23823675238160402
+depth_band,registered companies in the NAICS code,civilian except GSA,no match,no match,83890,167350,0.501284732596355,0.4988891885240437,0.5036802176888745
+depth_band,registered companies in the NAICS code,civilian except GSA,1-9,1-9,42582,136980,0.3108628996933859,0.3084171563515681,0.31331925103647673
+depth_band,registered companies in the NAICS code,civilian except GSA,10-99,10-99,8534,15639,0.5456870643903062,0.5378732313096881,0.5534784584559977
+depth_band,registered companies in the NAICS code,GSA,"1,000-9,999","1,000-9,999",90228,229858,0.3925380017228028,0.39054354621696563,0.3945360490456944
+depth_band,registered companies in the NAICS code,GSA,100-999,100-999,36123,102381,0.35282913821900547,0.34990765997305245,0.35576166010769067
+depth_band,registered companies in the NAICS code,GSA,no match,no match,18078,79021,0.2287746295288594,0.2258591789275182,0.23171644908134462
+depth_band,registered companies in the NAICS code,GSA,"10,000+","10,000+",6439,20605,0.3124969667556418,0.3062036013384002,0.3188602327718475
+depth_band,registered companies in the NAICS code,GSA,1-9,1-9,3049,12078,0.25244245736049015,0.24477463456321086,0.26026770352887446
+depth_band,registered companies in the NAICS code,GSA,10-99,10-99,72,187,0.3850267379679144,0.3182647248348545,0.45641735805363964
+depth_band,registered companies in the NAICS code,Department of Defense,"1,000-9,999","1,000-9,999",822863,3465546,0.237441084319758,0.23699337666955383,0.23788937404744404
+depth_band,registered companies in the NAICS code,Department of Defense,100-999,100-999,148241,635433,0.23329131474128664,0.23225306225631318,0.23433279193834697
+depth_band,registered companies in the NAICS code,Department of Defense,"10,000+","10,000+",89921,280600,0.32045972915181753,0.31873556988425883,0.3221888042220505
+depth_band,registered companies in the NAICS code,Department of Defense,1-9,1-9,68462,255741,0.26770052514066967,0.26598802535147864,0.2694200035172813
+depth_band,registered companies in the NAICS code,Department of Defense,no match,no match,47508,178974,0.2654463776861444,0.26340567438763374,0.26749714958391857
+depth_band,registered companies in the NAICS code,Department of Defense,10-99,10-99,6919,15810,0.4376344086021505,0.42991749616898106,0.44538162042232304
+fy,fiscal year,all sectors,2018,2018,143698,626784,0.22926239342420993,0.22822339467305594,0.23030471076994427
+fy,fiscal year,all sectors,2016,2016,141483,622546,0.22726513382143648,0.22622583465289212,0.2283077988241282
+fy,fiscal year,all sectors,2017,2017,138734,619760,0.22385116819413967,0.22281514176309297,0.22489061791094395
+fy,fiscal year,all sectors,2019,2019,163001,602996,0.27031854274323547,0.2691990347964694,0.2714409770982666
+fy,fiscal year,all sectors,2015,2015,137854,571816,0.24108104705010003,0.23997412678620353,0.24219144612471108
+fy,fiscal year,all sectors,2020,2020,145201,524247,0.276970588291397,0.275760861154746,0.27818358393324866
+fy,fiscal year,all sectors,2021,2021,135762,498185,0.27251322299948816,0.2712785803162184,0.27375137391503196
+fy,fiscal year,all sectors,2010,2010,161732,490287,0.32987209532375933,0.32855737624157805,0.3311894803310805
+fy,fiscal year,all sectors,2008,2008,178566,478797,0.37294719891728645,0.3715784519328538,0.3743179846120183
+fy,fiscal year,all sectors,2011,2011,143657,459164,0.3128664268104642,0.31152688758400426,0.31420909720531387
+fy,fiscal year,all sectors,2009,2009,144903,448888,0.32280435208782593,0.3214381261875431,0.3241736107444292
+fy,fiscal year,all sectors,2012,2012,110282,407386,0.27070640620934444,0.2693441611132729,0.27207297552663473
+fy,fiscal year,all sectors,2014,2014,98177,381345,0.2574492913241291,0.2560640318445715,0.2588394373981011
+fy,fiscal year,all sectors,2013,2013,97268,374582,0.2596707796957676,0.258269147465594,0.26107734118220777
+fy,fiscal year,civilian except GSA,2011,2011,66925,181159,0.3694268570703084,0.3672071050055482,0.3716521465990168
+fy,fiscal year,civilian except GSA,2010,2010,61345,176043,0.34846599978414367,0.3462435214219235,0.35069509129110354
+fy,fiscal year,civilian except GSA,2012,2012,51922,163046,0.31845000797321,0.3161929853723121,0.32071558521987786
+fy,fiscal year,civilian except GSA,2008,2008,71999,150395,0.47873267063399716,0.47620855533564677,0.4812578723445724
+fy,fiscal year,civilian except GSA,2013,2013,45158,148629,0.30383034266529413,0.30149730326785307,0.30617352218591554
+fy,fiscal year,civilian except GSA,2014,2014,42439,146399,0.28988585987609206,0.28756728725836217,0.29221545884835004
+fy,fiscal year,civilian except GSA,2015,2015,41101,139916,0.29375482432316535,0.29137388520890345,0.2961470882408442
+fy,fiscal year,civilian except GSA,2016,2016,39411,133228,0.29581619479388715,0.2933713302696073,0.29827283373591834
+fy,fiscal year,civilian except GSA,2009,2009,45531,132506,0.3436146287715273,0.3410621079342363,0.34617621682914124
+fy,fiscal year,civilian except GSA,2017,2017,38846,132429,0.29333454152791305,0.290888425525363,0.29579264695604124
+fy,fiscal year,civilian except GSA,2018,2018,31040,109368,0.2838124497110672,0.2811481060136288,0.2864919796860868
+fy,fiscal year,civilian except GSA,2019,2019,23550,78078,0.3016214554676093,0.29841198810425074,0.3048504424272144
+fy,fiscal year,civilian except GSA,2020,2020,22190,71212,0.31160478571027356,0.3082133521642893,0.3150165437358366
+fy,fiscal year,civilian except GSA,2021,2021,20958,68141,0.3075681307876315,0.3041140609002075,0.31104389620139467
+fy,fiscal year,GSA,2021,2021,30444,77127,0.3947255824808433,0.39128130810015294,0.3981803431295976
+fy,fiscal year,GSA,2019,2019,24667,73859,0.33397419407248946,0.3305815794164715,0.3373840780694656
+fy,fiscal year,GSA,2020,2020,29682,73338,0.4047287899860918,0.4011814598680671,0.4082861002306797
+fy,fiscal year,GSA,2008,2008,10814,50671,0.21341595784571057,0.20987033071618996,0.2170050345752659
+fy,fiscal year,GSA,2009,2009,14600,43641,0.33454778763089754,0.3301357377022436,0.3389889625529924
+fy,fiscal year,GSA,2010,2010,14983,40233,0.3724057365843959,0.3676941860734132,0.3771416502457102
+fy,fiscal year,GSA,2011,2011,11171,31140,0.35873474630700064,0.3534253277209282,0.36407901381532787
+fy,fiscal year,GSA,2012,2012,8927,24913,0.35832697788303297,0.3523949248995334,0.3643027146601918
+fy,fiscal year,GSA,2017,2017,2858,8464,0.33766540642722115,0.32766613091022057,0.3478119689852973
+fy,fiscal year,GSA,2018,2018,2150,7160,0.30027932960893855,0.2897713697671742,0.31100148144123163
+fy,fiscal year,GSA,2014,2014,920,3825,0.24052287581699347,0.22724284755200597,0.2543235684647617
+fy,fiscal year,GSA,2015,2015,856,3450,0.24811594202898551,0.23398882144426122,0.2628033675656432
+fy,fiscal year,GSA,2013,2013,1097,3374,0.3251333728512152,0.3095342216877668,0.34113025905077754
+fy,fiscal year,GSA,2016,2016,820,2935,0.27938671209540034,0.2634501609155926,0.29590000541843586
+fy,fiscal year,Department of Defense,2018,2018,110508,510256,0.2165736414662444,0.21544557585789487,0.2177059745892856
+fy,fiscal year,Department of Defense,2016,2016,101252,486383,0.20817339421813674,0.2070346988376295,0.20931669926236565
+fy,fiscal year,Department of Defense,2017,2017,97030,478867,0.20262411066120656,0.20148803832793996,0.2037649540397499
+fy,fiscal year,Department of Defense,2019,2019,114784,451059,0.25447668708528154,0.25320766329538047,0.25574989285431904
+fy,fiscal year,Department of Defense,2015,2015,95897,428450,0.22382308320690864,0.22257751586886315,0.22507360287423872
+fy,fiscal year,Department of Defense,2020,2020,93329,379697,0.2457986236393756,0.24443169722783858,0.24717069359558164
+fy,fiscal year,Department of Defense,2021,2021,84360,352917,0.23903637399161842,0.23763211676986146,0.24044631226649127
+fy,fiscal year,Department of Defense,2008,2008,95753,277731,0.34476885907586835,0.3430033633337358,0.34653864894280295
+fy,fiscal year,Department of Defense,2010,2010,85404,274011,0.3116809179193536,0.30994930855481,0.3134178074358415
+fy,fiscal year,Department of Defense,2009,2009,84772,272741,0.3108150223105437,0.3090807292199755,0.31255464453069265
+fy,fiscal year,Department of Defense,2011,2011,65561,246865,0.2655743017438681,0.26383581034938297,0.2673200888072683
+fy,fiscal year,Department of Defense,2014,2014,54818,231121,0.23718312052993887,0.23545337254535104,0.23892160492047515
+fy,fiscal year,Department of Defense,2013,2013,51013,222579,0.229190534596705,0.22744908203607264,0.2309413347189264
+fy,fiscal year,Department of Defense,2012,2012,49433,219427,0.22528221230751003,0.2235390430287551,0.22703500026212398

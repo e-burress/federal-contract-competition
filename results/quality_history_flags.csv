@@ -1,0 +1,530 @@
+agency,award_kind,quarter,metric,before,after,change_points,z,n_before,n_after,unit
+National Aeronautics and Space Administration,DEF,FY2011Q3,offers_2,21.0,85.2,64.2,13.9,219,250,points
+Department of Defense,IDV,FY2019Q1,offers_unusable,0.0,54.91,54.91,69.1,7160,3409,points
+Department of Agriculture,IDV,FY2020Q2,competed,77.82,23.36,-54.46,-21.8,2110,411,points
+Department of Agriculture,IDV,FY2010Q3,competed,73.9,20.97,-52.93,-38.1,3533,2012,points
+General Services Administration,DEF,FY2019Q1,competed,35.14,87.76,52.62,29.3,1753,1323,points
+Social Security Administration,IDV,FY2011Q1,competed,53.73,1.27,-52.46,-16.8,469,393,points
+Department of Health and Human Services,IDV,FY2021Q3,competed,76.27,30.59,-45.68,-14.6,982,304,points
+Environmental Protection Agency,PO,FY2010Q2,offers_unusable,44.57,0.0,-44.57,-14.0,1335,278,points
+General Services Administration,IDV,FY2021Q3,offers_unusable,43.64,87.44,43.8,22.8,2690,892,points
+Department of State,IDV,FY2011Q1,competed,54.14,11.94,-42.21,-16.0,1871,444,points
+Department of Health and Human Services,IDV,FY2008Q4,offers_unusable,73.71,31.87,-41.84,-11.3,563,251,points
+Department of Defense,IDV,FY2017Q3,offers_2,16.74,58.12,41.37,43.4,7274,3381,points
+Department of Transportation,PO,FY2017Q2,offers_3,55.28,15.8,-39.48,-15.2,1203,519,points
+Office of Personnel Management,PO,FY2011Q2,competed,35.59,74.34,38.75,18.4,1905,799,points
+General Services Administration,PO,FY2017Q1,competed,46.55,83.9,37.35,25.2,3016,1714,points
+Department of Transportation,IDV,FY2016Q2,competed,63.99,27.36,-36.62,-8.2,336,201,points
+Department of Health and Human Services,IDV,FY2011Q2,competed,69.54,33.05,-36.5,-10.7,1333,233,points
+Department of Agriculture,IDV,FY2019Q3,competed,46.49,82.04,35.55,18.5,2166,952,points
+General Services Administration,IDV,FY2011Q4,offers_unusable,85.59,50.75,-34.84,-26.6,3915,1458,points
+National Aeronautics and Space Administration,PO,FY2012Q2,offers_2,17.79,52.2,34.41,19.0,2575,751,points
+Environmental Protection Agency,PO,FY2010Q3,offers_unusable,34.19,0.0,-34.19,-12.0,1369,304,points
+Department of Agriculture,IDV,FY2017Q2,competed,21.69,55.87,34.18,12.7,3084,281,points
+Department of Labor,PO,FY2010Q1,offers_3,47.23,13.41,-33.81,-10.6,739,328,points
+General Services Administration,IDV,FY2020Q4,offers_unusable,60.95,27.54,-33.41,-18.9,2648,1140,points
+Department of the Interior,IDV,FY2011Q1,competed,68.06,34.83,-33.24,-9.2,1359,201,points
+U.S. Agency for Global Media,PO,FY2010Q1,competed,47.5,15.02,-32.47,-8.3,539,213,points
+U.S. Agency for Global Media,IDV,FY2009Q1,competed,47.72,15.31,-32.41,-9.8,373,405,points
+Department of Agriculture,IDV,FY2020Q4,competed,78.11,45.75,-32.36,-18.3,2718,883,points
+General Services Administration,DEF,FY2019Q2,competed,58.63,90.55,31.92,23.8,2782,1905,points
+Department of the Interior,DEF,FY2009Q1,offers_1,19.59,51.4,31.81,12.7,1455,393,points
+Department of State,IDV,FY2010Q3,competed,70.02,38.96,-31.05,-11.2,1621,367,points
+Department of Veterans Affairs,IDV,FY2010Q3,offers_unusable,36.94,6.29,-30.66,-11.3,1911,350,points
+Department of Agriculture,IDV,FY2016Q4,competed,21.71,51.97,30.26,12.8,3049,381,points
+Social Security Administration,PO,FY2010Q4,offers_unusable,30.11,0.0,-30.11,-8.7,445,200,points
+General Services Administration,DEF,FY2021Q1,offers_1,11.3,41.4,30.1,24.7,6839,983,points
+Office of Personnel Management,PO,FY2011Q2,offers_3,26.25,55.89,29.64,10.8,678,594,points
+Department of Agriculture,IDV,FY2010Q4,competed,47.28,76.74,29.47,15.4,4478,804,points
+Department of the Treasury,DEF,FY2013Q3,offers_2,43.35,14.18,-29.16,-10.6,1052,423,points
+Department of Transportation,IDV,FY2013Q4,competed,53.66,25.0,-28.66,-8.4,464,380,points
+Department of Homeland Security,IDV,FY2010Q4,offers_unusable,43.43,15.61,-27.82,-7.4,875,205,points
+Department of the Treasury,DEF,FY2013Q3,offers_3,30.7,58.39,27.69,9.9,1052,423,points
+Department of the Interior,IDV,FY2021Q2,competed,55.43,83.1,27.66,7.1,552,213,points
+General Services Administration,DEF,FY2021Q2,offers_1,17.96,45.38,27.42,20.1,6493,1071,points
+Environmental Protection Agency,PO,FY2010Q1,offers_unusable,50.12,22.99,-27.12,-8.2,1297,274,points
+National Aeronautics and Space Administration,PO,FY2010Q1,offers_3,24.45,51.41,26.96,8.9,1894,249,points
+Department of Agriculture,IDV,FY2014Q4,competed,27.28,54.11,26.83,13.9,3178,717,points
+Department of the Treasury,DEF,FY2014Q2,offers_2,21.84,48.51,26.67,8.2,1401,202,points
+National Aeronautics and Space Administration,PO,FY2017Q2,offers_1,27.3,53.79,26.49,10.7,2231,422,points
+Department of Transportation,PO,FY2017Q2,offers_2,15.05,41.43,26.38,11.9,1203,519,points
+General Services Administration,DEF,FY2021Q3,offers_1,28.17,54.42,26.26,16.1,5837,950,points
+Department of the Treasury,PO,FY2009Q1,offers_1,28.57,54.8,26.22,13.6,2352,834,points
+Office of Personnel Management,PO,FY2011Q1,competed,26.71,52.86,26.14,11.7,1561,630,points
+National Aeronautics and Space Administration,PO,FY2018Q4,offers_1,63.32,37.53,-25.8,-12.9,1925,906,points
+National Aeronautics and Space Administration,PO,FY2017Q4,offers_1,39.73,65.31,25.58,13.4,2404,957,points
+Department of the Interior,IDV,FY2016Q3,competed,46.51,21.28,-25.23,-7.6,860,296,points
+Office of Personnel Management,PO,FY2009Q4,competed,42.57,67.73,25.16,6.6,552,251,points
+Department of Transportation,DEF,FY2017Q4,offers_3,42.06,16.91,-25.15,-7.5,844,272,points
+Department of Agriculture,PO,FY2019Q1,competed,55.2,30.13,-25.07,-23.4,14546,2546,points
+Department of Labor,PO,FY2011Q1,competed,49.9,25.0,-24.9,-8.9,1922,376,points
+Agency for International Development,DEF,FY2008Q3,offers_1,44.01,19.31,-24.71,-6.8,543,259,points
+Department of Justice,DEF,FY2010Q2,competed,42.75,67.25,24.5,9.8,1787,513,points
+Department of the Interior,IDV,FY2013Q2,competed,39.96,64.42,24.46,8.0,1484,326,points
+Department of Health and Human Services,IDV,FY2010Q2,competed,48.39,72.83,24.44,8.5,1862,357,points
+Office of Personnel Management,PO,FY2013Q1,offers_3,42.15,17.72,-24.43,-7.5,1974,254,points
+Department of Defense,IDV,FY2013Q2,offers_1,25.39,49.71,24.32,21.4,7768,2068,points
+General Services Administration,DEF,FY2020Q4,offers_1,3.73,27.71,23.97,33.3,7342,1949,points
+Department of Justice,DEF,FY2010Q1,offers_3,37.35,13.42,-23.93,-7.7,423,380,points
+General Services Administration,DEF,FY2019Q1,offers_1,25.0,1.12,-23.88,-16.4,616,1161,points
+Department of Health and Human Services,IDV,FY2012Q3,competed,45.03,68.55,23.52,7.8,1026,372,points
+Department of State,IDV,FY2009Q2,competed,69.8,46.3,-23.5,-11.6,1828,825,points
+Department of Health and Human Services,IDV,FY2019Q4,competed,56.62,80.09,23.47,8.8,1231,442,points
+Department of State,IDV,FY2009Q4,offers_unusable,83.24,59.8,-23.44,-9.2,1492,306,points
+Office of Personnel Management,PO,FY2010Q1,competed,48.29,25.17,-23.11,-6.6,642,286,points
+Department of the Treasury,DEF,FY2014Q1,competed,66.04,42.97,-23.07,-8.5,2126,370,points
+General Services Administration,PO,FY2017Q2,competed,60.81,83.83,23.02,17.8,4300,1880,points
+Department of Justice,IDV,FY2009Q1,offers_unusable,20.95,43.84,22.89,7.7,1055,276,points
+General Services Administration,IDV,FY2017Q1,offers_2,9.6,32.41,22.81,9.1,906,253,points
+Department of Transportation,PO,FY2017Q3,offers_2,23.87,46.61,22.74,8.6,1504,354,points
+Environmental Protection Agency,PO,FY2010Q4,offers_unusable,22.6,0.0,-22.6,-12.6,1367,595,points
+Department of Agriculture,IDV,FY2011Q3,competed,38.0,15.44,-22.56,-17.1,3637,1833,points
+General Services Administration,DEF,FY2011Q2,competed,52.04,29.54,-22.5,-8.6,2871,413,points
+Department of Justice,IDV,FY2013Q1,competed,65.37,42.93,-22.44,-9.1,1308,573,points
+General Services Administration,IDV,FY2015Q2,offers_unusable,53.54,75.94,22.4,9.5,2624,532,points
+Department of Homeland Security,IDV,FY2010Q3,competed,78.97,56.61,-22.36,-7.4,1222,242,points
+General Services Administration,PO,FY2013Q2,offers_2,50.28,27.99,-22.29,-9.3,17956,443,points
+Office of Personnel Management,PO,FY2013Q2,offers_3,35.81,13.55,-22.26,-6.5,1885,214,points
+National Aeronautics and Space Administration,DEF,FY2011Q3,competed,72.13,94.36,22.23,7.0,305,266,points
+Department of Agriculture,IDV,FY2010Q1,offers_unusable,45.37,23.18,-22.18,-7.2,2731,289,points
+Department of State,IDV,FY2008Q3,competed,57.75,79.93,22.18,6.8,1103,274,points
+General Services Administration,IDV,FY2017Q3,offers_unusable,56.82,34.71,-22.11,-12.0,2404,1063,points
+General Services Administration,IDV,FY2011Q2,competed,87.87,65.93,-21.94,-18.8,5376,1224,points
+Department of State,IDV,FY2008Q3,offers_unusable,85.4,63.47,-21.93,-7.0,637,219,points
+Department of Agriculture,PO,FY2010Q1,offers_1,39.2,61.02,21.82,20.2,11783,2555,points
+Department of Health and Human Services,IDV,FY2020Q3,competed,59.55,81.12,21.56,8.2,1073,466,points
+Department of the Treasury,DEF,FY2016Q3,offers_1,14.2,35.66,21.46,7.9,852,286,points
+Department of the Interior,IDV,FY2010Q4,competed,74.96,53.57,-21.39,-7.7,1378,336,points
+Department of Agriculture,IDV,FY2021Q3,competed,70.66,91.98,21.32,15.9,2611,1471,points
+General Services Administration,IDV,FY2013Q3,offers_unusable,81.64,60.34,-21.3,-12.1,2903,701,points
+Department of the Interior,IDV,FY2010Q2,offers_unusable,56.57,35.29,-21.27,-7.2,944,408,points
+Department of Transportation,PO,FY2017Q3,offers_3,41.82,20.62,-21.2,-7.4,1504,354,points
+Department of Agriculture,IDV,FY2020Q3,competed,71.24,92.35,21.11,15.2,2298,1372,points
+Department of State,IDV,FY2009Q3,offers_unusable,83.29,62.2,-21.09,-7.2,1502,209,points
+Department of Agriculture,IDV,FY2019Q4,competed,63.31,84.31,21.0,10.9,1856,822,points
+Department of Agriculture,IDV,FY2013Q4,competed,28.53,49.49,20.96,10.7,3235,691,points
+Department of the Treasury,DEF,FY2013Q4,offers_3,39.53,60.34,20.81,8.0,1199,532,points
+Office of Personnel Management,PO,FY2010Q2,competed,46.07,25.34,-20.73,-6.7,764,367,points
+Department of Justice,DEF,FY2014Q4,competed,63.92,43.27,-20.66,-6.4,2478,245,points
+Department of Defense,IDV,FY2020Q1,offers_unusable,20.59,0.0,-20.59,-18.6,9097,1382,points
+Department of Defense,IDV,FY2011Q3,offers_2,14.62,35.15,20.53,25.8,10264,3303,points
+Department of Defense,IDV,FY2019Q2,offers_unusable,20.49,0.06,-20.43,-20.2,9134,1661,points
+Department of Defense,IDV,FY2014Q1,offers_1,33.07,12.67,-20.4,-18.6,7725,2186,points
+Department of Veterans Affairs,PO,FY2010Q1,offers_1,80.19,59.81,-20.38,-30.8,13324,6688,points
+General Services Administration,PO,FY2013Q3,offers_2,49.83,29.57,-20.26,-8.0,11860,399,points
+General Services Administration,DEF,FY2011Q1,competed,54.98,34.76,-20.22,-7.6,3110,397,points
+General Services Administration,PO,FY2013Q1,offers_2,51.87,31.71,-20.16,-7.7,23443,369,points
+Department of Defense,IDV,FY2019Q3,offers_unusable,20.14,0.0,-20.14,-20.7,9302,1767,points
+Department of Defense,IDV,FY2019Q4,offers_unusable,20.1,0.0,-20.1,-23.3,9318,2260,points
+U.S. Agency for Global Media,IDV,FY2009Q3,competed,13.11,33.17,20.06,7.0,1022,202,points
+Office of Personnel Management,PO,FY2011Q3,competed,50.45,70.39,19.94,9.5,2337,743,points
+Department of the Interior,IDV,FY2009Q1,competed,74.71,54.77,-19.93,-6.2,1190,241,points
+Department of Veterans Affairs,PO,FY2010Q2,offers_1,71.13,51.25,-19.88,-29.0,16341,6810,points
+Department of Defense,IDV,FY2018Q1,offers_2,34.43,14.56,-19.87,-15.0,8503,1435,points
+Department of Agriculture,PO,FY2021Q1,offers_1,42.92,62.79,19.87,8.4,5520,481,points
+Department of Agriculture,IDV,FY2008Q4,offers_unusable,54.92,35.39,-19.53,-7.7,1351,551,points
+Department of Agriculture,IDV,FY2012Q4,competed,29.06,48.52,19.46,10.3,3104,777,points
+Department of the Treasury,DEF,FY2014Q3,offers_2,22.57,42.01,19.44,6.1,1316,219,points
+Department of Veterans Affairs,DEF,FY2012Q1,offers_1,31.66,51.06,19.4,9.1,3771,566,points
+Department of Agriculture,IDV,FY2009Q3,competed,66.47,85.85,19.37,12.1,3126,1067,points
+Department of Labor,PO,FY2013Q4,competed,46.18,65.56,19.37,6.9,1022,450,points
+Department of Agriculture,PO,FY2010Q2,offers_unusable,19.35,0.0,-19.35,-26.7,15708,3101,points
+Department of Agriculture,IDV,FY2010Q3,offers_unusable,38.68,19.43,-19.25,-7.6,2611,422,points
+Department of the Interior,DEF,FY2009Q1,competed,66.05,85.25,19.2,8.1,2203,461,points
+Department of Justice,DEF,FY2010Q1,competed,35.13,54.21,19.08,8.1,1204,701,points
+Department of Health and Human Services,IDV,FY2019Q3,competed,60.78,41.72,-19.06,-6.1,1127,326,points
+Department of Justice,DEF,FY2010Q3,competed,51.0,69.93,18.93,7.2,2100,439,points
+National Aeronautics and Space Administration,PO,FY2009Q2,offers_3,29.41,10.52,-18.89,-9.3,1877,599,points
+National Aeronautics and Space Administration,DEF,FY2019Q4,competed,78.5,97.27,18.77,9.2,293,586,points
+Department of Veterans Affairs,IDV,FY2010Q4,offers_unusable,28.07,9.3,-18.77,-8.1,1774,430,points
+General Services Administration,DEF,FY2019Q1,offers_3,21.59,2.84,-18.75,-12.9,616,1161,points
+U.S. Agency for Global Media,PO,FY2014Q4,offers_1,69.85,51.12,-18.73,-7.3,1214,489,points
+Department of Agriculture,IDV,FY2011Q3,offers_unusable,18.6,0.0,-18.6,-7.9,1382,283,points
+Department of the Treasury,DEF,FY2013Q4,offers_2,32.86,14.29,-18.58,-8.0,1199,532,points
+Department of Defense,IDV,FY2008Q3,offers_2,36.88,18.43,-18.45,-20.4,6689,4119,points
+U.S. Agency for Global Media,PO,FY2015Q1,offers_3,20.19,38.64,18.45,6.0,1258,220,points
+General Services Administration,PO,FY2017Q1,offers_3,21.94,40.26,18.33,10.5,1404,1438,points
+Department of Labor,PO,FY2010Q1,offers_1,29.77,11.59,-18.18,-6.4,739,328,points
+U.S. Agency for Global Media,IDV,FY2009Q4,competed,16.14,34.31,18.16,6.5,1214,239,points
+National Aeronautics and Space Administration,PO,FY2011Q2,offers_3,40.18,22.19,-18.0,-9.9,2618,942,points
+Department of Justice,IDV,FY2011Q1,competed,82.51,64.52,-17.98,-8.1,1778,420,points
+General Services Administration,IDV,FY2016Q3,offers_unusable,63.82,45.84,-17.98,-8.4,2192,685,points
+Department of Health and Human Services,IDV,FY2010Q4,competed,57.15,75.13,17.98,7.6,1706,559,points
+Department of Transportation,PO,FY2018Q4,competed,43.37,61.32,17.94,10.7,3894,1140,points
+Department of the Treasury,DEF,FY2014Q2,competed,64.89,46.98,-17.91,-7.0,2159,430,points
+Department of State,IDV,FY2009Q4,competed,60.77,78.66,17.89,6.8,2455,389,points
+General Services Administration,PO,FY2013Q1,competed,57.04,39.17,-17.87,-10.9,41128,942,points
+Department of Veterans Affairs,IDV,FY2020Q4,competed,63.72,45.89,-17.83,-9.6,2368,998,points
+General Services Administration,DEF,FY2008Q4,offers_3,9.86,27.67,17.82,10.1,1197,701,points
+Department of Transportation,PO,FY2018Q2,offers_2,42.69,60.43,17.75,6.2,1757,369,points
+Department of Health and Human Services,IDV,FY2012Q4,competed,50.65,68.39,17.75,7.0,1159,579,points
+Department of the Treasury,PO,FY2010Q2,offers_1,41.32,23.59,-17.73,-8.5,3337,657,points
+Department of Justice,DEF,FY2014Q2,competed,69.72,52.03,-17.68,-8.4,2754,615,points
+General Services Administration,IDV,FY2012Q3,offers_unusable,70.8,88.44,17.64,10.0,3966,744,points
+Department of Veterans Affairs,PO,FY2010Q3,competed,24.42,41.99,17.58,49.1,86097,19043,points
+Department of State,IDV,FY2012Q1,competed,20.99,3.44,-17.55,-17.7,1796,2295,points
+Department of Justice,IDV,FY2012Q1,competed,68.65,51.17,-17.47,-6.3,1381,383,points
+Department of Defense,IDV,FY2018Q2,offers_2,33.87,16.41,-17.46,-13.4,8541,1493,points
+Department of Transportation,PO,FY2017Q4,offers_3,34.4,16.98,-17.42,-8.2,1625,642,points
+Department of State,IDV,FY2010Q4,competed,62.59,45.29,-17.3,-7.2,1708,552,points
+Department of State,IDV,FY2008Q4,competed,62.16,79.45,17.29,6.9,1377,472,points
+Department of Justice,IDV,FY2010Q4,offers_unusable,11.98,29.23,17.25,8.8,1386,479,points
+National Aeronautics and Space Administration,PO,FY2010Q2,competed,43.43,60.61,17.18,11.3,4693,1414,points
+General Services Administration,DEF,FY2019Q1,offers_2,19.32,2.15,-17.16,-12.6,616,1161,points
+General Services Administration,DEF,FY2019Q3,competed,74.32,91.46,17.14,17.0,4381,2388,points
+Office of Personnel Management,PO,FY2012Q4,offers_3,49.39,32.27,-17.12,-7.6,2122,626,points
+General Services Administration,IDV,FY2018Q3,offers_unusable,52.64,69.74,17.1,7.6,2931,585,points
+Department of Veterans Affairs,PO,FY2010Q2,offers_2,13.54,30.57,17.03,30.4,16341,6810,points
+Office of Personnel Management,PO,FY2011Q4,competed,58.37,75.37,17.0,9.6,2779,1027,points
+Department of Agriculture,PO,FY2010Q1,offers_unusable,22.4,5.44,-16.96,-20.4,15184,2702,points
+Department of Veterans Affairs,PO,FY2010Q1,offers_2,6.45,23.37,16.92,34.6,13324,6688,points
+Department of Defense,IDV,FY2008Q3,offers_1,26.3,43.19,16.89,18.2,6689,4119,points
+Department of Labor,PO,FY2012Q4,competed,41.75,58.61,16.87,6.7,1418,534,points
+U.S. Agency for Global Media,PO,FY2013Q4,offers_1,80.65,63.82,-16.83,-6.9,1013,445,points
+National Aeronautics and Space Administration,PO,FY2021Q3,competed,45.77,29.05,-16.72,-6.4,1905,444,points
+Department of Agriculture,IDV,FY2018Q3,competed,31.87,48.57,16.71,10.7,3659,1262,points
+General Services Administration,PO,FY2019Q1,offers_2,12.03,28.73,16.7,25.0,5620,15698,points
+National Aeronautics and Space Administration,PO,FY2017Q3,competed,55.73,72.4,16.66,10.9,4109,1373,points
+Department of Defense,IDV,FY2013Q1,offers_1,22.73,39.3,16.57,14.3,7286,1789,points
+Department of Agriculture,DEF,FY2011Q4,offers_3,32.48,16.03,-16.45,-12.2,4085,1528,points
+General Services Administration,IDV,FY2019Q4,offers_unusable,73.1,56.72,-16.38,-9.0,2286,915,points
+General Services Administration,DEF,FY2021Q4,offers_1,39.37,55.74,16.37,9.9,4953,1098,points
+Department of Justice,IDV,FY2011Q2,offers_unusable,16.35,0.0,-16.35,-6.2,1413,203,points
+U.S. Agency for Global Media,PO,FY2012Q4,competed,45.92,62.25,16.33,6.1,1176,498,points
+Department of Veterans Affairs,PO,FY2016Q1,offers_1,53.28,69.61,16.33,17.2,13252,3429,points
+Department of Defense,IDV,FY2018Q3,offers_2,33.11,16.79,-16.32,-13.5,8544,1751,points
+Department of Defense,IDV,FY2010Q3,competed,79.78,63.5,-16.28,-21.7,16887,3926,points
+General Services Administration,IDV,FY2020Q3,offers_unusable,66.63,50.35,-16.28,-7.3,2637,570,points
+General Services Administration,IDV,FY2017Q4,offers_unusable,51.08,67.36,16.28,7.6,2782,677,points
+Department of Defense,IDV,FY2017Q4,offers_2,34.57,18.34,-16.23,-14.7,8356,2235,points
+U.S. Agency for Global Media,PO,FY2014Q2,offers_2,1.86,18.04,16.18,11.1,1185,255,points
+National Aeronautics and Space Administration,PO,FY2013Q3,offers_3,37.47,21.29,-16.18,-8.4,2479,789,points
+Department of the Treasury,DEF,FY2013Q2,offers_1,9.62,25.78,16.16,7.0,925,287,points
+Department of Defense,IDV,FY2019Q1,competed,59.47,75.62,16.15,19.3,12039,4508,points
+Department of Agriculture,IDV,FY2013Q3,competed,34.1,18.0,-16.09,-11.3,2748,1583,points
+U.S. Agency for Global Media,IDV,FY2011Q1,competed,25.92,9.9,-16.02,-6.6,1057,394,points
+Department of Transportation,PO,FY2008Q4,competed,39.04,54.98,15.94,8.6,1957,1135,points
+Department of Health and Human Services,PO,FY2008Q4,offers_unusable,34.04,18.15,-15.89,-15.0,4792,2865,points
+Department of the Interior,IDV,FY2010Q2,competed,70.82,86.62,15.81,6.8,1333,471,points
+Department of Homeland Security,PO,FY2010Q1,offers_unusable,18.24,2.48,-15.75,-16.8,11790,1771,points
+Department of Defense,IDV,FY2020Q3,competed,65.02,80.76,15.73,22.3,13215,6189,points
+Department of Veterans Affairs,PO,FY2010Q2,competed,20.2,35.93,15.73,46.5,84953,18956,points
+Environmental Protection Agency,PO,FY2013Q4,competed,41.15,56.87,15.72,7.5,2396,728,points
+Department of the Treasury,PO,FY2010Q3,offers_1,36.25,20.7,-15.55,-7.8,3247,686,points
+General Services Administration,IDV,FY2014Q3,offers_unusable,61.03,45.49,-15.54,-7.7,2571,787,points
+Department of Agriculture,DEF,FY2011Q3,offers_3,33.29,17.77,-15.53,-8.5,4902,743,points
+Department of State,IDV,FY2021Q4,competed,13.23,28.67,15.45,10.4,4090,701,points
+National Aeronautics and Space Administration,PO,FY2008Q4,offers_1,21.88,37.28,15.4,7.4,1234,743,points
+Department of Homeland Security,PO,FY2010Q2,offers_unusable,15.38,0.0,-15.38,-20.7,11583,2425,points
+General Services Administration,IDV,FY2017Q3,offers_3,20.42,5.04,-15.38,-9.0,1038,694,points
+Department of Agriculture,IDV,FY2009Q2,competed,66.06,81.34,15.29,6.6,3061,461,points
+Department of Veterans Affairs,DEF,FY2013Q1,offers_1,30.23,45.5,15.27,7.1,3027,567,points
+Department of Agriculture,PO,FY2019Q3,competed,48.23,63.48,15.25,15.7,13633,3286,points
+Department of Defense,IDV,FY2017Q3,competed,59.16,74.37,15.22,18.2,12296,4546,points
+General Services Administration,IDV,FY2018Q2,offers_unusable,51.56,66.72,15.16,6.8,2878,595,points
+Department of Veterans Affairs,IDV,FY2017Q4,offers_1,41.01,25.99,-15.02,-6.2,1373,558,points
+Department of Transportation,PO,FY2017Q2,offers_1,21.03,36.03,15.0,6.5,1203,519,points
+Department of Veterans Affairs,PO,FY2009Q1,competed,4.94,19.9,14.96,93.6,806913,20159,points
+Department of the Treasury,PO,FY2011Q1,offers_2,35.79,50.74,14.96,6.2,3001,471,points
+General Services Administration,PO,FY2017Q3,competed,69.81,84.75,14.94,13.6,5635,2210,points
+Department of Health and Human Services,PO,FY2008Q3,offers_unusable,39.43,24.63,-14.8,-10.4,3046,1746,points
+National Aeronautics and Space Administration,PO,FY2008Q3,competed,46.36,31.67,-14.68,-8.3,1799,1326,points
+Department of Agriculture,IDV,FY2018Q1,competed,32.19,17.56,-14.63,-6.9,3374,541,points
+Department of the Treasury,PO,FY2012Q2,offers_1,24.06,9.45,-14.62,-7.2,2610,487,points
+Department of the Treasury,DEF,FY2013Q4,competed,58.57,73.18,14.6,7.0,2047,727,points
+Department of Veterans Affairs,PO,FY2018Q4,competed,26.77,41.37,14.59,29.3,48765,10090,points
+Department of Veterans Affairs,DEF,FY2010Q2,competed,51.02,65.59,14.57,10.1,7140,1421,points
+Department of State,IDV,FY2012Q4,competed,7.97,22.5,14.53,11.8,5594,631,points
+Department of Veterans Affairs,PO,FY2009Q3,offers_1,93.45,78.95,-14.51,-27.5,29570,2850,points
+National Aeronautics and Space Administration,PO,FY2014Q3,offers_1,28.45,13.96,-14.49,-8.6,2232,917,points
+Department of Justice,IDV,FY2011Q4,offers_unusable,14.47,0.0,-14.47,-6.9,1140,287,points
+Department of Energy,PO,FY2010Q2,offers_unusable,14.3,0.0,-14.3,-7.4,1727,341,points
+General Services Administration,PO,FY2013Q2,offers_3,7.61,21.9,14.29,11.0,17956,443,points
+Department of Agriculture,PO,FY2010Q3,offers_unusable,14.28,0.0,-14.28,-25.9,15972,4161,points
+Department of Veterans Affairs,PO,FY2017Q3,offers_1,51.67,37.46,-14.21,-15.6,13721,3849,points
+Department of Energy,PO,FY2009Q3,offers_unusable,8.59,22.78,14.19,8.0,1409,439,points
+Department of State,IDV,FY2021Q3,competed,11.88,26.03,14.15,9.7,4015,657,points
+Department of Veterans Affairs,PO,FY2009Q4,offers_1,89.9,75.75,-14.15,-25.3,21945,4120,points
+Department of State,IDV,FY2015Q4,competed,11.11,25.21,14.1,11.9,5498,952,points
+Department of Agriculture,IDV,FY2011Q4,offers_unusable,14.08,0.0,-14.08,-7.2,1243,328,points
+Office of Personnel Management,PO,FY2012Q3,competed,76.56,90.62,14.07,7.5,2773,576,points
+Department of the Treasury,PO,FY2017Q2,competed,28.79,42.83,14.04,8.5,3532,1018,points
+Department of the Treasury,DEF,FY2013Q3,competed,55.28,69.23,13.95,6.1,1903,611,points
+Department of Agriculture,DEF,FY2012Q1,offers_3,25.36,11.42,-13.94,-7.7,3659,639,points
+Department of State,IDV,FY2018Q4,competed,12.82,26.74,13.92,10.0,4952,733,points
+Department of Agriculture,PO,FY2018Q1,offers_1,37.33,51.16,13.83,9.9,10400,1382,points
+Department of Agriculture,DEF,FY2011Q1,offers_3,32.23,45.97,13.74,7.4,5687,744,points
+General Services Administration,IDV,FY2019Q2,offers_unusable,67.85,81.56,13.72,6.3,2370,537,points
+National Aeronautics and Space Administration,PO,FY2009Q2,competed,39.06,52.71,13.65,8.4,4893,1146,points
+National Aeronautics and Space Administration,PO,FY2011Q2,competed,51.41,64.92,13.51,9.1,5246,1451,points
+Department of Agriculture,IDV,FY2010Q4,offers_unusable,33.44,19.94,-13.51,-6.4,2117,617,points
+Department of Veterans Affairs,DEF,FY2020Q1,competed,58.19,44.71,-13.48,-6.5,3188,709,points
+General Services Administration,PO,FY2008Q4,offers_1,17.83,31.25,13.42,32.7,33635,14599,points
+Agency for International Development,PO,FY2008Q4,competed,52.92,66.27,13.35,6.1,1249,848,points
+Department of the Interior,DEF,FY2008Q4,competed,72.21,58.88,-13.33,-6.6,1184,1019,points
+Department of the Treasury,PO,FY2009Q1,offers_3,29.12,15.83,-13.3,-7.6,2352,834,points
+General Services Administration,PO,FY2013Q4,competed,51.74,38.49,-13.25,-9.6,8323,1564,points
+Department of Agriculture,PO,FY2010Q2,offers_1,41.79,55.01,13.22,13.3,12669,3101,points
+Department of Agriculture,PO,FY2019Q1,offers_1,40.67,53.85,13.18,7.1,8029,767,points
+Department of Veterans Affairs,DEF,FY2011Q1,offers_1,29.71,42.68,12.97,6.9,4393,710,points
+National Aeronautics and Space Administration,PO,FY2011Q2,offers_1,22.61,9.66,-12.95,-8.7,2618,942,points
+National Aeronautics and Space Administration,PO,FY2016Q3,offers_3,28.06,15.11,-12.95,-7.6,2327,880,points
+Department of Defense,IDV,FY2020Q2,competed,61.0,73.94,12.95,15.2,11591,4306,points
+National Aeronautics and Space Administration,PO,FY2010Q3,offers_3,33.09,46.02,12.93,6.0,2197,641,points
+National Aeronautics and Space Administration,PO,FY2016Q4,offers_1,22.46,35.39,12.93,7.2,2306,794,points
+National Aeronautics and Space Administration,PO,FY2010Q2,offers_1,27.8,14.91,-12.89,-7.1,2018,778,points
+Agency for International Development,PO,FY2009Q4,competed,67.85,80.73,12.88,7.2,1745,960,points
+Department of Veterans Affairs,PO,FY2009Q1,offers_1,96.23,83.38,-12.85,-34.6,39607,3671,points
+Department of State,IDV,FY2016Q4,competed,13.82,26.63,12.8,9.6,4861,875,points
+Department of Health and Human Services,PO,FY2010Q2,offers_unusable,12.79,0.0,-12.79,-16.8,8877,1966,points
+Department of Veterans Affairs,PO,FY2013Q2,competed,46.15,33.38,-12.77,-26.5,54950,13136,points
+Department of the Treasury,PO,FY2019Q1,competed,44.95,32.19,-12.75,-6.8,3660,848,points
+General Services Administration,IDV,FY2014Q2,competed,74.44,87.18,12.74,7.9,3306,866,points
+Department of the Interior,PO,FY2019Q1,competed,72.41,59.69,-12.72,-6.9,9689,640,points
+Department of the Treasury,PO,FY2009Q2,offers_1,35.1,47.79,12.69,6.3,2681,747,points
+Department of State,IDV,FY2009Q1,offers_unusable,78.96,91.63,12.67,6.4,1231,526,points
+Department of Veterans Affairs,DEF,FY2009Q3,offers_1,43.27,30.61,-12.66,-6.4,3247,758,points
+Department of Energy,PO,FY2010Q3,offers_unusable,12.63,0.0,-12.63,-7.1,1734,355,points
+General Services Administration,IDV,FY2014Q2,offers_unusable,67.05,54.44,-12.61,-6.3,2461,755,points
+Department of Agriculture,PO,FY2010Q1,offers_3,32.45,19.84,-12.6,-12.6,11783,2555,points
+General Services Administration,PO,FY2018Q1,offers_3,41.2,53.8,12.6,8.6,6429,1407,points
+Department of Veterans Affairs,DEF,FY2012Q3,offers_1,31.68,19.2,-12.48,-7.0,3494,802,points
+General Services Administration,IDV,FY2021Q1,competed,93.1,80.65,-12.45,-9.2,3086,496,points
+Department of Homeland Security,PO,FY2012Q1,offers_1,29.06,41.47,12.42,10.7,11942,1818,points
+Department of Transportation,PO,FY2017Q3,competed,43.82,31.41,-12.41,-7.4,3432,1127,points
+Department of Defense,IDV,FY2011Q1,competed,71.04,58.64,-12.4,-13.0,16883,2686,points
+Department of Agriculture,DEF,FY2008Q3,offers_3,38.03,25.63,-12.4,-6.7,1704,1038,points
+National Aeronautics and Space Administration,PO,FY2009Q2,offers_1,27.06,14.69,-12.37,-6.2,1877,599,points
+Department of Veterans Affairs,PO,FY2011Q1,offers_2,25.55,13.27,-12.28,-28.5,31731,13000,points
+Department of Veterans Affairs,PO,FY2010Q4,competed,30.04,42.26,12.22,35.8,86305,24222,points
+Department of Health and Human Services,PO,FY2010Q1,offers_unusable,16.85,4.74,-12.11,-13.3,8566,1837,points
+Department of Commerce,PO,FY2009Q2,offers_1,38.44,26.39,-12.05,-6.5,4300,811,points
+National Aeronautics and Space Administration,PO,FY2017Q3,offers_2,20.79,8.75,-12.03,-8.4,2290,994,points
+Department of the Interior,PO,FY2020Q1,competed,70.93,58.93,-12.0,-6.5,7809,672,points
+Department of Veterans Affairs,DEF,FY2012Q1,competed,64.67,52.75,-11.92,-7.4,5831,1073,points
+General Services Administration,PO,FY2013Q1,offers_3,6.54,18.43,11.89,9.0,23443,369,points
+Department of State,IDV,FY2019Q4,competed,13.93,25.79,11.86,8.3,4150,764,points
+Department of Transportation,PO,FY2018Q4,offers_3,16.04,27.9,11.85,6.6,1689,699,points
+Department of Health and Human Services,PO,FY2018Q4,offers_3,33.62,21.77,-11.85,-11.1,8129,2425,points
+Department of Veterans Affairs,PO,FY2010Q1,competed,17.56,29.4,11.84,39.5,82164,22948,points
+Department of Agriculture,PO,FY2021Q4,competed,54.77,42.93,-11.83,-13.4,8870,4982,points
+Department of Agriculture,IDV,FY2015Q3,competed,28.31,16.48,-11.83,-8.6,3416,1402,points
+Department of Health and Human Services,PO,FY2010Q1,offers_1,57.66,69.49,11.83,9.0,7123,1750,points
+General Services Administration,PO,FY2013Q3,competed,56.24,44.44,-11.8,-7.0,21097,900,points
+Department of State,IDV,FY2014Q4,competed,10.35,22.13,11.78,9.7,5103,836,points
+Department of Defense,IDV,FY2013Q4,offers_1,32.12,20.34,-11.78,-10.9,8388,2252,points
+Department of Commerce,PO,FY2009Q2,offers_3,35.77,47.47,11.7,6.3,4300,811,points
+National Aeronautics and Space Administration,PO,FY2015Q3,offers_3,33.0,21.31,-11.69,-6.5,2367,901,points
+Department of Veterans Affairs,DEF,FY2013Q1,competed,64.67,52.99,-11.68,-7.1,4681,1070,points
+Department of Veterans Affairs,PO,FY2017Q2,offers_1,53.98,42.32,-11.66,-11.1,13495,2741,points
+Department of Veterans Affairs,DEF,FY2017Q4,competed,56.83,68.46,11.64,7.3,3296,1300,points
+Department of the Interior,PO,FY2015Q1,competed,66.97,55.41,-11.56,-7.7,13791,1063,points
+Department of Agriculture,IDV,FY2014Q3,competed,28.33,16.78,-11.54,-8.9,3057,1704,points
+Department of Defense,IDV,FY2010Q1,competed,84.4,72.88,-11.52,-15.8,17098,3215,points
+Department of Transportation,PO,FY2010Q2,offers_unusable,11.5,0.0,-11.5,-6.1,1226,290,points
+Department of Homeland Security,PO,FY2010Q3,offers_unusable,11.49,0.0,-11.49,-20.6,11278,3378,points
+Department of Veterans Affairs,PO,FY2016Q4,offers_1,58.3,46.81,-11.49,-13.5,12702,4672,points
+General Services Administration,PO,FY2009Q2,offers_1,23.18,34.64,11.46,24.6,47855,10625,points
+Department of Agriculture,PO,FY2020Q4,offers_1,38.45,49.79,11.34,9.7,5316,2657,points
+Department of Defense,IDV,FY2012Q3,offers_2,23.97,12.66,-11.31,-10.5,8918,1769,points
+Department of the Treasury,PO,FY2008Q4,competed,31.95,43.26,11.3,9.2,4829,2180,points
+General Services Administration,PO,FY2021Q4,competed,71.29,82.59,11.3,36.5,97136,25635,points
+Department of Commerce,PO,FY2011Q1,competed,52.85,41.64,-11.21,-6.5,8463,927,points
+Department of Agriculture,PO,FY2013Q1,competed,65.07,53.86,-11.21,-11.0,17833,2536,points
+Department of Veterans Affairs,PO,FY2011Q2,offers_2,21.73,10.56,-11.17,-26.0,38043,10797,points
+Department of State,IDV,FY2013Q4,competed,9.32,20.47,11.15,10.1,5366,933,points
+Department of the Interior,PO,FY2014Q1,competed,64.35,53.22,-11.13,-6.7,12638,900,points
+Department of Veterans Affairs,PO,FY2009Q2,offers_1,95.04,83.94,-11.1,-23.8,35340,2683,points
+Department of Commerce,PO,FY2010Q1,competed,52.33,41.24,-11.09,-7.5,9396,1307,points
+Department of Veterans Affairs,PO,FY2009Q2,competed,5.52,16.54,11.02,62.0,650095,17812,points
+Department of Veterans Affairs,DEF,FY2010Q3,competed,54.5,65.51,11.01,8.3,7184,1725,points
+Department of State,PO,FY2021Q1,competed,68.36,57.42,-10.95,-7.9,13327,1247,points
+Department of Justice,PO,FY2020Q4,offers_1,30.51,41.42,10.91,11.8,10762,3433,points
+National Aeronautics and Space Administration,PO,FY2018Q4,competed,58.96,69.8,10.84,6.8,3265,1298,points
+National Aeronautics and Space Administration,DEF,FY2019Q4,offers_1,11.79,1.05,-10.74,-6.9,229,569,points
+National Aeronautics and Space Administration,PO,FY2014Q3,competed,50.12,60.85,10.73,7.2,4453,1507,points
+General Services Administration,PO,FY2013Q2,competed,57.16,46.48,-10.68,-6.6,31441,953,points
+Department of Veterans Affairs,PO,FY2012Q4,offers_1,58.19,47.51,-10.67,-17.6,31764,8463,points
+Department of Defense,IDV,FY2017Q3,offers_1,22.22,11.59,-10.62,-13.0,7274,3381,points
+Department of Defense,IDV,FY2012Q2,competed,61.35,50.74,-10.6,-10.1,15685,2556,points
+Department of Defense,IDV,FY2015Q3,offers_1,23.72,13.11,-10.6,-11.6,7514,2707,points
+Department of Veterans Affairs,DEF,FY2010Q2,offers_1,36.98,26.39,-10.58,-6.1,3643,932,points
+Department of Justice,PO,FY2011Q4,offers_3,43.02,53.58,10.56,15.2,18020,7161,points
+Department of State,IDV,FY2013Q3,competed,8.68,19.23,10.55,9.4,5403,832,points
+Department of Veterans Affairs,DEF,FY2016Q4,competed,55.91,66.41,10.5,6.3,3275,1179,points
+General Services Administration,DEF,FY2020Q3,offers_1,1.01,11.5,10.49,23.5,7692,1834,points
+National Aeronautics and Space Administration,PO,FY2011Q2,offers_2,19.71,9.24,-10.47,-7.3,2618,942,points
+National Aeronautics and Space Administration,PO,FY2016Q3,competed,52.42,62.81,10.39,6.8,4439,1401,points
+Department of Health and Human Services,PO,FY2019Q2,offers_3,30.03,19.69,-10.34,-6.2,6284,843,points
+General Services Administration,IDV,FY2012Q2,offers_unusable,72.24,82.56,10.31,6.1,3959,814,points
+Department of the Interior,PO,FY2016Q1,competed,65.42,55.14,-10.28,-7.3,14461,1264,points
+Department of Justice,PO,FY2017Q1,offers_3,40.98,30.72,-10.26,-14.2,23920,5661,points
+Department of Defense,PO,FY2015Q1,competed,79.34,89.58,10.24,73.7,269342,105310,points
+National Aeronautics and Space Administration,PO,FY2015Q4,offers_2,20.37,30.61,10.24,6.0,2351,833,points
+Department of Defense,IDV,FY2011Q2,competed,68.64,58.44,-10.21,-11.5,16354,3419,points
+National Aeronautics and Space Administration,PO,FY2014Q3,offers_2,21.59,11.45,-10.14,-6.6,2232,917,points
+National Aeronautics and Space Administration,PO,FY2009Q2,offers_2,17.16,7.01,-10.14,-6.1,1877,599,points
+General Services Administration,IDV,FY2011Q1,offers_unusable,88.97,78.83,-10.14,-8.8,4887,1011,points
+General Services Administration,IDV,FY2017Q3,offers_2,14.45,4.32,-10.13,-6.8,1038,694,points
+Department of Justice,PO,FY2009Q1,offers_3,48.89,38.78,-10.11,-11.6,15633,4154,points
+Department of State,IDV,FY2017Q4,competed,14.0,24.09,10.08,7.9,4777,984,points
+Department of Veterans Affairs,PO,FY2017Q4,offers_1,47.51,37.44,-10.07,-13.0,14617,5678,points
+Department of Veterans Affairs,PO,FY2009Q3,competed,6.43,16.45,10.01,53.5,470708,18835,points
+Department of Justice,PO,FY2013Q1,offers_2,17.02,7.01,-10.01,-19.3,23032,5947,points
+General Services Administration,PO,FY2019Q4,volume,1905.0,24707.0,1196.96,,1905,24707,percent
+General Services Administration,PO,FY2019Q2,volume,1719.0,22039.0,1182.08,,1719,22039,percent
+General Services Administration,PO,FY2019Q1,volume,1645.0,20776.0,1162.98,,1645,20776,percent
+General Services Administration,PO,FY2019Q3,volume,1787.0,21030.0,1076.83,,1787,21030,percent
+General Services Administration,DEF,FY2019Q2,volume,306.0,1905.0,522.55,,306,1905,percent
+Department of State,IDV,FY2012Q2,volume,288.0,1736.0,502.78,,288,1736,percent
+General Services Administration,DEF,FY2019Q3,volume,426.0,2388.0,460.56,,426,2388,percent
+Department of State,IDV,FY2012Q1,volume,444.0,2295.0,416.89,,444,2295,percent
+General Services Administration,DEF,FY2019Q1,volume,294.0,1323.0,350.0,,294,1323,percent
+Department of State,IDV,FY2009Q2,volume,204.0,825.0,304.41,,204,825,percent
+General Services Administration,PO,FY2017Q1,volume,430.0,1714.0,298.6,,430,1714,percent
+General Services Administration,DEF,FY2019Q4,volume,727.0,2867.0,294.36,,727,2867,percent
+General Services Administration,PO,FY2017Q2,volume,545.0,1880.0,244.95,,545,1880,percent
+General Services Administration,PO,FY2017Q3,volume,788.0,2210.0,180.46,,788,2210,percent
+Department of Justice,DEF,FY2009Q4,volume,240.0,617.0,157.08,,240,617,percent
+Department of Justice,DEF,FY2010Q2,volume,200.0,513.0,156.5,,200,513,percent
+Office of Personnel Management,PO,FY2011Q3,volume,301.0,743.0,146.84,,301,743,percent
+Office of Personnel Management,PO,FY2010Q4,volume,251.0,607.0,141.83,,251,607,percent
+Department of Transportation,PO,FY2017Q2,volume,491.0,1157.0,135.64,,491,1157,percent
+Department of State,IDV,FY2012Q3,volume,370.0,869.0,134.86,,370,869,percent
+Department of Transportation,PO,FY2017Q3,volume,509.0,1127.0,121.41,,509,1127,percent
+Department of Defense,IDV,FY2020Q3,volume,2808.0,6189.0,120.41,,2808,6189,percent
+Office of Personnel Management,PO,FY2011Q1,volume,286.0,630.0,120.28,,286,630,percent
+Department of the Interior,IDV,FY2012Q1,volume,201.0,438.0,117.91,,201,438,percent
+Office of Personnel Management,PO,FY2011Q2,volume,367.0,799.0,117.71,,367,799,percent
+Department of the Interior,IDV,FY2010Q2,volume,217.0,471.0,117.05,,217,471,percent
+Department of Agriculture,IDV,FY2017Q4,volume,381.0,824.0,116.27,,381,824,percent
+Department of Defense,IDV,FY2021Q1,volume,2303.0,4753.0,106.38,,2303,4753,percent
+Department of Defense,IDV,FY2020Q4,volume,3798.0,7736.0,103.69,,3798,7736,percent
+Department of Defense,PO,FY2015Q1,volume,52689.0,105310.0,99.87,,52689,105310,percent
+General Services Administration,PO,FY2013Q3,volume,13674.0,900.0,-93.42,,13674,900,percent
+General Services Administration,PO,FY2013Q2,volume,11297.0,953.0,-91.56,,11297,953,percent
+Department of Veterans Affairs,PO,FY2009Q3,volume,212871.0,18835.0,-91.15,,212871,18835,percent
+General Services Administration,PO,FY2013Q1,volume,10629.0,942.0,-91.14,,10629,942,percent
+Department of Veterans Affairs,PO,FY2009Q2,volume,197199.0,17812.0,-90.97,,197199,17812,percent
+Department of the Treasury,DEF,FY2013Q2,volume,237.0,451.0,90.3,,237,451,percent
+Department of Veterans Affairs,PO,FY2009Q1,volume,176977.0,20159.0,-88.61,,176977,20159,percent
+Department of Agriculture,IDV,FY2010Q3,volume,1067.0,2012.0,88.57,,1067,2012,percent
+Department of Veterans Affairs,PO,FY2009Q4,volume,219866.0,25358.0,-88.47,,219866,25358,percent
+Department of the Interior,DEF,FY2010Q3,volume,354.0,660.0,86.44,,354,660,percent
+Department of Agriculture,IDV,FY2020Q2,volume,223.0,411.0,84.3,,223,411,percent
+Department of Health and Human Services,IDV,FY2009Q3,volume,239.0,434.0,81.59,,239,434,percent
+Department of Defense,IDV,FY2019Q1,volume,2491.0,4508.0,80.97,,2491,4508,percent
+Equal Employment Opportunity Commission,PO,FY2009Q4,volume,211.0,379.0,79.62,,211,379,percent
+Department of Health and Human Services,IDV,FY2014Q3,volume,201.0,361.0,79.6,,201,361,percent
+Department of Defense,PO,FY2015Q2,volume,57763.0,102733.0,77.85,,57763,102733,percent
+Department of Justice,DEF,FY2013Q1,volume,376.0,666.0,77.13,,376,666,percent
+U.S. Agency for Global Media,PO,FY2013Q1,volume,209.0,370.0,77.03,,209,370,percent
+Social Security Administration,IDV,FY2012Q4,volume,1820.0,430.0,-76.37,,1820,430,percent
+General Services Administration,DEF,FY2015Q1,volume,221.0,388.0,75.57,,221,388,percent
+Department of Justice,DEF,FY2014Q4,volume,988.0,245.0,-75.2,,988,245,percent
+Department of Agriculture,IDV,FY2009Q4,volume,926.0,1598.0,72.57,,926,1598,percent
+General Services Administration,PO,FY2017Q4,volume,1253.0,2154.0,71.91,,1253,2154,percent
+General Services Administration,PO,FY2013Q4,volume,5528.0,1564.0,-71.71,,5528,1564,percent
+Department of Homeland Security,IDV,FY2010Q1,volume,212.0,364.0,71.7,,212,364,percent
+Department of Justice,IDV,FY2009Q4,volume,326.0,555.0,70.25,,326,555,percent
+Agency for International Development,PO,FY2011Q1,volume,210.0,356.0,69.52,,210,356,percent
+Department of the Interior,DEF,FY2009Q1,volume,272.0,461.0,69.49,,272,461,percent
+Department of Transportation,PO,FY2016Q4,volume,768.0,1300.0,69.27,,768,1300,percent
+Office of Personnel Management,PO,FY2011Q4,volume,607.0,1027.0,69.19,,607,1027,percent
+Department of the Interior,DEF,FY2010Q2,volume,279.0,472.0,69.18,,279,472,percent
+U.S. Agency for Global Media,PO,FY2013Q2,volume,310.0,522.0,68.39,,310,522,percent
+Department of Defense,PO,FY2015Q4,volume,89883.0,150363.0,67.29,,89883,150363,percent
+Department of State,IDV,FY2010Q2,volume,825.0,284.0,-65.58,,825,284,percent
+Department of State,PO,FY2019Q1,volume,3798.0,1334.0,-64.88,,3798,1334,percent
+Department of Defense,PO,FY2015Q3,volume,69007.0,113209.0,64.05,,69007,113209,percent
+Department of Agriculture,IDV,FY2021Q4,volume,883.0,320.0,-63.76,,883,320,percent
+General Services Administration,PO,FY2012Q4,volume,15187.0,5528.0,-63.6,,15187,5528,percent
+Department of Justice,DEF,FY2010Q3,volume,269.0,439.0,63.2,,269,439,percent
+Department of State,PO,FY2019Q2,volume,6166.0,2391.0,-61.22,,6166,2391,percent
+Department of Defense,IDV,FY2020Q2,volume,2682.0,4306.0,60.55,,2682,4306,percent
+Department of Agriculture,IDV,FY2019Q4,volume,517.0,822.0,58.99,,517,822,percent
+Department of Health and Human Services,IDV,FY2017Q2,volume,260.0,413.0,58.85,,260,413,percent
+General Services Administration,DEF,FY2015Q2,volume,335.0,529.0,57.91,,335,529,percent
+Department of Transportation,IDV,FY2013Q4,volume,241.0,380.0,57.68,,241,380,percent
+General Services Administration,IDV,FY2021Q3,volume,619.0,972.0,57.03,,619,972,percent
+Department of Veterans Affairs,PO,FY2019Q2,volume,11844.0,5099.0,-56.95,,11844,5099,percent
+Department of Health and Human Services,IDV,FY2012Q3,volume,239.0,372.0,55.65,,239,372,percent
+U.S. Agency for Global Media,IDV,FY2011Q4,volume,261.0,405.0,55.17,,261,405,percent
+National Aeronautics and Space Administration,PO,FY2018Q3,volume,1373.0,623.0,-54.62,,1373,623,percent
+Department of the Interior,DEF,FY2011Q3,volume,660.0,300.0,-54.55,,660,300,percent
+Environmental Protection Agency,PO,FY2013Q3,volume,666.0,303.0,-54.5,,666,303,percent
+Department of State,PO,FY2019Q3,volume,7881.0,3614.0,-54.14,,7881,3614,percent
+National Aeronautics and Space Administration,PO,FY2019Q2,volume,695.0,319.0,-54.1,,695,319,percent
+Office of Personnel Management,PO,FY2013Q2,volume,567.0,262.0,-53.79,,567,262,percent
+Department of Agriculture,DEF,FY2011Q3,volume,1774.0,823.0,-53.61,,1774,823,percent
+National Aeronautics and Space Administration,DEF,FY2021Q4,volume,569.0,264.0,-53.6,,569,264,percent
+Department of Veterans Affairs,PO,FY2019Q1,volume,11295.0,5290.0,-53.17,,11295,5290,percent
+Agency for International Development,PO,FY2011Q2,volume,314.0,480.0,52.87,,314,480,percent
+General Services Administration,IDV,FY2009Q4,volume,1217.0,1860.0,52.83,,1217,1860,percent
+Department of Agriculture,IDV,FY2018Q2,volume,281.0,426.0,51.6,,281,426,percent
+General Services Administration,IDV,FY2017Q3,volume,754.0,1140.0,51.19,,754,1140,percent
+Department of Justice,DEF,FY2013Q4,volume,654.0,988.0,51.07,,654,988,percent
+Department of Agriculture,IDV,FY2015Q4,volume,717.0,352.0,-50.91,,717,352,percent
+Department of State,PO,FY2018Q4,volume,16790.0,8288.0,-50.64,,16790,8288,percent
+Environmental Protection Agency,PO,FY2013Q2,volume,726.0,363.0,-50.0,,726,363,percent
+Department of Justice,DEF,FY2011Q2,volume,513.0,257.0,-49.9,,513,257,percent
+Department of Agriculture,IDV,FY2010Q4,volume,1598.0,804.0,-49.69,,1598,804,percent
+Environmental Protection Agency,PO,FY2014Q1,volume,532.0,268.0,-49.62,,532,268,percent
+Department of Justice,IDV,FY2013Q1,volume,383.0,573.0,49.61,,383,573,percent
+Department of Health and Human Services,PO,FY2019Q1,volume,2245.0,1134.0,-49.49,,2245,1134,percent
+Department of Transportation,PO,FY2019Q3,volume,892.0,452.0,-49.33,,892,452,percent
+Department of Agriculture,DEF,FY2021Q1,volume,607.0,308.0,-49.26,,607,308,percent
+Department of Veterans Affairs,IDV,FY2021Q1,volume,518.0,773.0,49.23,,518,773,percent
+Department of Defense,IDV,FY2020Q1,volume,4508.0,2303.0,-48.91,,4508,2303,percent
+Department of Agriculture,PO,FY2020Q1,volume,2546.0,1303.0,-48.82,,2546,1303,percent
+Department of Transportation,PO,FY2019Q2,volume,881.0,451.0,-48.81,,881,451,percent
+Department of State,IDV,FY2013Q4,volume,631.0,933.0,47.86,,631,933,percent
+U.S. Agency for Global Media,IDV,FY2010Q2,volume,417.0,218.0,-47.72,,417,218,percent
+General Services Administration,DEF,FY2011Q2,volume,790.0,413.0,-47.72,,790,413,percent
+Department of Agriculture,IDV,FY2019Q2,volume,426.0,223.0,-47.65,,426,223,percent
+U.S. Agency for Global Media,PO,FY2018Q4,volume,622.0,327.0,-47.43,,622,327,percent
+Department of Justice,DEF,FY2012Q3,volume,339.0,499.0,47.2,,339,499,percent
+Department of Health and Human Services,IDV,FY2019Q3,volume,222.0,326.0,46.85,,222,326,percent
+Department of Health and Human Services,IDV,FY2017Q3,volume,411.0,219.0,-46.72,,411,219,percent
+Department of Labor,PO,FY2012Q3,volume,481.0,258.0,-46.36,,481,258,percent
+Department of Transportation,DEF,FY2016Q4,volume,318.0,465.0,46.23,,318,465,percent
+Department of Health and Human Services,IDV,FY2013Q3,volume,372.0,201.0,-45.97,,372,201,percent
+General Services Administration,DEF,FY2021Q3,volume,2050.0,1126.0,-45.07,,2050,1126,percent
+Department of the Interior,PO,FY2013Q1,volume,1863.0,1033.0,-44.55,,1863,1033,percent
+Department of Agriculture,IDV,FY2013Q3,volume,1096.0,1583.0,44.43,,1096,1583,percent
+Department of Veterans Affairs,PO,FY2012Q2,volume,25605.0,14264.0,-44.29,,25605,14264,percent
+Department of Health and Human Services,PO,FY2019Q2,volume,3116.0,1737.0,-44.26,,3116,1737,percent
+Department of Agriculture,IDV,FY2020Q3,volume,952.0,1372.0,44.12,,952,1372,percent
+Agency for International Development,PO,FY2009Q1,volume,365.0,204.0,-44.11,,365,204,percent
+Department of Justice,IDV,FY2011Q3,volume,498.0,279.0,-43.98,,498,279,percent
+Department of Agriculture,DEF,FY2010Q2,volume,855.0,1230.0,43.86,,855,1230,percent
+Department of the Interior,IDV,FY2010Q3,volume,477.0,268.0,-43.82,,477,268,percent
+Department of Health and Human Services,IDV,FY2010Q3,volume,434.0,244.0,-43.78,,434,244,percent
+Department of Veterans Affairs,PO,FY2012Q3,volume,21329.0,12026.0,-43.62,,21329,12026,percent
+Department of Agriculture,IDV,FY2015Q1,volume,349.0,500.0,43.27,,349,500,percent
+Department of the Interior,DEF,FY2011Q2,volume,472.0,268.0,-43.22,,472,268,percent
+Department of Transportation,PO,FY2019Q1,volume,575.0,328.0,-42.96,,575,328,percent
+Department of Health and Human Services,IDV,FY2020Q3,volume,326.0,466.0,42.94,,326,466,percent
+Department of Health and Human Services,IDV,FY2009Q4,volume,457.0,652.0,42.67,,457,652,percent
+Department of Agriculture,IDV,FY2011Q4,volume,804.0,1146.0,42.54,,804,1146,percent
+General Services Administration,IDV,FY2021Q4,volume,1220.0,703.0,-42.38,,1220,703,percent
+General Services Administration,IDV,FY2018Q3,volume,1140.0,658.0,-42.28,,1140,658,percent
+Department of Agriculture,DEF,FY2011Q2,volume,1230.0,712.0,-42.11,,1230,712,percent
+Department of State,IDV,FY2010Q4,volume,389.0,552.0,41.9,,389,552,percent
+Department of Veterans Affairs,PO,FY2012Q1,volume,31693.0,18427.0,-41.86,,31693,18427,percent
+Department of State,IDV,FY2015Q2,volume,1208.0,1711.0,41.64,,1208,1711,percent
+Department of the Interior,PO,FY2019Q2,volume,1963.0,1146.0,-41.62,,1963,1146,percent
+Department of Agriculture,PO,FY2019Q2,volume,2669.0,1560.0,-41.55,,2669,1560,percent
+Department of the Interior,IDV,FY2009Q3,volume,337.0,477.0,41.54,,337,477,percent
+Department of Veterans Affairs,DEF,FY2021Q1,volume,709.0,415.0,-41.47,,709,415,percent
+Department of Veterans Affairs,IDV,FY2020Q4,volume,706.0,998.0,41.36,,706,998,percent
+Department of Energy,PO,FY2018Q4,volume,482.0,283.0,-41.29,,482,283,percent
+Department of Agriculture,DEF,FY2016Q2,volume,665.0,936.0,40.75,,665,936,percent
+Department of Health and Human Services,IDV,FY2018Q2,volume,413.0,245.0,-40.68,,413,245,percent
+Environmental Protection Agency,PO,FY2018Q4,volume,352.0,209.0,-40.62,,352,209,percent
+General Services Administration,IDV,FY2017Q1,volume,458.0,644.0,40.61,,458,644,percent
+Department of Labor,PO,FY2011Q1,volume,633.0,376.0,-40.6,,633,376,percent
+National Aeronautics and Space Administration,PO,FY2009Q1,volume,631.0,376.0,-40.41,,631,376,percent
+Department of State,IDV,FY2016Q2,volume,1711.0,1023.0,-40.21,,1711,1023,percent
+Department of Agriculture,IDV,FY2012Q3,volume,1833.0,1096.0,-40.21,,1833,1096,percent
+Department of Health and Human Services,PO,FY2015Q1,volume,1884.0,2641.0,40.18,,1884,2641,percent

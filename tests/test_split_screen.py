@@ -94,14 +94,45 @@ class ThresholdTests(unittest.TestCase):
     def test_thresholds_by_date(self):
         adopt = ss.load_adoption()
         ag = ["Department of Veterans Affairs", "Department of Justice", "Department of Justice", "Department of Defense",
-              "Department of Defense", "Department of Defense", "Department of Justice", "Department of Justice"]
+              "Department of Defense", "Department of Defense", "Department of Justice", "Department of Justice",
+              "Department of Defense", "Department of Defense", "General Services Administration", "General Services Administration"]
         dates = np.array(["2018-04-01", "2018-04-01", "2020-09-01", "2018-05-01", "2018-09-01", "2025-11-01", "2010-09-30",
-                          "2025-10-01"], dtype="datetime64[D]")
+                          "2025-10-01", "2017-08-01", "2018-04-12", "2020-08-30", "2020-08-31"], dtype="datetime64[D]")
         dod = np.array([a == "Department of Defense" for a in ag])
         sat = ss.thresholds_at("SAT", ag, dates, dod, adopt)
         mpt = ss.thresholds_at("MPT", ag, dates, dod, adopt)
-        np.testing.assert_array_equal(sat, [250_000, 150_000, 250_000, 250_000, 250_000, 350_000, 100_000, 350_000])
-        np.testing.assert_array_equal(mpt, [10_000, 3_500, 10_000, 5_000, 10_000, 10_000, 3_000, 15_000])
+        np.testing.assert_array_equal(sat, [250_000, 150_000, 250_000, 250_000, 250_000, 350_000, 100_000, 350_000,
+                                            150_000, 150_000, 150_000, 250_000])
+        # reference/thresholds.csv: DoD at $5,000 from 2017-07-13, $10,000 from 2018-08-31, $15,000 from 2025-10-01 (as civilian)
+        np.testing.assert_array_equal(mpt, [10_000, 3_500, 10_000, 5_000, 10_000, 15_000, 3_000, 15_000,
+                                            5_000, 5_000, 3_500, 10_000])
+
+    def test_thresholds_come_from_the_reference_files(self):
+        self.assertIn("reference/thresholds.csv", ss.THRESHOLDS_SOURCE)
+        rows, far = ss.read_thresholds()
+        self.assertEqual(rows, ss.THRESHOLDS)
+        self.assertEqual(far, "2020-08-31")
+        self.assertEqual(rows, ss.FALLBACK_THRESHOLDS)              # the fallback is kept in step with the files
+        self.assertIn(("SAT", 250_000, "adoption", "civilian"), rows)
+        self.assertIn(("MPT", 15_000, "2025-10-01", "dod"), rows)
+
+    def test_reference_values_change_the_lines(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ref = os.path.join(os.path.dirname(SCRIPTS), "reference")
+            t = pd.read_csv(os.path.join(ref, "thresholds.csv"), dtype=str)
+            t.loc[(t.threshold == "simplified_acquisition") & (pd.to_numeric(t.value_usd) == 350_000), "effective_date"] = "2025-11-15"
+            p = os.path.join(tmp, "thresholds.csv")
+            t.to_csv(p, index=False)
+            rows, far = ss.read_thresholds(p)
+            T = ss.thresholds_at("SAT", ["Department of Justice"] * 2, np.array(["2025-11-01", "2025-11-15"], dtype="datetime64[D]"),
+                                 [False, False], ss.load_adoption(), table=rows, far_date=far)
+            np.testing.assert_array_equal(T, [250_000, 350_000])
+
+    def test_fallback_when_files_are_missing(self):
+        rows, far, source = ss.load_thresholds(path=os.path.join(SCRIPTS, "no_such_file.csv"))
+        self.assertEqual(rows, ss.FALLBACK_THRESHOLDS)
+        self.assertEqual(far, ss.FALLBACK_FAR_DATE)
+        self.assertIn("fallback", source)
 
     def test_placebo_fit_recovers_smooth_curve(self):
         m = np.array(ss.MULTIPLES)

@@ -1,6 +1,8 @@
 """Offline test for scripts/16_quality_monitor.py with a small synthetic table (no files from data/)."""
 import importlib.util
+import json
 import os
+import tempfile
 import unittest
 
 import numpy as np
@@ -46,6 +48,62 @@ class QualityMonitorTests(unittest.TestCase):
         fl = q16.find_flags(t[~drop], data_end=pd.Timestamp("2025-09-30"))
         v = fl[(fl.metric == "volume") & (fl.agency == "Stable Agency")]
         self.assertEqual(list(v.quarter), ["FY2025Q4"])
+
+
+class HistoryInputTests(unittest.TestCase):
+    """the history tables: awarding_agency_name, several files or a folder, their own output names, separate top lists"""
+    def test_awarding_agency_name_gives_the_same_flags(self):
+        t = make_table()
+        a = q16.find_flags(t)
+        b = q16.find_flags(t.rename(columns={"agency": "awarding_agency_name"}))
+        self.assertTrue(a.equals(b))
+        with self.assertRaises(KeyError):
+            q16.find_flags(t.drop(columns="agency"))
+
+    def test_several_files_equal_one_table(self):
+        t = make_table()
+        h = t.rename(columns={"agency": "awarding_agency_name"})
+        fy = h.action_date.dt.year + (h.action_date.dt.month >= 10)
+        with tempfile.TemporaryDirectory() as d:
+            folder = os.path.join(d, "processed")
+            os.makedirs(folder)
+            for y, g in h.groupby(fy):
+                g.to_parquet(os.path.join(folder, f"base_actions_FY{y}.parquet"), index=False)
+            open(os.path.join(folder, "award_year_FY2024.parquet"), "wb").close()     # other tables in the folder are not read
+            files = q16.input_files([folder])
+            self.assertEqual([os.path.basename(f) for f in files], ["base_actions_FY2024.parquet", "base_actions_FY2025.parquet"])
+            fl, n, end, ags = q16.flags_for_files(files)
+            self.assertEqual(n, len(t))
+            self.assertEqual(ags, {"awarding_agency_name"})
+            self.assertTrue(fl.equals(q16.find_flags(t)))
+            out = os.path.join(d, "results")
+            fl2, summ, name = q16.main(["16_quality_monitor.py", folder], results_dir=out, verbose=False)
+            self.assertEqual(name, "quality_history")
+            self.assertEqual(sorted(os.listdir(out)), ["quality_history_flags.csv", "quality_history_summary.json"])
+            # a snapshot-style table keeps the old names
+            p = os.path.join(d, "snap.parquet")
+            t.to_parquet(p, index=False)
+            self.assertEqual(q16.main(["x", p], results_dir=out, verbose=False)[2], "quality")
+            self.assertTrue(os.path.exists(os.path.join(out, "quality_flags.csv")))
+            self.assertEqual(q16.main(["x", "--prefix", "custom", p], results_dir=out, verbose=False)[2], "custom")
+
+    def test_share_and_volume_flags_are_listed_separately(self):
+        t = make_table()
+        drop = (t.agency == "Stable Agency") & (t.action_date >= "2025-07-01") & (np.arange(len(t)) % 2 == 0)
+        fl = q16.find_flags(t[~drop], data_end=pd.Timestamp("2025-09-30"))
+        self.assertEqual(list(fl.columns)[-1], "unit")
+        self.assertEqual(set(fl[fl.metric == "volume"].unit), {"percent"})
+        self.assertEqual(set(fl[fl.metric != "volume"].unit), {"points"})
+        kinds = list((fl.metric == "volume").astype(int))
+        self.assertEqual(kinds, sorted(kinds))                          # all share flags before all volume flags
+        s = q16.summarize(fl)
+        self.assertTrue(s["top_share_flags"] and s["top_volume_flags"])
+        self.assertTrue(all(f["metric"] != "volume" for f in s["top_share_flags"]))
+        self.assertTrue(all(f["metric"] == "volume" for f in s["top_volume_flags"]))
+        self.assertEqual(s["top_15"], s["top_share_flags"][:15])          # kept for older readers, one unit only
+        self.assertIn("points", s["units"]["share"])
+        self.assertIn("percent", s["units"]["volume"])
+        json.dumps(s, default=float)
 
 
 if __name__ == "__main__":

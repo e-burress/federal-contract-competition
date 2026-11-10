@@ -1,0 +1,1811 @@
+{
+ "what": "Split-like clusters: same company, office and 4-character product code, awards at most 30 days apart, every award at or under the line, total above it. Excess ratio = share of at-or-under-line awards in such clusters at the real line, divided by the share expected from placebo lines (1.0 = no excess). A screening indicator; it cannot tell a prohibited split from legitimate repeat buying.",
+ "years_used": [
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021
+ ],
+ "years_not_present": [
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "universe": [
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2008,
+   "awards": 956910,
+   "clusters": 488190,
+   "multi_award_clusters": 99418
+  },
+  {
+   "sector": "gsa",
+   "fy": 2008,
+   "awards": 23053,
+   "clusters": 8847,
+   "multi_award_clusters": 2260
+  },
+  {
+   "sector": "defense",
+   "fy": 2008,
+   "awards": 332227,
+   "clusters": 246803,
+   "multi_award_clusters": 31699
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2009,
+   "awards": 335334,
+   "clusters": 225435,
+   "multi_award_clusters": 26599
+  },
+  {
+   "sector": "gsa",
+   "fy": 2009,
+   "awards": 33246,
+   "clusters": 8971,
+   "multi_award_clusters": 2364
+  },
+  {
+   "sector": "defense",
+   "fy": 2009,
+   "awards": 351660,
+   "clusters": 246629,
+   "multi_award_clusters": 33273
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2010,
+   "awards": 317787,
+   "clusters": 234422,
+   "multi_award_clusters": 28149
+  },
+  {
+   "sector": "gsa",
+   "fy": 2010,
+   "awards": 36303,
+   "clusters": 9136,
+   "multi_award_clusters": 2306
+  },
+  {
+   "sector": "defense",
+   "fy": 2010,
+   "awards": 328954,
+   "clusters": 230299,
+   "multi_award_clusters": 31615
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2011,
+   "awards": 311076,
+   "clusters": 221225,
+   "multi_award_clusters": 29868
+  },
+  {
+   "sector": "gsa",
+   "fy": 2011,
+   "awards": 35018,
+   "clusters": 8001,
+   "multi_award_clusters": 1979
+  },
+  {
+   "sector": "defense",
+   "fy": 2011,
+   "awards": 321767,
+   "clusters": 222484,
+   "multi_award_clusters": 30520
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2012,
+   "awards": 260515,
+   "clusters": 191282,
+   "multi_award_clusters": 24133
+  },
+  {
+   "sector": "gsa",
+   "fy": 2012,
+   "awards": 151045,
+   "clusters": 6820,
+   "multi_award_clusters": 1708
+  },
+  {
+   "sector": "defense",
+   "fy": 2012,
+   "awards": 305364,
+   "clusters": 201482,
+   "multi_award_clusters": 27827
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2013,
+   "awards": 245568,
+   "clusters": 175709,
+   "multi_award_clusters": 23180
+  },
+  {
+   "sector": "gsa",
+   "fy": 2013,
+   "awards": 7372,
+   "clusters": 4459,
+   "multi_award_clusters": 665
+  },
+  {
+   "sector": "defense",
+   "fy": 2013,
+   "awards": 284985,
+   "clusters": 186886,
+   "multi_award_clusters": 26912
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2014,
+   "awards": 239780,
+   "clusters": 175401,
+   "multi_award_clusters": 22454
+  },
+  {
+   "sector": "gsa",
+   "fy": 2014,
+   "awards": 8214,
+   "clusters": 4158,
+   "multi_award_clusters": 612
+  },
+  {
+   "sector": "defense",
+   "fy": 2014,
+   "awards": 272867,
+   "clusters": 190595,
+   "multi_award_clusters": 27325
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2015,
+   "awards": 245383,
+   "clusters": 172668,
+   "multi_award_clusters": 21912
+  },
+  {
+   "sector": "gsa",
+   "fy": 2015,
+   "awards": 5907,
+   "clusters": 3953,
+   "multi_award_clusters": 541
+  },
+  {
+   "sector": "defense",
+   "fy": 2015,
+   "awards": 408673,
+   "clusters": 255973,
+   "multi_award_clusters": 47948
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2016,
+   "awards": 250927,
+   "clusters": 169421,
+   "multi_award_clusters": 21178
+  },
+  {
+   "sector": "gsa",
+   "fy": 2016,
+   "awards": 5005,
+   "clusters": 3731,
+   "multi_award_clusters": 531
+  },
+  {
+   "sector": "defense",
+   "fy": 2016,
+   "awards": 467399,
+   "clusters": 264190,
+   "multi_award_clusters": 53427
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2017,
+   "awards": 227574,
+   "clusters": 164101,
+   "multi_award_clusters": 20425
+  },
+  {
+   "sector": "gsa",
+   "fy": 2017,
+   "awards": 9792,
+   "clusters": 7274,
+   "multi_award_clusters": 1114
+  },
+  {
+   "sector": "defense",
+   "fy": 2017,
+   "awards": 468532,
+   "clusters": 248231,
+   "multi_award_clusters": 50427
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2018,
+   "awards": 190428,
+   "clusters": 138585,
+   "multi_award_clusters": 16081
+  },
+  {
+   "sector": "gsa",
+   "fy": 2018,
+   "awards": 8477,
+   "clusters": 6218,
+   "multi_award_clusters": 1106
+  },
+  {
+   "sector": "defense",
+   "fy": 2018,
+   "awards": 466112,
+   "clusters": 246658,
+   "multi_award_clusters": 52851
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2019,
+   "awards": 132222,
+   "clusters": 101193,
+   "multi_award_clusters": 10743
+  },
+  {
+   "sector": "gsa",
+   "fy": 2019,
+   "awards": 23540,
+   "clusters": 5898,
+   "multi_award_clusters": 1415
+  },
+  {
+   "sector": "defense",
+   "fy": 2019,
+   "awards": 490610,
+   "clusters": 217591,
+   "multi_award_clusters": 47259
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2020,
+   "awards": 118183,
+   "clusters": 95196,
+   "multi_award_clusters": 9325
+  },
+  {
+   "sector": "gsa",
+   "fy": 2020,
+   "awards": 35163,
+   "clusters": 5376,
+   "multi_award_clusters": 1421
+  },
+  {
+   "sector": "defense",
+   "fy": 2020,
+   "awards": 515483,
+   "clusters": 193213,
+   "multi_award_clusters": 41316
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2021,
+   "awards": 125604,
+   "clusters": 91539,
+   "multi_award_clusters": 8979
+  },
+  {
+   "sector": "gsa",
+   "fy": 2021,
+   "awards": 240212,
+   "clusters": 5580,
+   "multi_award_clusters": 1492
+  },
+  {
+   "sector": "defense",
+   "fy": 2021,
+   "awards": 628057,
+   "clusters": 180803,
+   "multi_award_clusters": 40012
+  }
+ ],
+ "design": {
+  "gap_days": 30,
+  "multiples": [
+   0.5,
+   0.6,
+   0.7,
+   0.8,
+   1.0,
+   1.25,
+   1.4,
+   1.6,
+   2.0
+  ],
+  "donut_cap": 0.9,
+  "near_other_line": 1.08,
+  "bootstrap": 200,
+  "bootstrap_unit": "company within sector and fiscal year",
+  "baseline": "straight line in log(share) on log(multiple)",
+  "thresholds": [
+   {
+    "kind": "SAT",
+    "dollars": 100000,
+    "start": "1900-01-01",
+    "scope": "all"
+   },
+   {
+    "kind": "SAT",
+    "dollars": 150000,
+    "start": "2010-10-01",
+    "scope": "civilian"
+   },
+   {
+    "kind": "SAT",
+    "dollars": 150000,
+    "start": "2010-10-01",
+    "scope": "dod"
+   },
+   {
+    "kind": "SAT",
+    "dollars": 250000,
+    "start": "2018-04-13",
+    "scope": "dod"
+   },
+   {
+    "kind": "SAT",
+    "dollars": 250000,
+    "start": "adoption",
+    "scope": "civilian"
+   },
+   {
+    "kind": "SAT",
+    "dollars": 350000,
+    "start": "2025-10-01",
+    "scope": "all"
+   },
+   {
+    "kind": "MPT",
+    "dollars": 2500,
+    "start": "1900-01-01",
+    "scope": "all"
+   },
+   {
+    "kind": "MPT",
+    "dollars": 3000,
+    "start": "2006-09-28",
+    "scope": "all"
+   },
+   {
+    "kind": "MPT",
+    "dollars": 3500,
+    "start": "2015-10-01",
+    "scope": "civilian"
+   },
+   {
+    "kind": "MPT",
+    "dollars": 3500,
+    "start": "2015-10-01",
+    "scope": "dod"
+   },
+   {
+    "kind": "MPT",
+    "dollars": 5000,
+    "start": "2017-07-13",
+    "scope": "dod"
+   },
+   {
+    "kind": "MPT",
+    "dollars": 10000,
+    "start": "2018-08-31",
+    "scope": "dod"
+   },
+   {
+    "kind": "MPT",
+    "dollars": 10000,
+    "start": "adoption",
+    "scope": "civilian"
+   },
+   {
+    "kind": "MPT",
+    "dollars": 15000,
+    "start": "2025-10-01",
+    "scope": "civilian"
+   },
+   {
+    "kind": "MPT",
+    "dollars": 15000,
+    "start": "2025-10-01",
+    "scope": "dod"
+   }
+  ],
+  "thresholds_source": "reference/thresholds.csv and reference/threshold_adoption_2018.csv",
+  "far_rule_date": "2020-08-31"
+ },
+ "excess_ratio_pooled": {
+  "civilian_ex_gsa|SAT|all": {
+   "ratio": 1.068,
+   "ci_lo": 1.046,
+   "ci_hi": 1.106,
+   "years": 14,
+   "actual_awards": 357094,
+   "expected_awards": 334363.1
+  },
+  "civilian_ex_gsa|SAT|donut": {
+   "ratio": 1.044,
+   "ci_lo": 1.021,
+   "ci_hi": 1.089,
+   "years": 14,
+   "actual_awards": 337764,
+   "expected_awards": 323613.9
+  },
+  "civilian_ex_gsa|MPT|all": {
+   "ratio": 1.245,
+   "ci_lo": 1.225,
+   "ci_hi": 1.27,
+   "years": 14,
+   "actual_awards": 276868,
+   "expected_awards": 222304.1
+  },
+  "civilian_ex_gsa|MPT|donut": {
+   "ratio": 1.076,
+   "ci_lo": 1.059,
+   "ci_hi": 1.1,
+   "years": 14,
+   "actual_awards": 216327,
+   "expected_awards": 201036.9
+  },
+  "gsa|SAT|all": {
+   "ratio": 1.078,
+   "ci_lo": 1.036,
+   "ci_hi": 1.135,
+   "years": 14,
+   "actual_awards": 368992,
+   "expected_awards": 342392.7
+  },
+  "gsa|SAT|donut": {
+   "ratio": 1.081,
+   "ci_lo": 1.04,
+   "ci_hi": 1.143,
+   "years": 14,
+   "actual_awards": 362322,
+   "expected_awards": 335029.0
+  },
+  "gsa|MPT|all": {
+   "ratio": 1.06,
+   "ci_lo": 0.945,
+   "ci_hi": 1.153,
+   "years": 12,
+   "actual_awards": 75925,
+   "expected_awards": 71624.9
+  },
+  "gsa|MPT|donut": {
+   "ratio": 1.0,
+   "ci_lo": 0.909,
+   "ci_hi": 1.088,
+   "years": 11,
+   "actual_awards": 65185,
+   "expected_awards": 65214.4
+  },
+  "defense|SAT|all": {
+   "ratio": 1.126,
+   "ci_lo": 1.104,
+   "ci_hi": 1.147,
+   "years": 14,
+   "actual_awards": 870151,
+   "expected_awards": 772462.3
+  },
+  "defense|SAT|donut": {
+   "ratio": 1.039,
+   "ci_lo": 1.021,
+   "ci_hi": 1.062,
+   "years": 14,
+   "actual_awards": 759494,
+   "expected_awards": 730720.7
+  },
+  "defense|MPT|all": {
+   "ratio": 1.058,
+   "ci_lo": 1.045,
+   "ci_hi": 1.07,
+   "years": 14,
+   "actual_awards": 230781,
+   "expected_awards": 218026.8
+  },
+  "defense|MPT|donut": {
+   "ratio": 1.015,
+   "ci_lo": 1.002,
+   "ci_hi": 1.03,
+   "years": 14,
+   "actual_awards": 187796,
+   "expected_awards": 184949.0
+  }
+ },
+ "natural_experiment": [
+  {
+   "threshold_type": "SAT",
+   "old_line": 100000,
+   "new_line": 150000,
+   "change_label": "FY2011",
+   "sector": "civilian_ex_gsa",
+   "variant": "all",
+   "before_years": [
+    2008,
+    2010
+   ],
+   "after_years": [
+    2011,
+    2013
+   ],
+   "before": {
+    "ratio": 1.076,
+    "ci_lo": 0.96,
+    "ci_hi": 1.214,
+    "years": 3,
+    "actual_awards": 41598,
+    "expected_awards": 38651.5
+   },
+   "after": {
+    "ratio": 0.971,
+    "ci_lo": 0.918,
+    "ci_hi": 1.022,
+    "years": 3,
+    "actual_awards": 19383,
+    "expected_awards": 19970.1
+   },
+   "after_minus_before": {
+    "change": -0.105,
+    "ci_lo": -0.271,
+    "ci_hi": 0.033
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 100000,
+   "new_line": 150000,
+   "change_label": "FY2011",
+   "sector": "civilian_ex_gsa",
+   "variant": "donut",
+   "before_years": [
+    2008,
+    2010
+   ],
+   "after_years": [
+    2011,
+    2013
+   ],
+   "before": {
+    "ratio": 1.07,
+    "ci_lo": 0.952,
+    "ci_hi": 1.208,
+    "years": 3,
+    "actual_awards": 40700,
+    "expected_awards": 38053.1
+   },
+   "after": {
+    "ratio": 0.959,
+    "ci_lo": 0.905,
+    "ci_hi": 1.009,
+    "years": 3,
+    "actual_awards": 18460,
+    "expected_awards": 19239.5
+   },
+   "after_minus_before": {
+    "change": -0.111,
+    "ci_lo": -0.28,
+    "ci_hi": 0.031
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 100000,
+   "new_line": 150000,
+   "change_label": "FY2011",
+   "sector": "gsa",
+   "variant": "all",
+   "before_years": [
+    2008,
+    2010
+   ],
+   "after_years": [
+    2011,
+    2013
+   ],
+   "before": {
+    "ratio": 1.437,
+    "ci_lo": 0.948,
+    "ci_hi": 2.45,
+    "years": 3,
+    "actual_awards": 5520,
+    "expected_awards": 3840.2
+   },
+   "after": {
+    "ratio": 1.165,
+    "ci_lo": 0.627,
+    "ci_hi": 1.929,
+    "years": 3,
+    "actual_awards": 7517,
+    "expected_awards": 6451.1
+   },
+   "after_minus_before": {
+    "change": -0.272,
+    "ci_lo": -1.484,
+    "ci_hi": 0.562
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 100000,
+   "new_line": 150000,
+   "change_label": "FY2011",
+   "sector": "gsa",
+   "variant": "donut",
+   "before_years": [
+    2008,
+    2010
+   ],
+   "after_years": [
+    2011,
+    2013
+   ],
+   "before": {
+    "ratio": 1.416,
+    "ci_lo": 0.92,
+    "ci_hi": 2.469,
+    "years": 3,
+    "actual_awards": 5360,
+    "expected_awards": 3784.3
+   },
+   "after": {
+    "ratio": 1.164,
+    "ci_lo": 0.628,
+    "ci_hi": 1.936,
+    "years": 3,
+    "actual_awards": 7466,
+    "expected_awards": 6411.5
+   },
+   "after_minus_before": {
+    "change": -0.252,
+    "ci_lo": -1.494,
+    "ci_hi": 0.605
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 100000,
+   "new_line": 150000,
+   "change_label": "FY2011",
+   "sector": "defense",
+   "variant": "all",
+   "before_years": [
+    2008,
+    2010
+   ],
+   "after_years": [
+    2011,
+    2013
+   ],
+   "before": {
+    "ratio": 1.091,
+    "ci_lo": 1.055,
+    "ci_hi": 1.124,
+    "years": 3,
+    "actual_awards": 27098,
+    "expected_awards": 24839.1
+   },
+   "after": {
+    "ratio": 1.023,
+    "ci_lo": 0.988,
+    "ci_hi": 1.066,
+    "years": 3,
+    "actual_awards": 24984,
+    "expected_awards": 24423.2
+   },
+   "after_minus_before": {
+    "change": -0.068,
+    "ci_lo": -0.122,
+    "ci_hi": -0.015
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 100000,
+   "new_line": 150000,
+   "change_label": "FY2011",
+   "sector": "defense",
+   "variant": "donut",
+   "before_years": [
+    2008,
+    2010
+   ],
+   "after_years": [
+    2011,
+    2013
+   ],
+   "before": {
+    "ratio": 1.031,
+    "ci_lo": 0.995,
+    "ci_hi": 1.066,
+    "years": 3,
+    "actual_awards": 24117,
+    "expected_awards": 23398.3
+   },
+   "after": {
+    "ratio": 0.997,
+    "ci_lo": 0.961,
+    "ci_hi": 1.043,
+    "years": 3,
+    "actual_awards": 22944,
+    "expected_awards": 23007.3
+   },
+   "after_minus_before": {
+    "change": -0.034,
+    "ci_lo": -0.091,
+    "ci_hi": 0.02
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 150000,
+   "new_line": 250000,
+   "change_label": "2018-2020",
+   "sector": "civilian_ex_gsa",
+   "variant": "all",
+   "before_years": [
+    2015,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.049,
+    "ci_lo": 0.998,
+    "ci_hi": 1.1,
+    "years": 3,
+    "actual_awards": 20462,
+    "expected_awards": 19502.6
+   },
+   "after": {
+    "ratio": 0.973,
+    "ci_lo": 0.871,
+    "ci_hi": 1.103,
+    "years": 1,
+    "actual_awards": 2800,
+    "expected_awards": 2878.3
+   },
+   "after_minus_before": {
+    "change": -0.076,
+    "ci_lo": -0.191,
+    "ci_hi": 0.052
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 150000,
+   "new_line": 250000,
+   "change_label": "2018-2020",
+   "sector": "civilian_ex_gsa",
+   "variant": "donut",
+   "before_years": [
+    2015,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.032,
+    "ci_lo": 0.976,
+    "ci_hi": 1.088,
+    "years": 3,
+    "actual_awards": 19514,
+    "expected_awards": 18913.5
+   },
+   "after": {
+    "ratio": 0.95,
+    "ci_lo": 0.847,
+    "ci_hi": 1.095,
+    "years": 1,
+    "actual_awards": 2576,
+    "expected_awards": 2710.4
+   },
+   "after_minus_before": {
+    "change": -0.082,
+    "ci_lo": -0.199,
+    "ci_hi": 0.054
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 150000,
+   "new_line": 250000,
+   "change_label": "2018-2020",
+   "sector": "gsa",
+   "variant": "all",
+   "before_years": [
+    2015,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.204,
+    "ci_lo": 0.907,
+    "ci_hi": 1.588,
+    "years": 3,
+    "actual_awards": 444,
+    "expected_awards": 368.8
+   },
+   "after": {
+    "ratio": 0.639,
+    "ci_lo": 0.321,
+    "ci_hi": 1.026,
+    "years": 1,
+    "actual_awards": 6508,
+    "expected_awards": 10179.0
+   },
+   "after_minus_before": {
+    "change": -0.565,
+    "ci_lo": -1.139,
+    "ci_hi": -0.033
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 150000,
+   "new_line": 250000,
+   "change_label": "2018-2020",
+   "sector": "gsa",
+   "variant": "donut",
+   "before_years": [
+    2015,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.253,
+    "ci_lo": 0.921,
+    "ci_hi": 1.706,
+    "years": 3,
+    "actual_awards": 419,
+    "expected_awards": 334.5
+   },
+   "after": {
+    "ratio": 0.638,
+    "ci_lo": 0.319,
+    "ci_hi": 1.024,
+    "years": 1,
+    "actual_awards": 6493,
+    "expected_awards": 10174.3
+   },
+   "after_minus_before": {
+    "change": -0.615,
+    "ci_lo": -1.201,
+    "ci_hi": -0.092
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 150000,
+   "new_line": 250000,
+   "change_label": "2018-2020",
+   "sector": "defense",
+   "variant": "all",
+   "before_years": [
+    2015,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.052,
+    "ci_lo": 0.981,
+    "ci_hi": 1.125,
+    "years": 3,
+    "actual_awards": 47967,
+    "expected_awards": 45602.6
+   },
+   "after": {
+    "ratio": 1.031,
+    "ci_lo": 0.851,
+    "ci_hi": 1.228,
+    "years": 1,
+    "actual_awards": 23421,
+    "expected_awards": 22707.2
+   },
+   "after_minus_before": {
+    "change": -0.021,
+    "ci_lo": -0.208,
+    "ci_hi": 0.189
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 150000,
+   "new_line": 250000,
+   "change_label": "2018-2020",
+   "sector": "defense",
+   "variant": "donut",
+   "before_years": [
+    2015,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.013,
+    "ci_lo": 0.94,
+    "ci_hi": 1.085,
+    "years": 3,
+    "actual_awards": 44878,
+    "expected_awards": 44300.7
+   },
+   "after": {
+    "ratio": 1.034,
+    "ci_lo": 0.85,
+    "ci_hi": 1.233,
+    "years": 1,
+    "actual_awards": 23009,
+    "expected_awards": 22248.5
+   },
+   "after_minus_before": {
+    "change": 0.021,
+    "ci_lo": -0.172,
+    "ci_hi": 0.237
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 250000,
+   "new_line": 350000,
+   "change_label": "FY2026",
+   "sector": "civilian_ex_gsa",
+   "variant": "all",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 250000,
+   "new_line": 350000,
+   "change_label": "FY2026",
+   "sector": "civilian_ex_gsa",
+   "variant": "donut",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 250000,
+   "new_line": 350000,
+   "change_label": "FY2026",
+   "sector": "gsa",
+   "variant": "all",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 250000,
+   "new_line": 350000,
+   "change_label": "FY2026",
+   "sector": "gsa",
+   "variant": "donut",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 250000,
+   "new_line": 350000,
+   "change_label": "FY2026",
+   "sector": "defense",
+   "variant": "all",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 250000,
+   "new_line": 350000,
+   "change_label": "FY2026",
+   "sector": "defense",
+   "variant": "donut",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3000,
+   "new_line": 3500,
+   "change_label": "FY2016",
+   "sector": "civilian_ex_gsa",
+   "variant": "all",
+   "before_years": [
+    2013,
+    2015
+   ],
+   "after_years": [
+    2016,
+    2017
+   ],
+   "before": {
+    "ratio": 1.101,
+    "ci_lo": 0.969,
+    "ci_hi": 1.287,
+    "years": 3,
+    "actual_awards": 1196,
+    "expected_awards": 1086.0
+   },
+   "after": {
+    "ratio": 1.245,
+    "ci_lo": 1.048,
+    "ci_hi": 1.552,
+    "years": 2,
+    "actual_awards": 630,
+    "expected_awards": 505.9
+   },
+   "after_minus_before": {
+    "change": 0.144,
+    "ci_lo": -0.1,
+    "ci_hi": 0.464
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3000,
+   "new_line": 3500,
+   "change_label": "FY2016",
+   "sector": "civilian_ex_gsa",
+   "variant": "donut",
+   "before_years": [
+    2013,
+    2015
+   ],
+   "after_years": [
+    2016,
+    2017
+   ],
+   "before": {
+    "ratio": 1.072,
+    "ci_lo": 0.934,
+    "ci_hi": 1.247,
+    "years": 3,
+    "actual_awards": 1113,
+    "expected_awards": 1038.0
+   },
+   "after": {
+    "ratio": 1.234,
+    "ci_lo": 1.036,
+    "ci_hi": 1.558,
+    "years": 2,
+    "actual_awards": 594,
+    "expected_awards": 481.4
+   },
+   "after_minus_before": {
+    "change": 0.162,
+    "ci_lo": -0.091,
+    "ci_hi": 0.485
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3000,
+   "new_line": 3500,
+   "change_label": "FY2016",
+   "sector": "gsa",
+   "variant": "all",
+   "before_years": [
+    2013,
+    2015
+   ],
+   "after_years": [
+    2016,
+    2017
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3000,
+   "new_line": 3500,
+   "change_label": "FY2016",
+   "sector": "gsa",
+   "variant": "donut",
+   "before_years": [
+    2013,
+    2015
+   ],
+   "after_years": [
+    2016,
+    2017
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3000,
+   "new_line": 3500,
+   "change_label": "FY2016",
+   "sector": "defense",
+   "variant": "all",
+   "before_years": [
+    2013,
+    2015
+   ],
+   "after_years": [
+    2016,
+    2017
+   ],
+   "before": {
+    "ratio": 1.159,
+    "ci_lo": 1.071,
+    "ci_hi": 1.256,
+    "years": 3,
+    "actual_awards": 3630,
+    "expected_awards": 3131.5
+   },
+   "after": {
+    "ratio": 1.037,
+    "ci_lo": 0.978,
+    "ci_hi": 1.092,
+    "years": 2,
+    "actual_awards": 7520,
+    "expected_awards": 7250.3
+   },
+   "after_minus_before": {
+    "change": -0.122,
+    "ci_lo": -0.234,
+    "ci_hi": -0.015
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3000,
+   "new_line": 3500,
+   "change_label": "FY2016",
+   "sector": "defense",
+   "variant": "donut",
+   "before_years": [
+    2013,
+    2015
+   ],
+   "after_years": [
+    2016,
+    2017
+   ],
+   "before": {
+    "ratio": 1.159,
+    "ci_lo": 1.065,
+    "ci_hi": 1.261,
+    "years": 3,
+    "actual_awards": 3311,
+    "expected_awards": 2856.5
+   },
+   "after": {
+    "ratio": 1.012,
+    "ci_lo": 0.951,
+    "ci_hi": 1.078,
+    "years": 2,
+    "actual_awards": 6761,
+    "expected_awards": 6678.7
+   },
+   "after_minus_before": {
+    "change": -0.147,
+    "ci_lo": -0.267,
+    "ci_hi": -0.04
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3500,
+   "new_line": 10000,
+   "change_label": "2018-2020",
+   "sector": "civilian_ex_gsa",
+   "variant": "all",
+   "before_years": [
+    2016,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.055,
+    "ci_lo": 0.98,
+    "ci_hi": 1.118,
+    "years": 2,
+    "actual_awards": 4651,
+    "expected_awards": 4409.4
+   },
+   "after": {
+    "ratio": 0.859,
+    "ci_lo": 0.706,
+    "ci_hi": 1.077,
+    "years": 1,
+    "actual_awards": 312,
+    "expected_awards": 363.0
+   },
+   "after_minus_before": {
+    "change": -0.196,
+    "ci_lo": -0.373,
+    "ci_hi": 0.047
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3500,
+   "new_line": 10000,
+   "change_label": "2018-2020",
+   "sector": "civilian_ex_gsa",
+   "variant": "donut",
+   "before_years": [
+    2016,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.038,
+    "ci_lo": 0.954,
+    "ci_hi": 1.11,
+    "years": 2,
+    "actual_awards": 3868,
+    "expected_awards": 3728.0
+   },
+   "after": {
+    "ratio": 0.869,
+    "ci_lo": 0.698,
+    "ci_hi": 1.134,
+    "years": 1,
+    "actual_awards": 268,
+    "expected_awards": 308.3
+   },
+   "after_minus_before": {
+    "change": -0.169,
+    "ci_lo": -0.366,
+    "ci_hi": 0.116
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3500,
+   "new_line": 10000,
+   "change_label": "2018-2020",
+   "sector": "gsa",
+   "variant": "all",
+   "before_years": [
+    2016,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.033,
+    "ci_lo": 0.525,
+    "ci_hi": 1.468,
+    "years": 1,
+    "actual_awards": 159,
+    "expected_awards": 153.9
+   },
+   "after": {
+    "ratio": 0.982,
+    "ci_lo": 0.764,
+    "ci_hi": 1.285,
+    "years": 1,
+    "actual_awards": 2110,
+    "expected_awards": 2148.0
+   },
+   "after_minus_before": {
+    "change": -0.051,
+    "ci_lo": -0.499,
+    "ci_hi": 0.588
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3500,
+   "new_line": 10000,
+   "change_label": "2018-2020",
+   "sector": "gsa",
+   "variant": "donut",
+   "before_years": [
+    2016,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 0.568,
+    "ci_lo": 0.262,
+    "ci_hi": 0.95,
+    "years": 1,
+    "actual_awards": 74,
+    "expected_awards": 130.4
+   },
+   "after": {
+    "ratio": 0.966,
+    "ci_lo": 0.741,
+    "ci_hi": 1.236,
+    "years": 1,
+    "actual_awards": 1965,
+    "expected_awards": 2033.2
+   },
+   "after_minus_before": {
+    "change": 0.398,
+    "ci_lo": -0.023,
+    "ci_hi": 0.833
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3500,
+   "new_line": 10000,
+   "change_label": "2018-2020",
+   "sector": "defense",
+   "variant": "all",
+   "before_years": [
+    2016,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.048,
+    "ci_lo": 1.02,
+    "ci_hi": 1.074,
+    "years": 2,
+    "actual_awards": 41456,
+    "expected_awards": 39575.7
+   },
+   "after": {
+    "ratio": 0.999,
+    "ci_lo": 0.964,
+    "ci_hi": 1.034,
+    "years": 1,
+    "actual_awards": 16545,
+    "expected_awards": 16558.6
+   },
+   "after_minus_before": {
+    "change": -0.049,
+    "ci_lo": -0.09,
+    "ci_hi": -0.007
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 3500,
+   "new_line": 10000,
+   "change_label": "2018-2020",
+   "sector": "defense",
+   "variant": "donut",
+   "before_years": [
+    2016,
+    2017
+   ],
+   "after_years": [
+    2021,
+    2023
+   ],
+   "before": {
+    "ratio": 1.019,
+    "ci_lo": 0.994,
+    "ci_hi": 1.047,
+    "years": 2,
+    "actual_awards": 35134,
+    "expected_awards": 34471.3
+   },
+   "after": {
+    "ratio": 0.986,
+    "ci_lo": 0.95,
+    "ci_hi": 1.027,
+    "years": 1,
+    "actual_awards": 14255,
+    "expected_awards": 14464.7
+   },
+   "after_minus_before": {
+    "change": -0.033,
+    "ci_lo": -0.08,
+    "ci_hi": 0.013
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 10000,
+   "new_line": 15000,
+   "change_label": "FY2026",
+   "sector": "civilian_ex_gsa",
+   "variant": "all",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 10000,
+   "new_line": 15000,
+   "change_label": "FY2026",
+   "sector": "civilian_ex_gsa",
+   "variant": "donut",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 10000,
+   "new_line": 15000,
+   "change_label": "FY2026",
+   "sector": "gsa",
+   "variant": "all",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 10000,
+   "new_line": 15000,
+   "change_label": "FY2026",
+   "sector": "gsa",
+   "variant": "donut",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 10000,
+   "new_line": 15000,
+   "change_label": "FY2026",
+   "sector": "defense",
+   "variant": "all",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  },
+  {
+   "threshold_type": "MPT",
+   "old_line": 10000,
+   "new_line": 15000,
+   "change_label": "FY2026",
+   "sector": "defense",
+   "variant": "donut",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after": {
+    "ratio": null,
+    "ci_lo": null,
+    "ci_hi": null,
+    "years": 0
+   },
+   "after_minus_before": {
+    "change": null,
+    "ci_lo": null,
+    "ci_hi": null
+   }
+  }
+ ]
+}

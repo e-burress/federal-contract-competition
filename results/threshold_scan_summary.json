@@ -1,0 +1,1322 @@
+{
+ "generated_by": "scripts/27_threshold_scan.py",
+ "fiscal_years_present": [
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021
+ ],
+ "fiscal_years_missing": [
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "method": "Bunching ratio = awards in the four 2%-of-the-line bins just under a line / a cubic Poisson curve fitted outside the bins near any threshold value in force that year or the year before and outside bins holding a multiple of the line's leading power of ten. Window 0.6 to 1.4 times the line. Poisson bootstrap, 200 replicates. Changes: two years before vs two years after (each agency's own date for the 2018 civilian change); DiD = change at the new line minus change at the old line.",
+ "moved": [
+  "micro_purchase defense: $3,500 -> $5,000 (2017-07-13) | DiD +0.10 (+0.04 to +0.16); the old line's pile-up shrank",
+  "simplified_acquisition civilian: $100,000 -> $150,000 (2010-10-01) | DiD +1.04 (+0.90 to +1.20); the new line's pile-up grew and the old one's shrank",
+  "simplified_acquisition defense: $100,000 -> $150,000 (2010-10-01) | DiD +2.71 (+2.58 to +2.84); the new line's pile-up grew and the old one's shrank",
+  "simplified_acquisition defense: $150,000 -> $250,000 (2018-04-13) | DiD +2.88 (+2.70 to +3.05); the new line's pile-up grew and the old one's shrank",
+  "cost_or_pricing_data defense: $700,000 -> $750,000 (2015-10-01) | DiD +0.78 (+0.24 to +1.44); neither side alone is clear",
+  "cost_or_pricing_data defense: $750,000 -> $2,000,000 (2018-07-01) | DiD +0.99 (+0.20 to +2.07); the old line's pile-up shrank",
+  "cost_or_pricing_data all: $700,000 -> $750,000 (2015-10-01) | DiD +0.66 (+0.28 to +1.12); the old line's pile-up shrank",
+  "subcontracting_plan civilian: $550,000 -> $650,000 (2010-10-01) | DiD +0.28 (+0.04 to +0.50); the new line's pile-up grew",
+  "subcontracting_plan defense: $550,000 -> $650,000 (2010-10-01) | DiD +0.36 (+0.17 to +0.56); the new line's pile-up grew",
+  "subcontracting_plan all: $550,000 -> $650,000 (2010-10-01) | DiD +0.33 (+0.19 to +0.48); the new line's pile-up grew",
+  "justification_level1 civilian: $650,000 -> $700,000 (2015-10-01) | DiD +0.51 (+0.03 to +0.99); neither side alone is clear",
+  "justification_level1 defense: $550,000 -> $650,000 (2010-10-01) | DiD +0.61 (+0.28 to +0.94); the new line's pile-up grew",
+  "justification_level1 all: $550,000 -> $650,000 (2010-10-01) | DiD +0.53 (+0.26 to +0.80); the new line's pile-up grew",
+  "8a_competitive_threshold_nonmfg civilian: $3,500,000 -> $4,000,000 (2010-10-01) | DiD +7.21 (+4.30 to +11.50); the new line's pile-up grew and the old one's shrank",
+  "8a_competitive_threshold_nonmfg defense: $3,500,000 -> $4,000,000 (2010-10-01) | DiD +5.59 (+3.71 to +8.27); the new line's pile-up grew and the old one's shrank",
+  "8a_competitive_threshold_nonmfg all: $3,500,000 -> $4,000,000 (2010-10-01) | DiD +6.21 (+4.56 to +8.41); the new line's pile-up grew and the old one's shrank"
+ ],
+ "moved_wrong_way": [
+  "micro_purchase civilian: $3,000 -> $3,500 (2015-10-01) | DiD -1.11 (-1.20 to -1.01); neither side alone is clear",
+  "micro_purchase defense: $3,000 -> $3,500 (2015-10-01) | DiD -0.20 (-0.24 to -0.16); neither side alone is clear"
+ ],
+ "no_clear_move": [
+  "micro_purchase defense: $5,000 -> $10,000 (2018-08-31) | DiD +0.04 (-0.01 to +0.09); the new line's pile-up grew",
+  "cost_or_pricing_data civilian: $650,000 -> $700,000 (2010-10-01) | DiD -0.13 (-0.42 to +0.27); neither side alone is clear",
+  "cost_or_pricing_data civilian: $700,000 -> $750,000 (2015-10-01) | DiD +0.38 (-0.12 to +0.82); neither side alone is clear",
+  "cost_or_pricing_data civilian: $750,000 -> $2,000,000 (2018-07-01) | DiD -0.60 (-1.34 to +0.01); neither side alone is clear",
+  "cost_or_pricing_data defense: $650,000 -> $700,000 (2010-10-01) | DiD -0.01 (-0.30 to +0.30); the new line's pile-up grew",
+  "cost_or_pricing_data all: $650,000 -> $700,000 (2010-10-01) | DiD -0.06 (-0.32 to +0.20); the new line's pile-up grew",
+  "cost_or_pricing_data all: $750,000 -> $2,000,000 (2018-07-01) | DiD +0.35 (-0.21 to +1.02); neither side alone is clear",
+  "commercial_simplified civilian: $5,500,000 -> $6,500,000 (2010-10-01) | DiD +0.39 (-0.20 to +0.96); neither side alone is clear",
+  "commercial_simplified civilian: $6,500,000 -> $7,000,000 (2015-10-01) | DiD +0.00 (-0.61 to +0.85); neither side alone is clear",
+  "commercial_simplified defense: $5,500,000 -> $6,500,000 (2010-10-01) | DiD +0.07 (-0.47 to +0.59); neither side alone is clear",
+  "commercial_simplified defense: $6,500,000 -> $7,000,000 (2015-10-01) | DiD +0.34 (-0.42 to +1.15); the old line's pile-up shrank",
+  "commercial_simplified all: $5,500,000 -> $6,500,000 (2010-10-01) | DiD +0.21 (-0.20 to +0.58); neither side alone is clear",
+  "commercial_simplified all: $6,500,000 -> $7,000,000 (2015-10-01) | DiD +0.19 (-0.27 to +0.77); neither side alone is clear",
+  "subcontracting_plan civilian: $650,000 -> $700,000 (2015-10-01) | DiD +0.17 (-0.14 to +0.43); neither side alone is clear",
+  "subcontracting_plan defense: $650,000 -> $700,000 (2015-10-01) | DiD -0.03 (-0.31 to +0.24); the old line's pile-up shrank",
+  "subcontracting_plan all: $650,000 -> $700,000 (2015-10-01) | DiD +0.05 (-0.12 to +0.24); neither side alone is clear",
+  "subcontracting_plan_construction civilian: $1,000,000 -> $1,500,000 (2010-10-01) | DiD -0.32 (-1.77 to +1.26); neither side alone is clear",
+  "subcontracting_plan_construction defense: $1,000,000 -> $1,500,000 (2010-10-01) | DiD -0.32 (-1.36 to +0.50); neither side alone is clear",
+  "subcontracting_plan_construction all: $1,000,000 -> $1,500,000 (2010-10-01) | DiD -0.35 (-1.23 to +0.48); neither side alone is clear",
+  "justification_level1 civilian: $550,000 -> $650,000 (2010-10-01) | DiD +0.27 (-0.09 to +0.65); neither side alone is clear",
+  "justification_level1 defense: $650,000 -> $700,000 (2015-10-01) | DiD -0.10 (-0.63 to +0.40); neither side alone is clear",
+  "justification_level1 all: $650,000 -> $700,000 (2015-10-01) | DiD +0.12 (-0.24 to +0.46); neither side alone is clear",
+  "justification_level2 civilian: $11,500,000 -> $12,500,000 (2010-10-01) | DiD -0.19 (-1.41 to +1.15); neither side alone is clear",
+  "justification_level2 civilian: $12,500,000 -> $13,500,000 (2015-10-01) | DiD +0.31 (-1.39 to +1.78); the old line's pile-up shrank",
+  "justification_level2 defense: $11,500,000 -> $12,500,000 (2010-10-01) | DiD +0.36 (-0.53 to +1.44); neither side alone is clear",
+  "justification_level2 defense: $12,500,000 -> $13,500,000 (2015-10-01) | DiD +0.80 (-0.22 to +2.09); neither side alone is clear",
+  "justification_level2 all: $11,500,000 -> $12,500,000 (2010-10-01) | DiD +0.18 (-0.44 to +0.94); neither side alone is clear",
+  "justification_level2 all: $12,500,000 -> $13,500,000 (2015-10-01) | DiD +0.72 (-0.07 to +1.64); neither side alone is clear"
+ ],
+ "not_testable": [
+  {
+   "change": "micro_purchase civilian: $2,500 -> $3,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "micro_purchase civilian: $3,500 -> $10,000 (by agency, 2018-2020) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "micro_purchase civilian: $10,000 -> $15,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "micro_purchase defense: $2,500 -> $3,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "micro_purchase defense: $10,000 -> $15,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "micro_purchase all: $2,500 -> $3,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "simplified_acquisition civilian: $150,000 -> $250,000 (by agency, 2018-2020) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "simplified_acquisition civilian: $250,000 -> $350,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "simplified_acquisition defense: $250,000 -> $350,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "cost_or_pricing_data civilian: $550,000 -> $650,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "cost_or_pricing_data civilian: $2,000,000 -> $2,500,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "cost_or_pricing_data defense: $550,000 -> $650,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "cost_or_pricing_data defense: $2,000,000 -> $2,500,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "cost_or_pricing_data defense: $2,500,000 -> $10,000,000 (2026-07-01) [incomplete: FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2026)"
+  },
+  {
+   "change": "cost_or_pricing_data all: $550,000 -> $650,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "commercial_simplified civilian: $5,000,000 -> $5,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "commercial_simplified civilian: $7,000,000 -> $7,500,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "commercial_simplified civilian: $7,500,000 -> $9,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "commercial_simplified defense: $5,000,000 -> $5,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "commercial_simplified defense: $7,000,000 -> $7,500,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "commercial_simplified defense: $7,500,000 -> $9,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "commercial_simplified all: $5,000,000 -> $5,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "commercial_simplified all: $7,000,000 -> $7,500,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "commercial_simplified all: $7,500,000 -> $9,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "subcontracting_plan civilian: $500,000 -> $550,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "subcontracting_plan civilian: $700,000 -> $750,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "subcontracting_plan civilian: $750,000 -> $900,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "subcontracting_plan defense: $500,000 -> $550,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "subcontracting_plan defense: $700,000 -> $750,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "subcontracting_plan defense: $750,000 -> $900,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "subcontracting_plan all: $500,000 -> $550,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "subcontracting_plan all: $700,000 -> $750,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "subcontracting_plan all: $750,000 -> $900,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "subcontracting_plan_construction civilian: $1,500,000 -> $2,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "subcontracting_plan_construction defense: $1,500,000 -> $2,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "subcontracting_plan_construction all: $1,500,000 -> $2,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "justification_level1 civilian: $500,000 -> $550,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "justification_level1 civilian: $700,000 -> $750,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "justification_level1 civilian: $750,000 -> $900,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "justification_level1 defense: $500,000 -> $550,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "justification_level1 defense: $700,000 -> $750,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "justification_level1 defense: $750,000 -> $900,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "justification_level1 all: $500,000 -> $550,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "justification_level1 all: $700,000 -> $750,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "justification_level1 all: $750,000 -> $900,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "justification_level2 civilian: $10,000,000 -> $11,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "justification_level2 civilian: $13,500,000 -> $15,000,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (new line, after)"
+  },
+  {
+   "change": "justification_level2 civilian: $15,000,000 -> $20,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "justification_level2 defense: $10,000,000 -> $11,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "justification_level2 defense: $13,500,000 -> $15,000,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (new line, after)"
+  },
+  {
+   "change": "justification_level2 defense: $15,000,000 -> $20,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "justification_level2 all: $10,000,000 -> $11,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "justification_level2 all: $13,500,000 -> $15,000,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "justification_level2 all: $15,000,000 -> $20,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "justification_level3_civilian civilian: $50,000,000 -> $57,000,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "justification_level3_civilian civilian: $57,000,000 -> $62,500,000 (2010-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "justification_level3_civilian civilian: $62,500,000 -> $68,000,000 (2015-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "justification_level3_civilian civilian: $68,000,000 -> $75,000,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "justification_level3_civilian civilian: $75,000,000 -> $90,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "justification_level3_dod defense: $75,000,000 -> $78,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "justification_level3_dod defense: $78,500,000 -> $85,500,000 (2010-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "justification_level3_dod defense: $85,500,000 -> $93,000,000 (2015-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "justification_level3_dod defense: $93,000,000 -> $100,000,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "justification_level3_dod defense: $100,000,000 -> $150,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "8a_competitive_threshold_nonmfg civilian: $3,000,000 -> $3,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "8a_competitive_threshold_nonmfg civilian: $4,000,000 -> $4,500,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "8a_competitive_threshold_nonmfg civilian: $4,500,000 -> $5,500,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "8a_competitive_threshold_nonmfg defense: $3,000,000 -> $3,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "8a_competitive_threshold_nonmfg defense: $4,000,000 -> $4,500,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "8a_competitive_threshold_nonmfg defense: $4,500,000 -> $5,500,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "8a_competitive_threshold_nonmfg all: $3,000,000 -> $3,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "8a_competitive_threshold_nonmfg all: $4,000,000 -> $4,500,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "waiting for FY2022 (not present yet); the numbers shown use part of the windows"
+  },
+  {
+   "change": "8a_competitive_threshold_nonmfg all: $4,500,000 -> $5,500,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg civilian: $5,000,000 -> $5,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg civilian: $5,500,000 -> $6,500,000 (2010-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg civilian: $6,500,000 -> $7,000,000 (2015-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg civilian: $7,000,000 -> $7,500,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg civilian: $7,500,000 -> $8,500,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg defense: $5,000,000 -> $5,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg defense: $5,500,000 -> $6,500,000 (2010-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg defense: $6,500,000 -> $7,000,000 (2015-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg defense: $7,000,000 -> $7,500,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg defense: $7,500,000 -> $8,500,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg all: $5,000,000 -> $5,500,000 (2006-09-28)",
+   "why": "before or after window outside FY2008-FY2026",
+   "reason": "no awards in the before window in the years present"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg all: $5,500,000 -> $6,500,000 (2010-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg all: $6,500,000 -> $7,000,000 (2015-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg all: $7,000,000 -> $7,500,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_competitive_threshold_mfg all: $7,500,000 -> $8,500,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "8a_sole_source_ja civilian: $20,000,000 -> $22,000,000 (2015-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_sole_source_ja civilian: $22,000,000 -> $25,000,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_sole_source_ja civilian: $25,000,000 -> $30,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "8a_sole_source_ja defense: $20,000,000 -> $22,000,000 (2015-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_sole_source_ja defense: $22,000,000 -> $25,000,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_sole_source_ja defense: $25,000,000 -> $30,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  },
+  {
+   "change": "8a_sole_source_ja all: $20,000,000 -> $22,000,000 (2015-10-01)",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_sole_source_ja all: $22,000,000 -> $25,000,000 (2020-10-01) [incomplete: FY2022 not present]",
+   "why": "too few awards near the line",
+   "reason": "too few awards in the window (old line, before)"
+  },
+  {
+   "change": "8a_sole_source_ja all: $25,000,000 -> $30,000,000 (2025-10-01) [incomplete: FY2024;FY2025;FY2026 not present]",
+   "why": "fiscal years not present yet",
+   "reason": "no awards in the before window in the years present (missing FY2024;FY2025;FY2026)"
+  }
+ ],
+ "not_testable_counts": {
+  "fiscal years not present yet": 48,
+  "before or after window outside FY2008-FY2026": 26,
+  "too few awards near the line": 23
+ },
+ "levels": [
+  {
+   "family": "8a_competitive_threshold_mfg",
+   "sector": "all",
+   "active_cells": 0,
+   "inactive_cells": 0
+  },
+  {
+   "family": "8a_competitive_threshold_mfg",
+   "sector": "civilian",
+   "active_cells": 0,
+   "inactive_cells": 0
+  },
+  {
+   "family": "8a_competitive_threshold_mfg",
+   "sector": "defense",
+   "active_cells": 0,
+   "inactive_cells": 0
+  },
+  {
+   "family": "8a_competitive_threshold_nonmfg",
+   "sector": "all",
+   "active_cells": 14,
+   "inactive_cells": 27,
+   "active_minus_inactive": 2.468,
+   "active_minus_inactive_ci": [
+    2.146,
+    2.874
+   ],
+   "active_minus_placebo": 2.857,
+   "active_minus_placebo_ci": [
+    2.348,
+    3.472
+   ]
+  },
+  {
+   "family": "8a_competitive_threshold_nonmfg",
+   "sector": "civilian",
+   "active_cells": 14,
+   "inactive_cells": 24,
+   "active_minus_inactive": 2.941,
+   "active_minus_inactive_ci": [
+    1.623,
+    3.76
+   ],
+   "active_minus_placebo": 4.654,
+   "active_minus_placebo_ci": [
+    3.609,
+    6.665
+   ]
+  },
+  {
+   "family": "8a_competitive_threshold_nonmfg",
+   "sector": "defense",
+   "active_cells": 14,
+   "inactive_cells": 27,
+   "active_minus_inactive": 2.359,
+   "active_minus_inactive_ci": [
+    1.943,
+    2.97
+   ],
+   "active_minus_placebo": 2.173,
+   "active_minus_placebo_ci": [
+    1.582,
+    2.705
+   ]
+  },
+  {
+   "family": "8a_sole_source_ja",
+   "sector": "all",
+   "active_cells": 0,
+   "inactive_cells": 0
+  },
+  {
+   "family": "8a_sole_source_ja",
+   "sector": "civilian",
+   "active_cells": 0,
+   "inactive_cells": 0
+  },
+  {
+   "family": "8a_sole_source_ja",
+   "sector": "defense",
+   "active_cells": 0,
+   "inactive_cells": 0
+  },
+  {
+   "family": "commercial_simplified",
+   "sector": "all",
+   "active_cells": 14,
+   "inactive_cells": 24,
+   "active_minus_inactive": 0.178,
+   "active_minus_inactive_ci": [
+    -0.002,
+    0.42
+   ]
+  },
+  {
+   "family": "commercial_simplified",
+   "sector": "civilian",
+   "active_cells": 13,
+   "inactive_cells": 21,
+   "active_minus_inactive": 0.632,
+   "active_minus_inactive_ci": [
+    0.309,
+    1.035
+   ]
+  },
+  {
+   "family": "commercial_simplified",
+   "sector": "defense",
+   "active_cells": 14,
+   "inactive_cells": 24,
+   "active_minus_inactive": 0.008,
+   "active_minus_inactive_ci": [
+    -0.185,
+    0.298
+   ]
+  },
+  {
+   "family": "cost_or_pricing_data",
+   "sector": "all",
+   "active_cells": 13,
+   "inactive_cells": 18,
+   "active_minus_inactive": 0.137,
+   "active_minus_inactive_ci": [
+    -0.023,
+    0.308
+   ],
+   "active_minus_placebo": 0.329,
+   "active_minus_placebo_ci": [
+    0.216,
+    0.459
+   ]
+  },
+  {
+   "family": "cost_or_pricing_data",
+   "sector": "civilian",
+   "active_cells": 13,
+   "inactive_cells": 18,
+   "active_minus_inactive": 0.078,
+   "active_minus_inactive_ci": [
+    -0.131,
+    0.263
+   ],
+   "active_minus_placebo": 0.137,
+   "active_minus_placebo_ci": [
+    -0.009,
+    0.315
+   ]
+  },
+  {
+   "family": "cost_or_pricing_data",
+   "sector": "defense",
+   "active_cells": 13,
+   "inactive_cells": 18,
+   "active_minus_inactive": 0.125,
+   "active_minus_inactive_ci": [
+    -0.071,
+    0.3
+   ],
+   "active_minus_placebo": 0.392,
+   "active_minus_placebo_ci": [
+    0.235,
+    0.536
+   ]
+  },
+  {
+   "family": "justification_level1",
+   "sector": "all",
+   "active_cells": 14,
+   "inactive_cells": 11,
+   "active_minus_inactive": 0.213,
+   "active_minus_inactive_ci": [
+    0.04,
+    0.366
+   ],
+   "active_minus_placebo": 0.401,
+   "active_minus_placebo_ci": [
+    0.332,
+    0.493
+   ]
+  },
+  {
+   "family": "justification_level1",
+   "sector": "civilian",
+   "active_cells": 14,
+   "inactive_cells": 11,
+   "active_minus_inactive": 0.139,
+   "active_minus_inactive_ci": [
+    -0.092,
+    0.342
+   ],
+   "active_minus_placebo": 0.315,
+   "active_minus_placebo_ci": [
+    0.221,
+    0.435
+   ]
+  },
+  {
+   "family": "justification_level1",
+   "sector": "defense",
+   "active_cells": 14,
+   "inactive_cells": 11,
+   "active_minus_inactive": 0.133,
+   "active_minus_inactive_ci": [
+    -0.199,
+    0.397
+   ],
+   "active_minus_placebo": 0.433,
+   "active_minus_placebo_ci": [
+    0.341,
+    0.545
+   ]
+  },
+  {
+   "family": "justification_level2",
+   "sector": "all",
+   "active_cells": 14,
+   "inactive_cells": 34,
+   "active_minus_inactive": 0.093,
+   "active_minus_inactive_ci": [
+    -0.249,
+    0.566
+   ],
+   "active_minus_placebo": 0.402,
+   "active_minus_placebo_ci": [
+    -0.451,
+    1.34
+   ]
+  },
+  {
+   "family": "justification_level2",
+   "sector": "civilian",
+   "active_cells": 1,
+   "inactive_cells": 1,
+   "active_minus_inactive": 0.497,
+   "active_minus_inactive_ci": [
+    -0.774,
+    1.776
+   ]
+  },
+  {
+   "family": "justification_level2",
+   "sector": "defense",
+   "active_cells": 13,
+   "inactive_cells": 26,
+   "active_minus_inactive": 0.297,
+   "active_minus_inactive_ci": [
+    0.029,
+    0.596
+   ]
+  },
+  {
+   "family": "justification_level3_civilian",
+   "sector": "civilian",
+   "active_cells": 0,
+   "inactive_cells": 0
+  },
+  {
+   "family": "justification_level3_dod",
+   "sector": "defense",
+   "active_cells": 0,
+   "inactive_cells": 0
+  },
+  {
+   "family": "micro_purchase",
+   "sector": "all",
+   "active_cells": 10,
+   "inactive_cells": 25,
+   "active_minus_inactive": -0.221,
+   "active_minus_inactive_ci": [
+    -0.236,
+    -0.208
+   ],
+   "active_minus_placebo": -0.212,
+   "active_minus_placebo_ci": [
+    -0.226,
+    -0.199
+   ]
+  },
+  {
+   "family": "micro_purchase",
+   "sector": "civilian",
+   "active_cells": 11,
+   "inactive_cells": 25,
+   "active_minus_inactive": -0.424,
+   "active_minus_inactive_ci": [
+    -0.447,
+    -0.398
+   ],
+   "active_minus_placebo": -0.25,
+   "active_minus_placebo_ci": [
+    -0.272,
+    -0.226
+   ]
+  },
+  {
+   "family": "micro_purchase",
+   "sector": "defense",
+   "active_cells": 12,
+   "inactive_cells": 28,
+   "active_minus_inactive": -0.114,
+   "active_minus_inactive_ci": [
+    -0.128,
+    -0.101
+   ],
+   "active_minus_placebo": -0.195,
+   "active_minus_placebo_ci": [
+    -0.209,
+    -0.179
+   ]
+  },
+  {
+   "family": "simplified_acquisition",
+   "sector": "all",
+   "active_cells": 11,
+   "inactive_cells": 25,
+   "active_minus_inactive": 1.272,
+   "active_minus_inactive_ci": [
+    1.227,
+    1.317
+   ],
+   "active_minus_placebo": 1.563,
+   "active_minus_placebo_ci": [
+    1.536,
+    1.591
+   ]
+  },
+  {
+   "family": "simplified_acquisition",
+   "sector": "civilian",
+   "active_cells": 11,
+   "inactive_cells": 25,
+   "active_minus_inactive": 0.628,
+   "active_minus_inactive_ci": [
+    0.579,
+    0.688
+   ],
+   "active_minus_placebo": 0.68,
+   "active_minus_placebo_ci": [
+    0.64,
+    0.717
+   ]
+  },
+  {
+   "family": "simplified_acquisition",
+   "sector": "defense",
+   "active_cells": 13,
+   "inactive_cells": 27,
+   "active_minus_inactive": 1.657,
+   "active_minus_inactive_ci": [
+    1.617,
+    1.697
+   ],
+   "active_minus_placebo": 2.105,
+   "active_minus_placebo_ci": [
+    2.062,
+    2.144
+   ]
+  },
+  {
+   "family": "subcontracting_plan",
+   "sector": "all",
+   "active_cells": 14,
+   "inactive_cells": 11,
+   "active_minus_inactive": 0.067,
+   "active_minus_inactive_ci": [
+    -0.037,
+    0.156
+   ],
+   "active_minus_placebo": 0.246,
+   "active_minus_placebo_ci": [
+    0.199,
+    0.296
+   ]
+  },
+  {
+   "family": "subcontracting_plan",
+   "sector": "civilian",
+   "active_cells": 14,
+   "inactive_cells": 11,
+   "active_minus_inactive": 0.027,
+   "active_minus_inactive_ci": [
+    -0.09,
+    0.163
+   ],
+   "active_minus_placebo": 0.157,
+   "active_minus_placebo_ci": [
+    0.094,
+    0.232
+   ]
+  },
+  {
+   "family": "subcontracting_plan",
+   "sector": "defense",
+   "active_cells": 14,
+   "inactive_cells": 11,
+   "active_minus_inactive": 0.083,
+   "active_minus_inactive_ci": [
+    -0.075,
+    0.198
+   ],
+   "active_minus_placebo": 0.311,
+   "active_minus_placebo_ci": [
+    0.257,
+    0.378
+   ]
+  },
+  {
+   "family": "subcontracting_plan_construction",
+   "sector": "all",
+   "active_cells": 14,
+   "inactive_cells": 14,
+   "active_minus_inactive": -0.073,
+   "active_minus_inactive_ci": [
+    -0.339,
+    0.151
+   ],
+   "active_minus_placebo": 0.116,
+   "active_minus_placebo_ci": [
+    -0.085,
+    0.32
+   ]
+  },
+  {
+   "family": "subcontracting_plan_construction",
+   "sector": "civilian",
+   "active_cells": 3,
+   "inactive_cells": 0,
+   "active_minus_placebo": -0.096,
+   "active_minus_placebo_ci": [
+    -0.634,
+    0.426
+   ]
+  },
+  {
+   "family": "subcontracting_plan_construction",
+   "sector": "defense",
+   "active_cells": 13,
+   "inactive_cells": 11,
+   "active_minus_inactive": 0.121,
+   "active_minus_inactive_ci": [
+    -0.253,
+    0.479
+   ],
+   "active_minus_placebo": 0.201,
+   "active_minus_placebo_ci": [
+    -0.175,
+    0.496
+   ]
+  },
+  {
+   "family": "synopsis",
+   "sector": "all",
+   "active_cells": 14,
+   "inactive_cells": 0,
+   "active_minus_placebo": 0.288,
+   "active_minus_placebo_ci": [
+    0.274,
+    0.3
+   ]
+  },
+  {
+   "family": "synopsis",
+   "sector": "civilian",
+   "active_cells": 14,
+   "inactive_cells": 0,
+   "active_minus_placebo": 0.595,
+   "active_minus_placebo_ci": [
+    0.571,
+    0.617
+   ]
+  },
+  {
+   "family": "synopsis",
+   "sector": "defense",
+   "active_cells": 14,
+   "inactive_cells": 0,
+   "active_minus_placebo": 0.055,
+   "active_minus_placebo_ci": [
+    0.039,
+    0.07
+   ]
+  }
+ ],
+ "universes": {
+  "micro_purchase": "all purchase orders and definitive contracts. The FPDS reporting floor moves with this line, so counts just under it are thinned by non-reporting: read changes with care",
+  "simplified_acquisition": "all purchase orders and definitive contracts",
+  "synopsis": "all purchase orders and definitive contracts (posting applies to sole-source actions too)",
+  "cost_or_pricing_data": "not competed (extent competed B, C, E, G) and not commercial (commercial procedures code D): where certified data could apply. The 2026 move to $10M is Defense (and Coast Guard) only",
+  "commercial_simplified": "commercial items (commercial procedures code A, B or C)",
+  "subcontracting_plan": "not set aside for small business (no set-aside code), not construction (product or service code not Y or Z)",
+  "subcontracting_plan_construction": "not set aside, construction or real-property repair (product or service code Y or Z)",
+  "justification_level1": "other than full and open competition (extent competed B, C, E), excluding 8(a) awards (statutory exception)",
+  "justification_level2": "as level 1",
+  "justification_level3_civilian": "as level 1, civilian agencies only",
+  "justification_level3_dod": "as level 1, Defense only",
+  "8a_competitive_threshold_nonmfg": "8(a) sole-source awards (set-aside code 8AN) outside manufacturing (NAICS not 31-33)",
+  "8a_competitive_threshold_mfg": "8(a) sole-source awards (set-aside code 8AN) in manufacturing (NAICS 31-33)",
+  "8a_sole_source_ja": "8(a) sole-source awards (set-aside code 8AN)"
+ },
+ "placebo_values": {
+  "micro_purchase": {
+   "2500": [
+    4000
+   ],
+   "3000": [
+    1500,
+    4000
+   ],
+   "3500": [
+    1750,
+    4000
+   ],
+   "5000": [
+    7500
+   ],
+   "10000": [
+    7500,
+    12500
+   ],
+   "15000": [
+    12500,
+    17500
+   ]
+  },
+  "simplified_acquisition": {
+   "100000": [
+    50000,
+    200000
+   ],
+   "150000": [
+    125000,
+    175000
+   ],
+   "250000": [
+    200000,
+    300000
+   ],
+   "350000": [
+    300000,
+    400000
+   ]
+  },
+  "synopsis": {
+   "25000": [
+    50000
+   ]
+  },
+  "cost_or_pricing_data": {
+   "550000": [
+    425000
+   ],
+   "650000": [
+    425000,
+    1150000
+   ],
+   "700000": [
+    400000,
+    1150000
+   ],
+   "750000": [
+    400000,
+    1250000
+   ],
+   "2000000": [
+    1750000
+   ],
+   "2500000": [],
+   "10000000": [
+    17500000
+   ]
+  },
+  "commercial_simplified": {
+   "5000000": [],
+   "5500000": [],
+   "6500000": [],
+   "7000000": [],
+   "7500000": [],
+   "9000000": [
+    17000000
+   ]
+  },
+  "subcontracting_plan": {
+   "500000": [],
+   "550000": [
+    425000
+   ],
+   "650000": [
+    425000,
+    1150000
+   ],
+   "700000": [
+    400000,
+    1150000
+   ],
+   "750000": [
+    400000,
+    1250000
+   ],
+   "900000": [
+    1150000
+   ]
+  },
+  "subcontracting_plan_construction": {
+   "1000000": [
+    1250000
+   ],
+   "1500000": [
+    1250000,
+    1750000
+   ],
+   "2000000": [
+    1750000
+   ]
+  },
+  "justification_level1": {
+   "500000": [],
+   "550000": [
+    425000
+   ],
+   "650000": [
+    425000,
+    1150000
+   ],
+   "700000": [
+    400000,
+    1150000
+   ],
+   "750000": [
+    400000,
+    1250000
+   ],
+   "900000": [
+    1150000
+   ]
+  },
+  "justification_level2": {
+   "10000000": [
+    17500000
+   ],
+   "11500000": [],
+   "12500000": [
+    17500000
+   ],
+   "13500000": [],
+   "15000000": [
+    17500000
+   ],
+   "20000000": [
+    17500000,
+    35000000
+   ]
+  },
+  "justification_level3_civilian": {
+   "50000000": [],
+   "57000000": [
+    42500000
+   ],
+   "62500000": [
+    42500000,
+    115000000
+   ],
+   "68000000": [
+    42500000,
+    117500000
+   ],
+   "75000000": [
+    40000000,
+    125000000
+   ],
+   "90000000": [
+    115000000
+   ]
+  },
+  "justification_level3_dod": {
+   "75000000": [
+    40000000,
+    125000000
+   ],
+   "78500000": [],
+   "85500000": [],
+   "93000000": [
+    117500000
+   ],
+   "100000000": [
+    200000000
+   ],
+   "150000000": [
+    125000000,
+    175000000
+   ]
+  },
+  "8a_competitive_threshold_nonmfg": {
+   "3000000": [
+    1750000
+   ],
+   "3500000": [
+    1750000
+   ],
+   "4000000": [],
+   "4500000": [],
+   "5500000": []
+  },
+  "8a_competitive_threshold_mfg": {
+   "5000000": [],
+   "5500000": [],
+   "6500000": [],
+   "7000000": [],
+   "7500000": [],
+   "8500000": [
+    17000000
+   ]
+  },
+  "8a_sole_source_ja": {
+   "20000000": [
+    17500000,
+    35000000
+   ],
+   "22000000": [
+    17500000,
+    37500000
+   ],
+   "25000000": [
+    40000000
+   ],
+   "30000000": [
+    17500000,
+    35000000
+   ]
+  }
+ },
+ "not_scanned": {
+  "micro_purchase_construction / micro_purchase_services_sca": "never changed in the period, and the data cannot tell which purchases fall under Davis-Bacon or the Service Contract Act",
+  "micro_purchase_contingency_us / _abroad / _higher_ed": "apply only to contingency, emergency or university purchases, which the data does not identify",
+  "synopsis_display_floor": "a notice-display rule with little reason to shape award values; moves on the same days as the micro-purchase line (left in as an excluded value in every fit)",
+  "commercial_simplified_13_500c": "applies only to special purchases (contingency, defense against attack) the data does not identify",
+  "cost_or_pricing_data_pre2018_contracts": "applies to modifications of contracts entered into before July 2018, not to new awards",
+  "justification_dod_statute_*": "statute-only change of 2025-12-18 that FAR 6.304 has not implemented; at most part of one Defense year after it, with Defense data published 90 days late",
+  "small_business_reservation / fpds_reporting_floor / other_note_cas": "no dollar value (bands or notes)"
+ },
+ "caveats": [
+  "A pile-up is a pattern, not proof of why it happens: budgets written to fit the rules, set-aside rules tied to a line, and contract splitting all produce it.",
+  "Many lines move on the same day (1 October of 2010, 2015, 2020 and 2025): see same_day_changes. A change test on one line is confounded by the others that moved with it, and the first day of a fiscal year has its own pattern.",
+  "Justification level 1 and the subcontracting plan have had the same value since 2010 and change on the same days; their universes overlap, so their results are not independent.",
+  "The FPDS reporting floor moves with the micro-purchase line, so counts just under it change for reporting reasons too.",
+  "Samples near the larger lines (above about $10 million) are small; level 3 justifications and the 8(a) justification line are mostly too thin to test.",
+  "Delivery orders and BPA calls are not in the data; contract vehicles are left out. Values are base and all options at award, which is close to but not the same as each rule's measure.",
+  "Defense data are published 90 days late, so the latest Defense fiscal year is incomplete.",
+  "Placebo values are round numbers that were never thresholds; near $3 million to $15 million thresholds are so dense that no free value exists, and those lines rely on the active-versus-inactive comparison only."
+ ]
+}

@@ -21,13 +21,26 @@ Rules (kept simple on purpose):
      No z-test (counts are not shares); change_points is then the percent change and z is blank.
   5. The newest quarter is skipped for volume if the data stop before its last day (it would look like a false drop).
 
-Input : data/processed/base_awards_civilian.parquet (or any table with the same columns, given as the first argument)
-        columns used: agency, award_kind, action_date, competed, offers, offers_ok, eval_set
-Output: results/quality_flags.csv (agency, award_kind, quarter, metric, before, after, change_points, z, n_before, n_after; biggest first)
-        results/quality_summary.json (counts by metric, the 15 largest flags, thresholds)
+Two kinds of flag, two units.  Share flags move in percentage POINTS; volume flags move in PERCENT.  They are never ranked together:
+the flags table lists share flags first (largest move first), then volume flags (largest first), and the column `unit` says which unit
+change_points is in.  The summary lists the largest of each kind separately.
+
+Input : one or more tables with the columns agency (or awarding_agency_name), award_kind, action_date, competed, offers, offers_ok,
+        eval_set.  Give files and/or folders (a folder means its base_actions_FY*.parquet files, or else all its .parquet files).
+        Files are read one at a time, so the long history fits in little memory.
+        Default: data/processed/base_awards_civilian.parquet.  `--history`: data/history/processed (FY2008 onward, with Defense).
+Output: tables that name the agency `agency` (the FY2024-FY2026 snapshot):
+          results/quality_flags.csv, results/quality_summary.json
+        the history tables (`awarding_agency_name`, 18_history_build.py):
+          results/quality_history_flags.csv, results/quality_history_summary.json
+        `--prefix NAME` overrides the name (results/NAME_flags.csv, results/NAME_summary.json).
+        flags columns: agency, award_kind, quarter, metric, before, after, change_points, z, n_before, n_after, unit
         Shares are in percent; for volume, before/after are award counts.
-Run   : python -I scripts/16_quality_monitor.py [path/to/table.parquet]
+        summary: counts by metric, top_share_flags (points), top_volume_flags (percent), thresholds, inputs.  top_15 is kept for
+        older readers and now holds the 15 largest SHARE flags only (same unit), so it is the same as top_share_flags.
+Run   : python -I scripts/16_quality_monitor.py [--history] [--prefix NAME] [path ...]
 """
+import glob
 import json
 import os
 import sys
@@ -35,6 +48,7 @@ import time
 
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA, RESULTS  # noqa: E402
@@ -44,13 +58,19 @@ Z_BAR = 6.0          # |z| must reach this
 MIN_POINTS = 10.0    # share must move this many percentage points
 VOLUME_PCT = 40.0    # volume must move this many percent vs the same quarter a year earlier
 MIN_BASE_QUARTERS = 2  # at least this many of the previous four quarters must exist
+TOP = 15             # flags listed in the summary, per kind
 THRESHOLDS = {"min_n": MIN_N, "z_bar": Z_BAR, "min_points": MIN_POINTS, "volume_pct": VOLUME_PCT,
               "baseline": "previous four quarters pooled (at least %d present)" % MIN_BASE_QUARTERS,
               "volume_baseline": "same quarter one year earlier"}
+UNITS = {"share": "percentage points (change_points = after minus before, shares in percent)",
+         "volume": "percent (change_points = percent change in the number of awards)"}
 # metric -> (numerator column, denominator column) in the counts table
 SHARES = {"offers_1": ("o1", "n_ev"), "offers_2": ("o2", "n_ev"), "offers_3": ("o3", "n_ev"),
           "offers_unusable": ("bad", "n_comp"), "competed": ("n_comp", "n_all")}
-COLUMNS = ["agency", "award_kind", "quarter", "metric", "before", "after", "change_points", "z", "n_before", "n_after"]
+COLUMNS = ["agency", "award_kind", "quarter", "metric", "before", "after", "change_points", "z", "n_before", "n_after", "unit"]
+AGENCY_COLUMNS = ("agency", "awarding_agency_name")       # the snapshot tables use the first, the history tables the second
+OTHER_COLUMNS = ["award_kind", "action_date", "competed", "offers", "offers_ok", "eval_set"]
+NUM_COLS = ["n_all", "n_comp", "n_ev", "o1", "o2", "o3", "bad"]
 
 
 def quarter_index(dates):
@@ -65,17 +85,25 @@ def quarter_label(i):
     return "FY%dQ%d" % (i // 4, i % 4 + 1)
 
 
+def agency_column(columns):
+    """the name of the agency column in a table with these columns ('agency' or 'awarding_agency_name')"""
+    for c in AGENCY_COLUMNS:
+        if c in columns:
+            return c
+    raise KeyError("no agency column: expected one of %s" % ", ".join(AGENCY_COLUMNS))
+
+
 def count_table(df):
     """One row per agency x award kind x quarter with the counts every check needs."""
     comp = df["competed"].astype(bool)
     ev = df["eval_set"].astype(bool)
     off = pd.to_numeric(df["offers"], errors="coerce")
     d = pd.DataFrame({
-        "agency": df["agency"].astype(str), "award_kind": df["award_kind"].astype(str),
+        "agency": df[agency_column(df.columns)].astype(str), "award_kind": df["award_kind"].astype(str),
         "qi": quarter_index(pd.to_datetime(df["action_date"])),
-        "n_all": 1, "n_comp": comp.astype(int), "n_ev": ev.astype(int),
-        "o1": (ev & (off == 1)).astype(int), "o2": (ev & (off == 2)).astype(int), "o3": (ev & (off == 3)).astype(int),
-        "bad": (comp & ~df["offers_ok"].astype(bool)).astype(int),
+        "n_all": np.ones(len(df), np.int32), "n_comp": comp.astype(np.int32), "n_ev": ev.astype(np.int32),
+        "o1": (ev & (off == 1)).astype(np.int32), "o2": (ev & (off == 2)).astype(np.int32), "o3": (ev & (off == 3)).astype(np.int32),
+        "bad": (comp & ~df["offers_ok"].astype(bool)).astype(np.int32),
     })
     return d.groupby(["agency", "award_kind", "qi"]).sum().reset_index()
 
@@ -90,19 +118,29 @@ def two_prop_z(x1, n1, x2, n2):
     return z
 
 
-def find_flags(df, min_n=MIN_N, z_bar=Z_BAR, min_points=MIN_POINTS, volume_pct=VOLUME_PCT, data_end=None):
-    """Return the flags table for the awards table df (see header for the rules)."""
-    ct = count_table(df)
-    if data_end is None:
-        data_end = pd.to_datetime(df["action_date"]).max()
+def order_flags(fl):
+    """share flags first (largest move in points first), then volume flags (largest move in percent first); adds `unit`"""
+    if not len(fl):
+        return fl.reindex(columns=COLUMNS)
+    fl = fl.copy()
+    fl["unit"] = np.where(fl["metric"] == "volume", "percent", "points")
+    key = fl["change_points"].abs()
+    fl["_grp"] = (fl["metric"] == "volume").astype(int)
+    fl["_key"] = -key
+    fl = fl.sort_values(["_grp", "_key"], kind="stable").drop(columns=["_grp", "_key"]).reset_index(drop=True)
+    return fl[COLUMNS]
+
+
+def flags_from_counts(ct, data_end, min_n=MIN_N, z_bar=Z_BAR, min_points=MIN_POINTS, volume_pct=VOLUME_PCT):
+    """The flags table from a counts table (count_table, possibly several summed) and the last action date in the data."""
+    data_end = pd.Timestamp(data_end)
     last_q = int(quarter_index(pd.Series([data_end])).iloc[0])
     # a quarter is complete if the data reach its last month (Dec, Mar, Jun, Sep) and its last days
     qend_month = [12, 3, 6, 9][last_q % 4]
     last_q_complete = data_end.month == qend_month and data_end.day >= 28
-    num_cols = ["n_all", "n_comp", "n_ev", "o1", "o2", "o3", "bad"]
     out = []
     for (ag, kind), g in ct.groupby(["agency", "award_kind"]):
-        g = g.set_index("qi")[num_cols]
+        g = g.set_index("qi")[NUM_COLS].astype(float)
         g = g.reindex(range(int(g.index.min()), int(g.index.max()) + 1))
         present = g["n_all"].notna()
         g = g.fillna(0)
@@ -134,39 +172,124 @@ def find_flags(df, min_n=MIN_N, z_bar=Z_BAR, min_points=MIN_POINTS, volume_pct=V
             pct = (n2 / n1 - 1) * 100
             if abs(pct) >= volume_pct:
                 out.append((ag, kind, quarter_label(int(qi)), "volume", n1, n2, pct, np.nan, int(n1), int(n2)))
-    fl = pd.DataFrame(out, columns=COLUMNS)
-    if len(fl):
-        fl = fl.reindex(fl["change_points"].abs().sort_values(ascending=False, kind="stable").index).reset_index(drop=True)
-    return fl
+    return order_flags(pd.DataFrame(out, columns=COLUMNS[:-1]))
 
 
-def summarize(fl):
-    top = fl.head(15).astype(object).where(fl.head(15).notna(), None).to_dict("records")
-    return {"n_flags": int(len(fl)), "by_metric": {k: int(v) for k, v in fl["metric"].value_counts().items()},
-            "top_15": top, "thresholds": THRESHOLDS}
+def find_flags(df, min_n=MIN_N, z_bar=Z_BAR, min_points=MIN_POINTS, volume_pct=VOLUME_PCT, data_end=None):
+    """Return the flags table for the awards table df (see header for the rules)."""
+    if data_end is None:
+        data_end = pd.to_datetime(df["action_date"]).max()
+    return flags_from_counts(count_table(df), data_end, min_n, z_bar, min_points, volume_pct)
 
 
-def main(argv):
+def input_files(paths):
+    """Expand files and folders into a sorted list of parquet files (a folder: its base_actions_FY*.parquet, else all *.parquet)."""
+    files = []
+    for p in paths:
+        if os.path.isdir(p):
+            found = sorted(glob.glob(os.path.join(p, "base_actions_FY*.parquet"))) or sorted(glob.glob(os.path.join(p, "*.parquet")))
+            files += found
+        else:
+            files.append(p)
+    return list(dict.fromkeys(files))
+
+
+def read_counts(path):
+    """(counts table, last action date, number of rows, agency column name) for one parquet file, read with only the needed columns"""
+    ag = agency_column(pq.ParquetFile(path).schema_arrow.names)
+    df = pd.read_parquet(path, columns=[ag] + OTHER_COLUMNS)
+    return count_table(df), pd.to_datetime(df["action_date"]).max(), len(df), ag
+
+
+def flags_for_files(files):
+    """(flags, number of rows, last action date, agency column names) over several files, one file in memory at a time"""
+    cts, ends, n, ags = [], [], 0, set()
+    for p in files:
+        ct, end, k, ag = read_counts(p)
+        cts.append(ct)
+        ends.append(end)
+        n += k
+        ags.add(ag)
+    ct = pd.concat(cts, ignore_index=True).groupby(["agency", "award_kind", "qi"]).sum().reset_index()
+    data_end = max(e for e in ends if pd.notna(e))
+    return flags_from_counts(ct, data_end), n, data_end, ags
+
+
+def records(fl):
+    return fl.astype(object).where(fl.notna(), None).to_dict("records")
+
+
+def summarize(fl, top=TOP, inputs=None, data_end=None):
+    """Counts by metric and the largest flags, listed SEPARATELY for shares (points) and volume (percent)."""
+    share = fl[fl["metric"] != "volume"]
+    vol = fl[fl["metric"] == "volume"]
+    share = share.reindex(share["change_points"].abs().sort_values(ascending=False, kind="stable").index)
+    vol = vol.reindex(vol["change_points"].abs().sort_values(ascending=False, kind="stable").index)
+    top_share = records(share.head(top))
+    out = {"n_flags": int(len(fl)), "n_share_flags": int(len(share)), "n_volume_flags": int(len(vol)),
+           "by_metric": {k: int(v) for k, v in fl["metric"].value_counts().items()},
+           "units": UNITS,
+           "top_share_flags": top_share, "top_volume_flags": records(vol.head(top)),
+           "top_15": top_share[:15],
+           "top_15_note": "kept for older readers: the largest share flags only (percentage points); volume flags are in top_volume_flags",
+           "thresholds": THRESHOLDS}
+    if inputs is not None:
+        out["inputs"] = [os.path.basename(p) for p in inputs]
+    if data_end is not None:
+        out["data_end"] = str(pd.Timestamp(data_end).date())
+    return out
+
+
+def output_prefix(agency_columns, prefix=None):
+    """'quality' for tables with an `agency` column (the snapshot), 'quality_history' for the history tables"""
+    if prefix:
+        return prefix
+    return "quality_history" if "awarding_agency_name" in agency_columns else "quality"
+
+
+def parse_args(argv):
+    paths, prefix, i = [], None, 1
+    while i < len(argv):
+        a = argv[i]
+        if a == "--history":
+            paths.append(os.path.join(DATA, "history", "processed"))
+        elif a == "--prefix" and i + 1 < len(argv):
+            i += 1
+            prefix = argv[i]
+        else:
+            paths.append(a)
+        i += 1
+    return paths or [os.path.join(DATA, "processed", "base_awards_civilian.parquet")], prefix
+
+
+def main(argv, results_dir=RESULTS, verbose=True):
     t0 = time.time()
-    path = argv[1] if len(argv) > 1 else os.path.join(DATA, "processed", "base_awards_civilian.parquet")
-    cols = ["agency", "award_kind", "action_date", "competed", "offers", "offers_ok", "eval_set"]
-    df = pd.read_parquet(path, columns=cols)
-    fl = find_flags(df)
-    os.makedirs(RESULTS, exist_ok=True)
-    fl.round({"before": 2, "after": 2, "change_points": 2, "z": 1}).to_csv(os.path.join(RESULTS, "quality_flags.csv"), index=False)
-    summ = summarize(fl)
-    with open(os.path.join(RESULTS, "quality_summary.json"), "w", encoding="utf-8") as f:
+    paths, prefix = parse_args(argv)
+    files = input_files(paths)
+    if not files:
+        sys.exit("no input tables found in: " + ", ".join(paths))
+    fl, n, data_end, ags = flags_for_files(files)
+    name = output_prefix(ags, prefix)
+    os.makedirs(results_dir, exist_ok=True)
+    fl.round({"before": 2, "after": 2, "change_points": 2, "z": 1}).to_csv(os.path.join(results_dir, f"{name}_flags.csv"), index=False)
+    summ = summarize(fl, inputs=files, data_end=data_end)
+    with open(os.path.join(results_dir, f"{name}_summary.json"), "w", encoding="utf-8") as f:
         json.dump(summ, f, indent=2, default=float)
-    print("Quality monitor: %d awards read, %d flags (rules: |z| >= %g and >= %g points; volume >= %g%% vs a year earlier; min %d awards)"
-          % (len(df), len(fl), Z_BAR, MIN_POINTS, VOLUME_PCT, MIN_N))
+    if not verbose:
+        return fl, summ, name
+    print("Quality monitor: %d file(s), %d awards read, data through %s, %d flags (rules: |z| >= %g and >= %g points; volume >= %g%% vs a "
+          "year earlier; min %d awards)" % (len(files), n, summ["data_end"], len(fl), Z_BAR, MIN_POINTS, VOLUME_PCT, MIN_N))
     for k, v in summ["by_metric"].items():
         print("  %-16s %d" % (k, v))
-    print("Largest flags:")
-    for r in fl.head(10).itertuples():
-        unit = "awards" if r.metric == "volume" else "%"
-        print("  %-40s %-3s %s %-15s %.1f -> %.1f %s (%+.1f %s)" % (r.agency[:40], r.award_kind, r.quarter, r.metric, r.before, r.after,
-                                                                  unit, r.change_points, "%" if r.metric == "volume" else "pts"))
-    print("Done in %.1f s.  Wrote results/quality_flags.csv and results/quality_summary.json" % (time.time() - t0))
+    for title, lst, unit in (("Largest share flags (percentage points):", summ["top_share_flags"], "pts"),
+                             ("Largest volume flags (percent):", summ["top_volume_flags"], "%")):
+        print(title)
+        for r in lst[:10]:
+            u = "awards" if r["metric"] == "volume" else "%"
+            print("  %-40s %-3s %s %-15s %.1f -> %.1f %s (%+.1f %s)" % (str(r["agency"])[:40], r["award_kind"], r["quarter"], r["metric"],
+                                                                      r["before"], r["after"], u, r["change_points"], unit))
+    print("Done in %.1f s.  Wrote results/%s_flags.csv and results/%s_summary.json" % (time.time() - t0, name, name))
+    return fl, summ, name
 
 
 if __name__ == "__main__":
