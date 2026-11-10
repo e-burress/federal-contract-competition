@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Federal Contract Competition Explorer</title>
-<meta name="description" content="Explore single-offer shares by agency and year, pile-ups under dollar limits, data-quality flags and today's open solicitations. Built from free public data.">
+<meta name="description" content="Explore single-offer shares by agency and year, why some awards get one offer, what happens after award, pile-ups under every dollar limit, split-like purchases, data-quality flags and today's open solicitations. Built from free public data.">
 <script>
 /* show any error on the page, so problems are visible (also in headless test runs) */
 window.__fccErr = function (m) {
@@ -21,15 +21,17 @@ window.addEventListener("unhandledrejection", function (e) { window.__fccErr("So
 </script>
 <style>
 :root { --bg:#f6f7f9; --card:#fff; --ink:#1b2430; --muted:#5a6573; --line:#e1e5ea; --accent:#1f5fa8; --soft:#e7eef8; --warn:#fbf0dc;
-  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --grid:#e9ecf0; --err:#fde8e6; color-scheme:light; }
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#8a5cc9; --s6:#c2457a; --grid:#e9ecf0; --err:#fde8e6;
+  --ok:#17784f; --okbg:#e2f3ea; --bad:#a3361c; --badbg:#fbe6df; --nabg:#eceef1; color-scheme:light; }
 :root[data-theme="dark"] { --bg:#11161c; --card:#1a2129; --ink:#e7ecf2; --muted:#a3aebb; --line:#2c3540; --accent:#86b5ee; --soft:#1d2b3c; --warn:#33291a;
-  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --grid:#252d37; --err:#3a1f1d; color-scheme:dark; }
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#a17be0; --s6:#d9628f; --grid:#252d37; --err:#3a1f1d;
+  --ok:#6fd3a4; --okbg:#173326; --bad:#f19a80; --badbg:#3a2119; --nabg:#262e38; color-scheme:dark; }
 * { box-sizing:border-box; }
 html { -webkit-text-size-adjust:100%; }
 body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
 .wrap { max-width:1040px; margin:0 auto; padding:20px 16px 56px; }
-h1 { font-size:1.8rem; line-height:1.2; margin:14px 0 6px; } h2 { font-size:1.25rem; margin:40px 0 10px; scroll-margin-top:12px; }
-h3 { font-size:1rem; margin:20px 0 6px; } h3:first-child { margin-top:0; }
+h1 { font-size:1.8rem; line-height:1.2; margin:14px 0 6px; } h2 { font-size:1.25rem; margin:40px 0 10px; scroll-margin-top:64px; }
+h3 { font-size:1rem; margin:20px 0 6px; scroll-margin-top:64px; } h3:first-child { margin-top:0; }
 .sub { color:var(--muted); margin:0 0 4px; }
 .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; min-width:0; }
 .card + .card { margin-top:12px; } .kpis .card { margin-top:0; }
@@ -38,16 +40,27 @@ h3 { font-size:1rem; margin:20px 0 6px; } h3:first-child { margin-top:0; }
 a { color:var(--accent); }
 .top { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
 .theme { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:999px; padding:4px 12px; cursor:pointer; font:inherit; font-size:.85rem; }
-.jump { display:flex; flex-wrap:wrap; gap:6px 8px; margin:14px 0 0; padding:0; list-style:none; }
-.jump a { display:inline-block; padding:3px 10px; border-radius:999px; background:var(--soft); text-decoration:none; font-size:.88rem; font-weight:600; }
+/* sticky section menu: one row that scrolls sideways on a phone */
+.secnav { position:sticky; top:0; z-index:20; background:var(--bg); margin:14px -16px 0; padding:8px 16px; border-bottom:1px solid var(--line); }
+.secnav ul { display:flex; gap:6px; overflow-x:auto; list-style:none; margin:0; padding:0 0 3px; scrollbar-width:thin; }
+.secnav li { flex:none; }
+.secnav a { display:inline-block; padding:3px 11px; border-radius:999px; background:var(--soft); text-decoration:none; font-size:.86rem; font-weight:600; white-space:nowrap; }
+.secnav a[aria-current="true"] { background:var(--accent); color:var(--card); }
+.secnav .sep { width:1px; background:var(--line); margin:2px 2px; }
 .kpis { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin-bottom:12px; }
 .kpi b { display:block; font-size:1.9rem; color:var(--accent); line-height:1.1; } .kpi span { color:var(--muted); font-size:.92rem; }
-.pill { display:inline-block; padding:2px 8px; border-radius:999px; background:var(--soft); color:var(--accent); font-size:.8rem; font-weight:600; }
+.pill { display:inline-block; padding:2px 8px; border-radius:999px; background:var(--soft); color:var(--accent); font-size:.8rem; font-weight:600; white-space:nowrap; }
+.pill.v-moved { background:var(--okbg); color:var(--ok); } .pill.v-wrong { background:var(--badbg); color:var(--bad); }
+.pill.v-none { background:var(--soft); color:var(--accent); } .pill.v-na { background:var(--nabg); color:var(--muted); }
+.pill.r-placebo { background:var(--warn); color:var(--ink); } .pill.r-balance { background:var(--nabg); color:var(--muted); }
+.banner { border-left:4px solid var(--s4); background:var(--warn); padding:8px 12px; border-radius:6px; font-size:.92rem; margin:8px 0; }
 :focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 #errbox { background:var(--err); border:1px solid #c0392b; border-radius:10px; padding:10px 14px; margin:12px 0; font-size:.92rem; white-space:pre-wrap; }
 /* controls */
 .controls { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:flex-end; margin:4px 0 10px; }
+.controls > * { min-width:0; max-width:100%; } .controls select { width:100%; }
 .controls label, .field > span { font-size:.85rem; color:var(--muted); display:block; margin-bottom:3px; }
+input[type=search] { min-width:15em; }
 select, input[type=search] { font:inherit; font-size:.92rem; color:var(--ink); background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 8px; max-width:100%; }
 .seg { display:flex; flex-wrap:wrap; gap:6px; }
 .seg label { margin:0; font-size:.88rem; color:var(--ink); padding:3px 12px; cursor:pointer; position:relative; border:1px solid var(--line); border-radius:999px; }
@@ -56,6 +69,7 @@ select, input[type=search] { font:inherit; font-size:.92rem; color:var(--ink); b
 .seg label:has(input:focus-visible) { outline:2px solid var(--accent); outline-offset:1px; }
 fieldset { border:0; margin:0; padding:0; min-width:0; } legend { font-size:.85rem; color:var(--muted); padding:0; margin-bottom:3px; }
 .picker { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px 18px; margin-bottom:6px; }
+.two { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px 22px; }
 .aglist { max-height:216px; overflow-y:auto; border:1px solid var(--line); border-radius:10px; padding:4px 0; margin-top:6px; }
 .aglist label { display:flex; gap:8px; align-items:baseline; padding:4px 10px; cursor:pointer; font-size:.92rem; }
 .aglist label:hover { background:var(--soft); }
@@ -70,17 +84,19 @@ fieldset { border:0; margin:0; padding:0; min-width:0; } legend { font-size:.85r
 .chart svg { display:block; width:100%; height:auto; overflow:visible; }
 .chart svg:focus { outline:none; } .chart svg:focus-visible { outline:2px solid var(--accent); outline-offset:3px; border-radius:4px; }
 .chart text { fill:var(--muted); font-size:12px; font-family:inherit; }
-.chart text.ink { fill:var(--ink); }
+.chart text.ink { fill:var(--ink); } .chart text.head { fill:var(--ink); font-weight:600; }
 .chart .grid { stroke:var(--grid); stroke-width:1; shape-rendering:crispEdges; }
 .chart .axis { stroke:var(--line); stroke-width:1; shape-rendering:crispEdges; }
 .chart .ref { stroke:var(--muted); stroke-width:1; stroke-dasharray:4 3; }
 .chart .mark { stroke:var(--muted); stroke-width:1; stroke-dasharray:2 3; }
 .chart .guide { stroke:var(--muted); stroke-width:1; }
+.chart .gapband { fill:var(--grid); opacity:.55; }
 .legend { display:flex; flex-wrap:wrap; gap:4px 16px; font-size:.88rem; margin:2px 0 4px; }
 .key { white-space:nowrap; } .key i { width:16px; margin-right:6px; }
+.key i.dash { background:none !important; border-top:2px dashed var(--muted); height:0; }
 .key .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin:0 4px 0 2px; vertical-align:middle; }
 .tip { position:absolute; z-index:5; pointer-events:none; background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:8px;
-  box-shadow:0 4px 14px rgba(0,0,0,.14); padding:7px 10px; font-size:.85rem; line-height:1.4; max-width:260px; opacity:0; transition:opacity .12s; }
+  box-shadow:0 4px 14px rgba(0,0,0,.14); padding:7px 10px; font-size:.85rem; line-height:1.4; max-width:280px; opacity:0; transition:opacity .12s; }
 .tip.on { opacity:1; }
 .tip b { display:block; margin-bottom:2px; }
 .tip .row { display:flex; gap:6px; align-items:baseline; } .tip .row i { flex:none; width:10px; height:3px; border-radius:2px; position:relative; top:-3px; }
@@ -93,23 +109,31 @@ summary { cursor:pointer; color:var(--accent); font-weight:600; font-size:.92rem
 table { width:100%; border-collapse:collapse; font-size:.92rem; margin-top:6px; }
 th, td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
 td.n, th.n { text-align:right; font-variant-numeric:tabular-nums; } td.n { white-space:nowrap; }
+td.wide { min-width:14em; font-size:.88rem; color:var(--muted); }
 th { color:var(--muted); font-weight:600; }
 th button { all:unset; cursor:pointer; color:inherit; } th button:hover { color:var(--accent); } th button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 th button::after { content:" \2195"; opacity:.45; font-size:.85em; }
 th[aria-sort=ascending] button::after { content:" \2191"; opacity:1; } th[aria-sort=descending] button::after { content:" \2193"; opacity:1; }
+tr.placebo td { background:var(--warn); }
 .count { font-size:.88rem; color:var(--muted); margin:6px 0 0; }
 .links { padding-left:1.2em; margin:6px 0 0; } .links li { margin:4px 0; } .links span { color:var(--muted); font-size:.9rem; }
+.dl { display:grid; grid-template-columns:max-content minmax(0,1fr); gap:4px 14px; margin:8px 0 0; font-size:.92rem; }
+.dl dt { color:var(--muted); } .dl dd { margin:0; }
 code { font-size:.85rem; }
 footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
 @media (max-width:640px) {
   h1 { font-size:1.5rem; }
-  .picker { grid-template-columns:minmax(0,1fr); }
+  .picker, .two { grid-template-columns:minmax(0,1fr); }
   .card { padding:14px 12px; }
+  .dl { grid-template-columns:minmax(0,1fr); } .dl dd { margin-bottom:6px; }
   table.stack thead { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
   table.stack, table.stack tbody, table.stack tr, table.stack td { display:block; width:100%; }
   table.stack tr { border-bottom:1px solid var(--line); padding:6px 0; }
   table.stack td { border:0; padding:2px 0; display:flex; justify-content:space-between; gap:12px; text-align:right; }
+  table.stack td.wide { display:block; text-align:left; min-width:0; }
+  table.stack td > span { min-width:0; overflow-wrap:anywhere; }
   table.stack td::before { content:attr(data-label); color:var(--muted); text-align:left; flex:none; max-width:50%; }
+  table.stack td.wide::before { display:block; }
   table.stack td:first-child { font-weight:600; text-align:left; } table.stack td:first-child::before { display:none; }
   .stackbar { display:none; }
 }
@@ -123,13 +147,19 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
 <h1>Explore the data</h1>
 <p class="sub">Pick agencies, years and dollar lines, and see the numbers behind the <a href="index.html">dashboard</a>. Every chart has a table under it. These numbers are signals about markets and buying patterns, not accusations: a single offer or a pile-up under a limit can have ordinary explanations.</p>
 <p class="sub" id="builtline"></p>
-<ul class="jump" aria-label="Sections">
-  <li><a href="#agencies">1. Agencies</a></li><li><a href="#sectors">2. Sectors over time</a></li><li><a href="#thresholds">3. Dollar limits</a></li>
-  <li><a href="#quality">4. Data-quality flags</a></li><li><a href="#open">5. Open today</a></li><li><a href="#data">6. Get the data</a></li>
-</ul>
+<nav class="secnav" aria-label="Sections of this page"><ul id="secnav">
+  <li><a href="#agencies">Agencies</a></li><li><a href="#sectors">Sectors</a></li><li><a href="#whyone">Why only one bid?</a></li><li><a href="#after">After award</a></li>
+  <li class="sep" aria-hidden="true"></li>
+  <li><a href="#thresholds">Dollar limits</a></li><li><a href="#scan">Every dollar limit</a></li><li><a href="#switch2018">The 2018 switch</a></li><li><a href="#split">Split purchases?</a></li>
+  <li class="sep" aria-hidden="true"></li>
+  <li data-opt="model"><a href="#model">Forecast model</a></li><li data-opt="score"><a href="#score">Forecast scoreboard</a></li>
+  <li><a href="#quality">Data quality</a></li><li><a href="#open">Open today</a></li>
+  <li class="sep" aria-hidden="true"></li>
+  <li><a href="#depth">Market depth</a></li><li><a href="#allthresholds">All thresholds</a></li><li><a href="#data">Get the data</a></li>
+</ul></nav>
 <noscript><p class="card warn">This explorer needs JavaScript. The <a href="index.html">dashboard</a> and the <a href="https://github.com/e-burress/federal-contract-competition/tree/main/results">result files</a> work without it.</p></noscript>
 
-<h2 id="agencies">1. Agencies: how often did a competed award get only one offer?</h2>
+<h2 id="agencies">Agencies: how often did a competed award get only one offer?</h2>
 <div class="card">
   <p class="sub" style="margin-bottom:10px">A competed award is one where the agency asked for offers from more than one company. The single-offer share is the part of those awards that received exactly one offer. Pick up to three agencies to compare.</p>
   <div class="picker">
@@ -155,7 +185,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
 </div>
 <div class="card warn" id="gsa-note" hidden></div>
 
-<h2 id="sectors">2. Sectors over time</h2>
+<h2 id="sectors">Sectors over time</h2>
 <div class="card" id="sec-card">
   <p class="sub" style="margin-bottom:8px">Three groups, side by side: civilian agencies except GSA, GSA on its own, and the Department of Defense.</p>
   <div class="controls" id="sec-controls"></div>
@@ -165,7 +195,49 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <p class="note" id="sec-note"></p>
 </div>
 
-<h2 id="thresholds">3. Dollar limits: do awards pile up just under them?</h2>
+<h2 id="whyone">Why only one bid?</h2>
+<div class="card" id="why-card">
+  <p class="sub" style="margin-bottom:10px">Some kinds of purchases get a single offer far more often than others. Here you can see the single-offer share for each group of awards, and what a statistical model says once many factors are weighed together. These are associations, not causes: the factors travel together and with things the data do not record.</p>
+  <h3>Single-offer share by factor</h3>
+  <div class="controls" id="why-controls"></div>
+  <div class="chart" id="why-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="why-table"></div></details>
+  <p class="note" id="why-note"></p>
+</div>
+<div class="card" id="ame-card">
+  <h3>The model: each factor with the others held equal</h3>
+  <p class="sub" style="margin-bottom:8px">Each dot is the change in the chance of a single offer, in percentage points, compared with the most common level of the same factor, with agency and year held equal. The bar is the 95% interval. A bar that crosses zero means the data cannot tell the difference from none.</p>
+  <div class="controls" id="ame-controls"></div>
+  <div class="chart" id="ame-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="ame-table"></div></details>
+  <p class="note" id="ame-note"></p>
+</div>
+<div class="card" id="blk-card">
+  <h3>How much does each block of factors explain?</h3>
+  <p class="sub" style="margin-bottom:8px">The model is trained on earlier years and tested on a later year it has not seen. Each bar shows how much of the model's gain over a plain average is lost when one block of factors is left out. Blocks overlap, so the bars do not add up to 100%.</p>
+  <div class="chart" id="blk-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="blk-table"></div></details>
+  <p class="note" id="blk-note"></p>
+</div>
+
+<h2 id="after">After award: do single-offer awards turn out differently?</h2>
+<div class="card" id="out-card">
+  <p class="sub" style="margin-bottom:10px">Award data have no unit prices, so a price premium cannot be measured. The closest evidence is what happens after award: extra money, scope changes, terminations, options. Each dot is the difference between single-offer and multi-offer awards made by the same buying office, in the same quarter, for the same kind of product and of similar size. Zero means no difference.</p>
+  <div class="controls" id="out-controls"></div>
+  <div id="out-banner"></div>
+  <div class="chart" id="out-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="out-table"></div></details>
+  <h3>All outcomes at a glance</h3>
+  <p class="sub" id="out-glance-sub"></p>
+  <div class="tablewrap" id="out-glance"></div>
+  <h3>By award year</h3>
+  <div class="controls" id="outc-controls"></div>
+  <div class="chart" id="outc-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="outc-table"></div></details>
+  <p class="note" id="out-note"></p>
+</div>
+
+<h2 id="thresholds">Dollar limits: do awards pile up just under them?</h2>
 <div class="card">
   <p class="sub" style="margin-bottom:10px">Below a dollar limit called the simplified acquisition threshold, agencies can buy with faster, simpler steps. If many awards land just under that limit, values may be set to fit the simpler rules. The <b>bunching ratio</b> compares the number of awards in the steps just under a line with the number a smooth curve, fitted to the awards on either side, predicts there. <b>1.0 means no pile-up.</b> 2.0 means twice as many awards as expected sit just under the line. The ratio measures the pattern. It does not say why it happens: budgets written to fit the rules are one ordinary reason, contracts split to stay under the line are another.</p>
   <div class="controls" id="th-controls"></div>
@@ -179,16 +251,95 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <div class="tablewrap" id="th-moved"></div>
   <p class="note">All civilian agencies, purchase orders and definitive contracts. FY2025 is before the change, FY2026 after. Lines at $200K and $450K are comparison lines where nothing changed.</p>
 </div>
-<div class="card" id="st-card" hidden>
-  <h3>2018: agencies switched on different dates</h3>
-  <p class="sub" style="margin-bottom:8px">In 2018 the limit rose from $150K to $250K, but each agency adopted it on its own date. Here quarter 0 is the quarter each agency switched. If the rule drives the pile-up, it should move from $150K to $250K at quarter 0. The comparison view pretends every agency switched one year earlier, so a real effect should then show up at quarter +4 instead.</p>
-  <div class="controls" id="st-controls"></div>
-  <div class="legend" id="st-legend"></div>
-  <div class="chart" id="st-chart"></div>
-  <details><summary>Show the numbers</summary><div class="tablewrap" id="st-table"></div></details>
+
+<h2 id="scan">Every dollar limit</h2>
+<div class="card" id="scan-card">
+  <p class="sub" style="margin-bottom:10px">The rules have many dollar limits, not just one. This scan measures the pile-up just under every value each limit has had, year by year. A filled dot means the value was the limit that year. A hollow dot means it was not. Gray dashed lines are <b>placebo values</b>: round numbers near the limit that were never a limit. Awards heap on round numbers everywhere, so a real limit should stand out from its placebos, and the pile-up should follow the limit when it moves.</p>
+  <div class="controls" id="scan-controls"></div>
+  <div class="legend" id="scan-legend"></div>
+  <div class="chart" id="scan-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="scan-table"></div></details>
+  <p class="note" id="scan-note"></p>
+  <h3>When the limit moved, did the pile-up move with it?</h3>
+  <p class="sub" id="scan-ch-sub"></p>
+  <div class="tablewrap" id="scan-changes"></div>
+  <details id="scan-lv-details"><summary>Years in force compared with other years and with placebo values</summary><div class="tablewrap" id="scan-levels"></div><p class="note">The first comparison is the ratio in years the value was the limit minus the ratio for the same value in years when no limit used it. The second is the ratio in years the value was the limit minus the ratio at its placebo values in the same years. Both are averaged over the values of the limit. Above zero means the limit adds to the pile-up beyond round-number heaping.</p></details>
+  <p class="note" id="scan-caveats"></p>
 </div>
 
-<h2 id="quality">4. Data-quality flags</h2>
+<h2 id="switch2018">The 2018 switch: agencies moved on different dates</h2>
+<div class="card" id="st-card">
+  <p class="sub" style="margin-bottom:8px">In 2018 the simplified acquisition limit rose from $150K to $250K, but each agency adopted it on its own date. Here quarter 0 is the quarter each agency switched. If the rule drives the pile-up, it should move from $150K to $250K at quarter 0. The placebo panel pretends every agency switched one year earlier, so a real effect should show up there at quarter +4 instead, not at 0.</p>
+  <div class="controls" id="st-controls"></div>
+  <div class="legend" id="st-legend"></div>
+  <div class="two">
+    <div><h3 style="margin-top:6px">Each agency's real date</h3><div class="chart" id="st-chart"></div></div>
+    <div><h3 style="margin-top:6px">Placebo: dates one year earlier</h3><div class="chart" id="st-chart2"></div></div>
+  </div>
+  <details id="st-details"><summary>Show the numbers</summary><div class="tablewrap" id="st-table"></div></details>
+  <div id="st-scan" hidden><h3>The same switch in the scan of every dollar limit</h3><div class="tablewrap" id="st-scan-table"></div>
+    <p class="note">Each agency's awards are placed before or after its own date. Agencies without a documented date are left out of FY2018 to FY2020.</p></div>
+  <p class="note" id="st-note"></p>
+</div>
+
+<h2 id="split">Split purchases? Clusters of awards just under a line</h2>
+<div class="card" id="split-card">
+  <p class="sub" style="margin-bottom:10px">The rules forbid splitting one need into several purchases just to stay under a limit. This screen looks for a pattern that splitting would leave: the same office buys the same kind of product from the same company several times within 30 days, each purchase at or under the limit, but together above it. Repeat buying of monthly supplies makes the same pattern, so the screen compares the real limit with <b>fake lines</b> at other dollar values where no rule applies. The <b>excess ratio</b> is the share of awards in such clusters at the real limit divided by the share the fake lines predict there. <b>1.0 means no excess.</b></p>
+  <div class="controls" id="split-controls"></div>
+  <div class="legend" id="split-legend"></div>
+  <div class="chart" id="split-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="split-table"></div></details>
+  <h3>The real limit against the fake lines</h3>
+  <p class="sub" style="margin-bottom:8px">The share of awards in split-like clusters at each line, from half the limit to twice the limit. The filled dot is the real limit. Hollow dots are the fake lines used for the expected value (dashed). Gray dots are fake lines too close to another real limit, so they are not used.</p>
+  <div class="controls" id="split-pl-controls"></div>
+  <div class="chart" id="split-pl-chart"></div>
+  <details><summary>Pooled over all years</summary><div class="tablewrap" id="split-pooled"></div></details>
+  <details><summary>When the limit rose: did the excess fall?</summary><p class="sub" style="margin-top:6px">After a limit rises, a need between the old and the new limit fits in one simple purchase, so there is less reason to split it. The ratio below counts clusters under the old line whose total sits between the old and the new line.</p><div class="tablewrap" id="split-nat"></div></details>
+  <p class="note" id="split-note"></p>
+</div>
+
+<h2 id="model" data-opt="model">Forecast model, version 2</h2>
+<div data-opt="model">
+<div class="kpis" id="m2-kpis"></div>
+<div class="card" id="m2-card">
+  <p class="sub" id="m2-what"></p>
+  <dl class="dl" id="m2-dl"></dl>
+  <details id="m2-more" hidden><summary>How it was built</summary><div id="m2-more-body"></div></details>
+</div>
+<div class="card" id="m2-eval-card">
+  <h3>Tested year by year on years it had not seen</h3>
+  <p class="sub" style="margin-bottom:8px">For each test year the model is trained only on earlier years, then scored on that year. The plain baselines show what a simple average would do. Lower is better for the Brier score and log loss. Higher is better for AUC, where 0.5 is a coin flip.</p>
+  <div class="controls" id="m2-controls"></div>
+  <div class="legend" id="m2-legend"></div>
+  <div class="chart" id="m2-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="m2-table"></div></details>
+  <details id="m2-drop-details"><summary>What each block of inputs adds</summary><div class="tablewrap" id="m2-drops"></div><p class="note">Change in log loss when the block is left out (above zero: the forecast gets worse without it) and change in AUC (below zero: worse).</p></details>
+  <p class="note" id="m2-note"></p>
+</div>
+<div class="card" id="m2-cal-card">
+  <h3>Do the forecast chances match what happened?</h3>
+  <p class="sub" style="margin-bottom:8px">Forecasts are grouped by their chance of a single offer. Each dot compares the average forecast with the share that really got one offer. Dots on the dashed diagonal mean the chances can be taken at face value. Bigger dots hold more solicitations.</p>
+  <div class="controls" id="m2c-controls"></div>
+  <div class="legend" id="m2c-legend"></div>
+  <div class="chart" id="m2c-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="m2c-table"></div></details>
+  <p class="note" id="m2c-note"></p>
+</div>
+</div>
+
+<h2 id="score" data-opt="score">Forecast scoreboard</h2>
+<div data-opt="score">
+<div class="kpis" id="sb-kpis"></div>
+<div class="card" id="sb-card">
+  <p class="sub" style="margin-bottom:8px">Every day a batch of forecasts is sealed before the awards are known, then scored once they resolve. The Brier score measures the error: 0 is perfect, and lower is better. The baseline is a plain forecast to beat.</p>
+  <div class="legend" id="sb-legend"></div>
+  <div class="chart" id="sb-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="sb-table"></div></details>
+  <p class="note" id="sb-note"></p>
+</div>
+</div>
+
+<h2 id="quality">Data-quality flags</h2>
 <div class="card">
   <p class="sub" style="margin-bottom:10px">Contracting staff type in how many offers an award got and whether it was competed. When an agency changes <i>how</i> it records these fields, its numbers can jump even though real competition did not change. For example, if staff start entering "2 offers" where they used to enter "1", the single-offer share falls overnight. A sudden drop in the number of awards can also mean late or missing reports. This table lists the quarters where that kind of break shows up. A flag does not say which explanation is true. It says: check before you trust that agency's numbers for that quarter.</p>
   <div class="controls" id="q-controls"></div>
@@ -197,7 +348,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <p class="note" id="q-note"></p>
 </div>
 
-<h2 id="open">5. Open solicitations today</h2>
+<h2 id="open">Open solicitations today</h2>
 <div id="sam-kpis" class="kpis"></div>
 <div class="card" id="sam-card">
   <h3 id="sam-title">Open solicitation notices by civilian department</h3>
@@ -212,9 +363,32 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <details id="daily-details"><summary>Show the numbers</summary><div class="tablewrap" id="daily-table"></div></details>
 </div>
 
-<h2 id="data">6. Get the data</h2>
+<h2 id="depth">Market depth: registered companies per industry</h2>
+<div class="kpis" id="md-kpis"></div>
+<div class="card" id="md-card">
+  <p class="sub" style="margin-bottom:8px">How many companies are registered in SAM.gov to sell to the government in each industry (6-digit NAICS code). A thin market may explain some single offers. A registration is not a capable bidder: many registered companies never bid, and a company can list many codes.</p>
+  <div class="controls" id="md-controls"></div>
+  <div class="chart" id="md-chart"></div>
+  <h3>Look up a code</h3>
+  <div class="controls" id="md-search"></div>
+  <p class="count" id="md-count" aria-live="polite"></p>
+  <div class="tablewrap" id="md-table"></div>
+  <p class="note" id="md-note"></p>
+</div>
+
+<h2 id="allthresholds">All thresholds and when they applied</h2>
+<div class="card" id="tt-card">
+  <p class="sub" style="margin-bottom:8px">Every dollar limit in the scan, with each value it has had and the dates it applied, from the rule texts and agency notices. "From" left blank means the start date was before the period studied and was not researched.</p>
+  <div class="controls" id="tt-controls"></div>
+  <p class="count" id="tt-count" aria-live="polite"></p>
+  <div class="tablewrap" id="tt-table"></div>
+  <p class="note" id="tt-note"></p>
+</div>
+
+<h2 id="data">Get the data</h2>
 <div class="card">
   <p class="sub">Every number on this page comes from these files. They are plain CSV and JSON, rebuilt by the scripts in the repository.</p>
+  <p class="note" id="trimmed" hidden></p>
   <ul class="links" id="data-links"></ul>
   <h3 style="margin-top:16px">Guides</h3>
   <ul class="links" id="guide-links"></ul>
@@ -257,15 +431,23 @@ function isNum(x) { return typeof x === "number" && isFinite(x); }
 function pct(x, d) { return isNum(x) ? (100 * x).toFixed(d == null ? 1 : d) + "%" : "n/a"; }
 function int(x) { return isNum(x) ? Math.round(x).toLocaleString("en-US") : "n/a"; }
 function ratio(x) { return isNum(x) ? x.toFixed(2) : "n/a"; }
-function money(v) { return "$" + (v >= 1000 ? (v / 1000) + "K" : v); }
-function niceDate(s) { if (!s) return ""; var p = s.split("-"); return p.length < 3 ? s : MONTHS[+p[1] - 1] + " " + (+p[2]) + ", " + p[0]; }
+function signed(x, d) {
+  if (!isNum(x)) return "n/a";
+  var t = Math.abs(x).toFixed(d == null ? 2 : d);
+  return (+t === 0 ? "" : x > 0 ? "+" : "−") + t;   // no sign on a value that rounds to zero
+}
+function trimNum(x) { return String(+x.toFixed(2)); }
+function money(v) { if (!isNum(v)) return "n/a"; var a = Math.abs(v); return "$" + (a >= 1e6 ? trimNum(v / 1e6) + "M" : a >= 1000 ? trimNum(v / 1000) + "K" : trimNum(v)); }
+function moneyFull(v) { return isNum(v) ? "$" + v.toLocaleString("en-US") : "n/a"; }
+function niceDate(s) { if (!s) return ""; var p = String(s).split("-"); return p.length < 3 || !/^\d{4}$/.test(p[0]) ? s : MONTHS[+p[1] - 1] + " " + (+p[2]) + ", " + p[0]; }
+function empty(msg) { return '<p class="empty">' + esc(msg) + "</p>"; }
 function svg(tag, attrs, parent) {
   var e = document.createElementNS(NS, tag);
   for (var k in attrs) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
   if (parent) parent.appendChild(e);
   return e;
 }
-function color(i) { return "var(--s" + ((i % 4) + 1) + ")"; }
+function color(i) { return "var(--s" + ((i % 6) + 1) + ")"; }
 function agencyLabel(a) { return a.abbr && a.abbr !== a.name ? a.name + " (" + a.abbr + ")" : a.name; }
 function agencyShort(a) { return a.abbr || a.name; }
 function niceStep(range, count) {
@@ -275,8 +457,11 @@ function niceStep(range, count) {
 function legend(id, items) {
   var box = $(id); if (!box) return;
   box.innerHTML = items.length < 2 && !items.some(function (i) { return i.always; }) ? "" : items.map(function (it) {
-    return '<span class="key">' + (it.dot ? '<span class="dot" style="' + it.dot + '"></span>' : '<i style="background:' + it.color + '"></i>') + esc(it.name) + "</span>";
+    return '<span class="key">' + (it.dot ? '<span class="dot" style="' + it.dot + '"></span>' : it.dash ? '<i class="dash"></i>' : '<i style="background:' + it.color + '"></i>') + esc(it.name) + "</span>";
   }).join("");
+}
+function hideOpt(name) {
+  document.querySelectorAll('[data-opt="' + name + '"]').forEach(function (e) { e.hidden = true; });
 }
 
 /* ---------- tooltips: hover and keyboard focus ---------- */
@@ -295,12 +480,12 @@ function attachTips(box, s, f, slots, tipFor, orient) {
     tip.innerHTML = tipFor(cur); tip.classList.add("on");
     var bw = box.clientWidth, tw = tip.offsetWidth, th = tip.offsetHeight;
     if (orient === "h") {
-      guide.setAttribute("y", sl.p0); guide.setAttribute("height", sl.p1 - sl.p0); guide.style.opacity = orient === "h" ? 1 : 0.6;
+      guide.setAttribute("y", sl.p0); guide.setAttribute("height", sl.p1 - sl.p0); guide.style.opacity = 1;
       var left = Math.min(bw - tw, Math.max(0, f.w * k - tw));
       var top = sl.p1 * k + 4; if (top + th > box.clientHeight) top = sl.p0 * k - th - 4;
       tip.style.left = left + "px"; tip.style.top = Math.max(0, top) + "px";
     } else {
-      guide.setAttribute("x1", sl.p); guide.setAttribute("x2", sl.p); guide.style.opacity = orient === "h" ? 1 : 0.6;
+      guide.setAttribute("x1", sl.p); guide.setAttribute("x2", sl.p); guide.style.opacity = 0.6;
       var x = sl.p * k, l = x + 14; if (l + tw > bw) l = x - 14 - tw; if (l < 0) l = Math.max(0, Math.min(bw - tw, x - tw / 2));
       tip.style.left = l + "px"; tip.style.top = (f.m.t * k) + "px";
     }
@@ -338,40 +523,91 @@ function yAxis(f, lo, hi, fmt, count) {
   for (var v = Math.ceil(lo / st - 1e-9) * st; v <= hi + 1e-9; v += st) {
     var yy = Math.round(y(v)) + 0.5;
     svg("line", { class: "grid", x1: f.m.l, x2: f.m.l + f.pw, y1: yy, y2: yy }, g);
-    svg("text", { x: f.m.l - 6, y: yy + 4, "text-anchor": "end" }, g).textContent = fmt(v);
+    svg("text", { x: f.m.l - 6, y: yy + 4, "text-anchor": "end" }, g).textContent = fmt(Math.abs(v) < 1e-9 ? 0 : v);
   }
   return y;
 }
 function niceMax(v, count) { var st = niceStep(v, count || 5); return Math.max(st, Math.ceil(v / st - 1e-9) * st); }
 
-/* line chart with 95% interval whiskers.  cfg: series [{name, short, pts:[{x,y,lo,hi,hollow,src}]}], xs, xFmt, xTip, yFmt, yTip, ref, markers */
+/* x positions.  Years (and quarters) that are present sit side by side; where years are missing the axis does not leave
+   empty space for each of them: it puts in one short gap, shaded and marked with a break sign.  cfg.linear keeps true distances. */
+function xMapper(xs, f, opts) {
+  var n = xs.length, step = opts.step || 1;
+  if (opts.linear) {
+    var pad = n > 1 ? (xs[n - 1] - xs[0]) / (n - 1) / 2 : 0.5, a0 = xs[0] - pad, a1 = xs[n - 1] + pad;
+    return { pos: function (v) { return f.m.l + (v - a0) / (a1 - a0) * f.pw; }, gaps: [], slot: f.pw / Math.max(1, n) };
+  }
+  var GAP = 0.9, u = [0], i;
+  for (i = 1; i < n; i++) u.push(u[i - 1] + (xs[i] - xs[i - 1] > step * 1.001 ? 1 + GAP : 1));
+  var total = u[n - 1] + 1, sw = f.pw / total;
+  function at(k) { return f.m.l + (k + 0.5) * sw; }
+  function pos(v) {
+    var j = xs.indexOf(v); if (j >= 0) return at(u[j]);
+    if (v < xs[0]) return at(Math.max(-0.5, -(xs[0] - v) / step));
+    if (v > xs[n - 1]) return at(u[n - 1] + Math.min(0.5, (v - xs[n - 1]) / step));
+    for (j = 0; j < n - 1; j++) if (xs[j] < v && v < xs[j + 1]) {
+      var dA = (v - xs[j]) / step, dB = (xs[j + 1] - v) / step;
+      if (u[j + 1] - u[j] === 1) return at(u[j] + dA);
+      if (dB <= 0.5) return at(u[j + 1] - dB);
+      if (dA <= 0.5) return at(u[j] + dA);
+      return at((u[j] + u[j + 1]) / 2);
+    }
+    return at(0);
+  }
+  var gaps = [];
+  for (i = 1; i < n; i++) if (u[i] - u[i - 1] > 1) gaps.push({ x0: at(u[i - 1] + 0.5), x1: at(u[i] - 0.5), a: xs[i - 1], b: xs[i] });
+  return { pos: pos, gaps: gaps, slot: sw };
+}
+
+/* line chart with 95% interval whiskers.  cfg: series [{name, short, color, muted, dash, noDots, pts:[{x,y,lo,hi,hollow,half,big,why}]}],
+   xs, xFmt, xTip, yFmt, yTip, ref, markers, signed (allow values below zero), linear (true x distances), gapLabel(a, b) */
 function lineChart(box, cfg) {
   var narrow = (box.clientWidth || 600) < 560;
   var direct = !narrow && cfg.series.length > 1 && cfg.direct !== false;
-  var f = frame(box, cfg.height || (narrow ? 260 : 300), { t: cfg.markers && cfg.markers.length ? 30 : 14, r: direct ? 150 : 14, b: 30, l: 46 }, cfg.label);
+  var f = frame(box, cfg.height || (narrow ? 260 : 300), { t: cfg.markers && cfg.markers.length ? 30 : 14, r: direct ? 150 : 14, b: 30, l: 50 }, cfg.label);
   var xs = cfg.xs.slice().sort(function (a, b) { return a - b; });
-  if (!xs.length) { box.innerHTML = '<p class="empty">No data for this choice.</p>'; return; }
-  var x0 = xs[0] - 0.5, x1 = xs[xs.length - 1] + 0.5;
-  var xp = function (v) { return f.m.l + (v - x0) / (x1 - x0) * f.pw; };
-  var all = []; cfg.series.forEach(function (sr) { sr.pts.forEach(function (p) { all.push(p.y, p.hi); }); });
+  if (!xs.length) { box.innerHTML = empty(cfg.empty || "No data for this choice."); return; }
+  var X = xMapper(xs, f, { linear: cfg.linear, step: cfg.step }), xp = X.pos;
+  var all = [], lows = [];
+  cfg.series.forEach(function (sr) { sr.pts.forEach(function (p) { all.push(p.y, p.hi); lows.push(p.y, p.lo); }); });
   var top = Math.max.apply(null, all.filter(isNum).concat([cfg.ref || 0]));
   if (cfg.yCap) top = Math.min(top, cfg.yCap(cfg.series));
-  var y1 = cfg.yMax != null ? cfg.yMax : niceMax(top * 1.04);
+  var y1 = cfg.yMax != null ? cfg.yMax : niceMax(Math.max(top, 1e-9) * 1.04);
   if (cfg.yLimit) y1 = Math.min(y1, cfg.yLimit);
-  var y = yAxis(f, 0, y1, cfg.yFmt);
+  var y0 = 0;
+  if (cfg.signed) {
+    var bottom = Math.min.apply(null, lows.filter(isNum).concat([0]));
+    if (bottom < 0) y0 = -niceMax(-bottom * 1.04);
+    if (top <= 0) y1 = niceMax(Math.max(-y0, 1e-9) * 0.25);
+  }
+  if (cfg.zoom) {   // start the axis near the smallest value instead of at zero (scores that vary in a narrow band)
+    var lowest = Math.min.apply(null, lows.filter(isNum).concat(cfg.ref != null ? [cfg.ref] : []));
+    var zst = niceStep(y1 - lowest, 5);
+    y0 = Math.max(0, Math.floor((lowest - zst * 0.3) / zst) * zst);
+  }
+  var y = yAxis(f, y0, y1, cfg.yFmt);
   svg("line", { class: "axis", x1: f.m.l, x2: f.m.l + f.pw, y1: f.m.t + f.ph + 0.5, y2: f.m.t + f.ph + 0.5 }, f.s);
+  X.gaps.forEach(function (gp) {   // missing years: a shaded band and a break sign on the axis
+    svg("rect", { class: "gapband", x: gp.x0.toFixed(1), y: f.m.t, width: Math.max(1, gp.x1 - gp.x0).toFixed(1), height: f.ph }, f.s);
+    var mx = (gp.x0 + gp.x1) / 2, by = f.m.t + f.ph + 0.5;
+    svg("rect", { x: mx - 5, y: by - 4, width: 10, height: 8, style: "fill:var(--card)" }, f.s);
+    svg("path", { d: "M" + (mx - 5) + " " + (by + 4) + "L" + (mx - 1) + " " + (by - 4) + "M" + (mx + 1) + " " + (by + 4) + "L" + (mx + 5) + " " + (by - 4), style: "stroke:var(--muted);fill:none", "stroke-width": 1.2 }, f.s);
+    if (gp.x1 - gp.x0 > 64 && cfg.gapLabel) {
+      var gt = svg("text", { x: mx, y: f.m.t + f.ph - 6, "text-anchor": "middle" }, f.s); gt.textContent = cfg.gapLabel(gp.a, gp.b);
+    }
+  });
   // x labels, thinned to fit
   var ticks = (cfg.xTicks || xs).slice().sort(function (a, b) { return a - b; }), gap = cfg.xLabelW || 44, lastPx = Infinity;
   for (var ti = ticks.length - 1; ti >= 0; ti--) {   // label from the right, skipping any label too close to the previous one
     var tp = xp(ticks[ti]); if (lastPx - tp < gap) continue; lastPx = tp;
     svg("text", { x: tp, y: f.m.t + f.ph + 18, "text-anchor": "middle" }, f.s).textContent = cfg.xFmt(ticks[ti]);
   }
-  if (cfg.ref != null && cfg.ref <= y1) {
+  if (cfg.ref != null && cfg.ref <= y1 && cfg.ref >= y0) {
     svg("line", { class: "ref", x1: f.m.l, x2: f.m.l + f.pw, y1: y(cfg.ref), y2: y(cfg.ref) }, f.s);
     if (cfg.refLabel) svg("text", { x: f.m.l + f.pw - 4, y: y(cfg.ref) + 15, "text-anchor": "end", style: "paint-order:stroke;stroke:var(--card);stroke-width:4px;stroke-linejoin:round" }, f.s).textContent = cfg.refLabel;
   }
   (cfg.markers || []).forEach(function (mk, i) {
-    if (mk.x < x0 || mk.x > x1) return;
+    if (mk.x < xs[0] - 0.5 || mk.x > xs[xs.length - 1] + 0.5) return;   // a change outside the years shown gets no marker
     var mx = Math.round(xp(mk.x)) + 0.5;
     svg("line", { class: "mark", x1: mx, x2: mx, y1: f.m.t - 4, y2: f.m.t + f.ph }, f.s);
     var anchor = mx > f.m.l + f.pw * 0.75 ? "end" : mx < f.m.l + f.pw * 0.25 ? "start" : "middle";
@@ -379,33 +615,41 @@ function lineChart(box, cfg) {
     t.textContent = narrow && mk.short ? mk.short : mk.label;
   });
   var clipId = "c" + Math.random().toString(36).slice(2);
-  var cp = svg("clipPath", { id: clipId }, f.s); svg("rect", { x: f.m.l - 6, y: f.m.t - 2, width: f.pw + 12, height: f.ph + 4 }, cp);
+  var cp = svg("clipPath", { id: clipId }, f.s); svg("rect", { x: f.m.l - 8, y: f.m.t - 2, width: f.pw + 16, height: f.ph + 4 }, cp);
   var g = svg("g", { "clip-path": "url(#" + clipId + ")" }, f.s), n = cfg.series.length;
-  var dodge = Math.min(5, f.pw / xs.length / (n + 1));
-  cfg.series.forEach(function (sr, si) {
-    var c = color(sr.color != null ? sr.color : si), off = (si - (n - 1) / 2) * dodge, d = "", prev = null;
+  var dodge = cfg.dodge === false ? 0 : Math.min(5, X.slot / (n + 1));
+  function col(sr, si) { return sr.muted ? "var(--muted)" : color(sr.color != null ? sr.color : si); }
+  // muted series first, so the coloured ones are drawn on top
+  var order = cfg.series.map(function (sr, si) { return si; }).sort(function (a, b) { return (cfg.series[b].muted ? 1 : 0) - (cfg.series[a].muted ? 1 : 0); });
+  order.forEach(function (si) {
+    var sr = cfg.series[si], c = col(sr, si), off = sr.muted ? 0 : (si - (n - 1) / 2) * dodge, d = "", prev = null;
     sr.pts.forEach(function (p) {
       if (!isNum(p.y) || p.alone) { prev = null; return; }
       var px = xp(p.x) + off, py = y(p.y);
       d += (prev != null && !(cfg.breakAt && cfg.breakAt(prev, p.x)) ? "L" : "M") + px.toFixed(1) + " " + py.toFixed(1);
       prev = p.x;
     });
-    if (d) svg("path", { d: d, fill: "none", style: "stroke:" + c, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, g);
+    if (d) svg("path", { d: d, fill: "none", style: "stroke:" + c, "stroke-width": sr.width || (sr.muted ? 1.4 : 2), "stroke-dasharray": sr.dash ? "4 3" : null,
+      "stroke-linejoin": "round", "stroke-linecap": "round", opacity: sr.muted ? 0.75 : null }, g);
+    if (sr.noDots) return;
     sr.pts.forEach(function (p) {
       if (!isNum(p.y)) return;
-      var px = xp(p.x) + off;
+      var px = xp(p.x) + off, pc = p.color || c;
       if (isNum(p.lo) && isNum(p.hi)) {
-        svg("line", { x1: px, x2: px, y1: y(p.lo), y2: y(p.hi), style: "stroke:" + c, "stroke-width": 1, opacity: 0.55 }, g);
-        [p.lo, p.hi].forEach(function (v) { svg("line", { x1: px - 3, x2: px + 3, y1: y(v), y2: y(v), style: "stroke:" + c, "stroke-width": 1, opacity: 0.55 }, g); });
+        svg("line", { x1: px, x2: px, y1: y(p.lo), y2: y(p.hi), style: "stroke:" + pc, "stroke-width": 1, opacity: 0.55 }, g);
+        [p.lo, p.hi].forEach(function (v) { svg("line", { x1: px - 3, x2: px + 3, y1: y(v), y2: y(v), style: "stroke:" + pc, "stroke-width": 1, opacity: 0.55 }, g); });
       }
-      svg("circle", { cx: px, cy: y(p.y), r: p.hollow ? 3.5 : 3.2, style: p.hollow ? "fill:var(--card);stroke:" + c : "fill:" + c + ";stroke:var(--card)", "stroke-width": p.hollow ? 1.8 : 1 }, g);
+      var r = p.big ? 5.5 : sr.muted ? 2.6 : p.hollow ? 3.5 : 3.2;
+      var st = p.hollow ? "fill:var(--card);stroke:" + pc : p.half ? "fill:" + pc + ";fill-opacity:.4;stroke:" + pc : "fill:" + pc + ";stroke:var(--card)";
+      svg("circle", { cx: px, cy: y(p.y), r: r, style: st, "stroke-width": p.hollow || p.half ? 1.8 : 1 }, g);
     });
   });
   if (direct) {   // direct labels at the end of each line, pushed apart so they do not overlap
     var labs = cfg.series.map(function (sr, si) {
+      if (sr.muted) return null;
       var last = sr.pts.filter(function (p) { return isNum(p.y); }).pop();
       // only lines that reach the right edge get a label there; the legend covers the rest
-      return last && last.x === xs[xs.length - 1] ? { t: sr.short || sr.name, y: y(last.y), c: color(sr.color != null ? sr.color : si) } : null;
+      return last && last.x === xs[xs.length - 1] ? { t: sr.short || sr.name, y: y(last.y), c: col(sr, si) } : null;
     }).filter(Boolean).sort(function (a, b) { return a.y - b.y; });
     for (var i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 15) labs[i].y = labs[i - 1].y + 15;
     labs.forEach(function (l) {
@@ -419,9 +663,11 @@ function lineChart(box, cfg) {
   attachTips(box, f.s, f, slots, function (i) {
     var xv = slots[i].x, h = "<b>" + esc(cfg.xTip ? cfg.xTip(xv) : cfg.xFmt(xv)) + "</b>";
     cfg.series.forEach(function (sr, si) {
+      if (sr.noTip) return;
       var p = sr.pts.find(function (q) { return q.x === xv; });
-      h += '<div class="row"><i style="background:' + color(sr.color != null ? sr.color : si) + '"></i><span>' + (cfg.series.length > 1 ? esc(sr.short || sr.name) + ": " : "") +
-        (p && isNum(p.y) ? cfg.yTip(p) : '<span class="muted">no data</span>') + "</span></div>";
+      if (!p && cfg.skipMissing) return;
+      h += '<div class="row"><i style="background:' + col(sr, si) + '"></i><span>' + (cfg.series.length > 1 ? esc(sr.short || sr.name) + ": " : "") +
+        (p && isNum(p.y) ? cfg.yTip(p, sr) : '<span class="muted">' + esc(p && p.why ? p.why : "no data") + "</span>") + "</span></div>";
     });
     return h + (cfg.tipNote ? '<div class="muted">' + esc(cfg.tipNote(xv)) + "</div>" : "");
   });
@@ -429,14 +675,13 @@ function lineChart(box, cfg) {
 
 /* grouped vertical bars (thin). cfg: cats, catFmt, series [{name, short, vals}] */
 function barChart(box, cfg) {
-  var narrow = (box.clientWidth || 600) < 560;
   var f = frame(box, cfg.height || 200, { t: 12, r: 14, b: 30, l: 56 }, cfg.label);
-  if (!cfg.cats.length) { box.innerHTML = '<p class="empty">No data for this choice.</p>'; return; }
+  if (!cfg.cats.length) { box.innerHTML = empty("No data for this choice."); return; }
   var top = 0; cfg.series.forEach(function (s) { s.vals.forEach(function (v) { if (isNum(v)) top = Math.max(top, v); }); });
   var y = yAxis(f, 0, niceMax(top || 1, 4), cfg.yFmt, 4);
-  var gw = f.pw / cfg.cats.length, n = cfg.series.length, bw = Math.max(2, Math.min(12, gw * 0.7 / n));
+  var gw = f.pw / cfg.cats.length, n = cfg.series.length, bw = Math.max(2, Math.min(cfg.maxBar || 12, gw * 0.7 / n));
   svg("line", { class: "axis", x1: f.m.l, x2: f.m.l + f.pw, y1: f.m.t + f.ph + 0.5, y2: f.m.t + f.ph + 0.5 }, f.s);
-  var room = Math.max(1, Math.floor(f.pw / 44)), every = [1, 2, 4, 5, 10, 20].find(function (k) { return Math.ceil(cfg.cats.length / k) <= room; }) || 20;
+  var room = Math.max(1, Math.floor(f.pw / (cfg.labelW || 44))), every = [1, 2, 4, 5, 10, 20].find(function (k) { return Math.ceil(cfg.cats.length / k) <= room; }) || 20;
   var slots = cfg.cats.map(function (c, i) {
     var cx = f.m.l + gw * (i + 0.5);
     if ((cfg.cats.length - 1 - i) % every === 0) svg("text", { x: cx, y: f.m.t + f.ph + 18, "text-anchor": "middle" }, f.s).textContent = cfg.catFmt(c);
@@ -457,22 +702,107 @@ function barChart(box, cfg) {
   });
 }
 
-/* horizontal bars with the label above each bar (fits narrow screens). rows [{label, v, tip}] */
+/* horizontal bars with the label above each bar (fits narrow screens). rows [{label, v, tip}], fmt */
 function hbarChart(box, cfg) {
-  var rowH = 36, f = frame(box, cfg.rows.length * rowH + 8, { t: 4, r: 56, b: 4, l: 0 }, cfg.label, "Use the up and down arrow keys to read each value.");
-  var top = Math.max.apply(null, cfg.rows.map(function (r) { return r.v; }).concat([1]));
+  if (!cfg.rows.length) { box.innerHTML = empty("No data for this choice."); return; }
+  var rowH = 36, f = frame(box, cfg.rows.length * rowH + 8, { t: 4, r: 64, b: 4, l: 0 }, cfg.label, "Use the up and down arrow keys to read each value.");
+  var top = Math.max.apply(null, cfg.rows.map(function (r) { return isNum(r.v) ? r.v : 0; }).concat([cfg.minTop || 1e-9]));
   var slots = cfg.rows.map(function (r, i) {
     var y0 = f.m.t + i * rowH;
     svg("text", { x: 0, y: y0 + 13, class: "ink" }, f.s).textContent = r.label;
-    var w = Math.max(2, r.v / top * f.pw);
-    svg("rect", { x: 0, y: y0 + 19, width: w.toFixed(1), height: 8, rx: 2, style: "fill:" + color(0) }, f.s);
-    svg("text", { x: w + 6, y: y0 + 27, class: "ink" }, f.s).textContent = int(r.v);
+    var w = Math.max(2, Math.max(0, isNum(r.v) ? r.v : 0) / top * f.pw);
+    svg("rect", { x: 0, y: y0 + 19, width: w.toFixed(1), height: 8, rx: 2, style: "fill:" + color(r.color || 0) }, f.s);
+    svg("text", { x: w + 6, y: y0 + 27, class: "ink" }, f.s).textContent = cfg.fmt ? cfg.fmt(r.v) : int(r.v);
     return { p0: y0, p1: y0 + rowH - 2 };
   });
   attachTips(box, f.s, f, slots, function (i) { return "<b>" + esc(cfg.rows[i].label) + "</b>" + cfg.rows[i].tip; }, "h");
 }
 
-/* sortable table.  cols [{label, num, get(row)->sort value, fmt(row)->html}] */
+/* dot-and-interval rows, label above each row (fits narrow screens).
+   cfg: rows [{label, v, lo, hi, tip, muted, group, color}], fmt (axis numbers), ref, refLabel, clampMin, clampMax */
+function forestChart(box, cfg) {
+  var rows = cfg.rows;
+  if (!rows.length) { box.innerHTML = empty(cfg.empty || "No data for this choice."); return; }
+  var rowH = 36, headH = 28, items = [], prevG = null, h = 30;
+  rows.forEach(function (r) { if (r.group != null && r.group !== prevG) { items.push({ head: r.group }); prevG = r.group; h += headH; } items.push(r); h += rowH; });
+  var f = frame(box, h, { t: 24, r: 18, b: 6, l: 8 }, cfg.label, "Use the up and down arrow keys to read each row.");
+  var vals = [];
+  rows.forEach(function (r) { [r.v, r.lo, r.hi].forEach(function (v) { if (isNum(v)) vals.push(v); }); });
+  if (cfg.ref != null) vals.push(cfg.ref);
+  if (!vals.length) vals = [0, 1];
+  var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  if (hi - lo < 1e-9) { hi += 1; lo -= 1; }
+  var pad = (hi - lo) * 0.04; lo -= pad; hi += pad;
+  if (cfg.clampMin != null) lo = Math.max(lo, cfg.clampMin);
+  if (cfg.clampMax != null) hi = Math.min(hi, cfg.clampMax);
+  var st = niceStep(hi - lo, f.pw < 420 ? 3 : 7);
+  lo = Math.floor(lo / st + 1e-9) * st; hi = Math.ceil(hi / st - 1e-9) * st;
+  var x = function (v) { return f.m.l + (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * f.pw; };
+  var lastLab = -Infinity;
+  for (var v = lo; v <= hi + st * 1e-6; v += st) {
+    var xx = Math.round(x(v)) + 0.5;
+    svg("line", { class: "grid", x1: xx, x2: xx, y1: f.m.t, y2: h - f.m.b }, f.s);
+    var a = v === lo ? "start" : v + st > hi + st * 1e-6 ? "end" : "middle", lab = cfg.fmt(Math.abs(v) < 1e-9 ? 0 : v);
+    if (xx - lastLab < lab.length * 7 + 8) continue;   // skip a label that would run into the previous one
+    svg("text", { x: xx, y: f.m.t - 9, "text-anchor": a }, f.s).textContent = lab;
+    lastLab = xx + (a === "start" ? lab.length * 7 : 0);
+  }
+  if (cfg.ref != null && cfg.ref >= lo && cfg.ref <= hi) {
+    var rx = Math.round(x(cfg.ref)) + 0.5;
+    svg("line", { class: "ref", x1: rx, x2: rx, y1: f.m.t, y2: h - f.m.b }, f.s);
+  }
+  var y = f.m.t + 2, slots = [], maxChars = Math.max(20, Math.floor(f.pw / 6.6));
+  items.forEach(function (it) {
+    if (it.head) { var ht = svg("text", { x: f.m.l, y: y + 19, class: "head" }, f.s); ht.textContent = it.head.length > maxChars ? it.head.slice(0, maxChars - 1) + "…" : it.head; y += headH; return; }
+    var t = svg("text", { x: f.m.l, y: y + 13, class: it.muted ? "" : "ink" }, f.s);
+    t.textContent = it.label.length > maxChars ? it.label.slice(0, maxChars - 1) + "…" : it.label;
+    var c = it.color || (it.muted ? "var(--muted)" : color(0)), cy = y + 25;
+    if (isNum(it.lo) && isNum(it.hi)) {
+      svg("line", { x1: x(it.lo), x2: x(it.hi), y1: cy, y2: cy, style: "stroke:" + c, "stroke-width": 2, opacity: 0.55 }, f.s);
+      [it.lo, it.hi].forEach(function (b) { svg("line", { x1: x(b), x2: x(b), y1: cy - 4, y2: cy + 4, style: "stroke:" + c, "stroke-width": 1.2, opacity: 0.55 }, f.s); });
+    }
+    if (isNum(it.v)) svg("circle", { cx: x(it.v), cy: cy, r: 4.5, style: it.hollow ? "fill:var(--card);stroke:" + c : "fill:" + c + ";stroke:var(--card)", "stroke-width": it.hollow ? 2 : 1 }, f.s);
+    else svg("text", { x: f.m.l, y: cy + 4 }, f.s).textContent = it.none || "no estimate";
+    slots.push({ p0: y, p1: y + rowH - 2, row: it }); y += rowH;
+  });
+  attachTips(box, f.s, f, slots, function (i) { var r = slots[i].row; return "<b>" + esc(r.label) + "</b>" + (r.tip || ""); }, "h");
+}
+
+/* reliability chart: average forecast (x) against the observed share (y), with the diagonal.  cfg.series [{name, color, pts:[{x,y,n,band}]}] */
+function calChart(box, cfg) {
+  var narrow = (box.clientWidth || 600) < 560;
+  var f = frame(box, narrow ? 300 : 340, { t: 14, r: 18, b: 44, l: 50 }, cfg.label);
+  var top = 0, nmax = 1, bands = [];
+  cfg.series.forEach(function (s) { s.pts.forEach(function (p) { top = Math.max(top, p.x || 0, p.y || 0); nmax = Math.max(nmax, p.n || 0); if (bands.indexOf(p.band) < 0) bands.push(p.band); }); });
+  if (!bands.length) { box.innerHTML = empty("No data for this choice."); return; }
+  var mx = Math.min(1, niceMax(top * 1.05, 5)), pf = function (v) { return Math.round(v * 100) + "%"; };
+  var y = yAxis(f, 0, mx, pf), x = function (v) { return f.m.l + v / mx * f.pw; };
+  var st = niceStep(mx, narrow ? 4 : 6);
+  for (var v = 0; v <= mx + 1e-9; v += st) svg("text", { x: x(v), y: f.m.t + f.ph + 18, "text-anchor": "middle" }, f.s).textContent = pf(v);
+  svg("text", { x: f.m.l + f.pw / 2, y: f.m.t + f.ph + 36, "text-anchor": "middle" }, f.s).textContent = "Average forecast chance of one offer";
+  svg("line", { class: "axis", x1: f.m.l, x2: f.m.l + f.pw, y1: f.m.t + f.ph + 0.5, y2: f.m.t + f.ph + 0.5 }, f.s);
+  svg("line", { class: "ref", x1: x(0), y1: y(0), x2: x(mx), y2: y(mx) }, f.s);
+  cfg.series.forEach(function (s, si) {
+    var c = color(s.color != null ? s.color : si), pts = s.pts.filter(function (p) { return isNum(p.x) && isNum(p.y); }).sort(function (a, b) { return a.x - b.x; });
+    if (pts.length > 1) svg("path", { d: pts.map(function (p, i) { return (i ? "L" : "M") + x(p.x).toFixed(1) + " " + y(p.y).toFixed(1); }).join(""), fill: "none", style: "stroke:" + c, "stroke-width": 1.6, opacity: 0.8 }, f.s);
+    pts.forEach(function (p) { svg("circle", { cx: x(p.x), cy: y(p.y), r: (2.5 + 5 * Math.sqrt((p.n || 0) / nmax)).toFixed(1), style: "fill:" + c + ";fill-opacity:.75;stroke:var(--card)", "stroke-width": 1 }, f.s); });
+  });
+  var slots = bands.map(function (b) {
+    var xsum = 0, k = 0; cfg.series.forEach(function (s) { s.pts.forEach(function (p) { if (p.band === b && isNum(p.x)) { xsum += p.x; k++; } }); });
+    return { p: x(k ? xsum / k : 0), band: b };
+  }).sort(function (a, b) { return a.p - b.p; });
+  attachTips(box, f.s, f, slots, function (i) {
+    var b = slots[i].band, h = "<b>Forecasts of " + esc(b.replace("-", " to ").replace(/(\d\.\d\d)/g, function (m) { return Math.round(+m * 100) + "%"; })) + "</b>";
+    cfg.series.forEach(function (s, si) {
+      var p = s.pts.find(function (q) { return q.band === b; });
+      h += '<div class="row"><i style="background:' + color(s.color != null ? s.color : si) + '"></i><span>' + (cfg.series.length > 1 ? esc(s.name) + ": " : "") +
+        (p ? "forecast " + pct(p.x) + ", observed <b style='display:inline'>" + pct(p.y) + "</b> of " + int(p.n) : '<span class="muted">no data</span>') + "</span></div>";
+    });
+    return h;
+  });
+}
+
+/* sortable table.  cols [{label, num, wide, get(row)->sort value, fmt(row)->html}] */
 function table(box, cols, rows, opts) {
   opts = opts || {};
   var state = { col: opts.sortCol != null ? opts.sortCol : -1, dir: opts.sortDir || 1 };
@@ -492,9 +822,12 @@ function table(box, cols, rows, opts) {
     }).join("") + "</tr></thead><tbody>";
     var cut = opts.limit && !state.all && rs.length > opts.limit + 5 ? opts.limit : rs.length;
     h += rs.slice(0, cut).map(function (r) {
-      return "<tr>" + cols.map(function (c) { return '<td data-label="' + esc(c.label) + '"' + (c.num ? ' class="n"' : "") + "><span>" + c.fmt(r) + "</span></td>"; }).join("") + "</tr>";
+      return "<tr" + (opts.rowClass && opts.rowClass(r) ? ' class="' + opts.rowClass(r) + '"' : "") + ">" + cols.map(function (c) {
+        var cl = (c.num ? "n" : "") + (c.wide ? " wide" : "");
+        return '<td data-label="' + esc(c.label) + '"' + (cl ? ' class="' + cl.trim() + '"' : "") + "><span>" + c.fmt(r) + "</span></td>";
+      }).join("") + "</tr>";
     }).join("") + "</tbody></table>";
-    if (!rs.length) h += '<p class="empty">No rows match.</p>';
+    if (!rs.length) h += '<p class="empty">' + esc(opts.emptyText || "No rows match.") + "</p>";
     if (opts.limit && rs.length > opts.limit + 5) h += '<button type="button" class="theme more" style="margin-top:10px">' + (state.all ? "Show the first " + opts.limit + " rows" : "Show all " + rs.length + " rows") + "</button>";
     box.innerHTML = h;
     var more = box.querySelector("button.more");
@@ -513,17 +846,25 @@ function table(box, cols, rows, opts) {
 function seg(name, legendText, options, value, onChange) {
   var fs = document.createElement("fieldset");
   fs.innerHTML = "<legend>" + esc(legendText) + '</legend><div class="seg">' + options.map(function (o) {
-    return '<label><input type="radio" name="' + name + '" value="' + esc(o[0]) + '"' + (o[0] === value ? " checked" : "") + ">" + esc(o[1]) + "</label>";
+    return '<label><input type="radio" name="' + name + '" value="' + esc(o[0]) + '"' + (String(o[0]) === String(value) ? " checked" : "") + ">" + esc(o[1]) + "</label>";
   }).join("") + "</div>";
   fs.addEventListener("change", function (e) { onChange(e.target.value); });
   return fs;
 }
-function selectBox(id, label, options, onChange) {
+/* options [[value, label]] or [[groupLabel, [[value, label], ...]]] for groups */
+function selectBox(id, label, options, onChange, value) {
   var w = document.createElement("div");
+  function opt(o) { return '<option value="' + esc(o[0]) + '"' + (value != null && String(o[0]) === String(value) ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }
   w.innerHTML = '<label for="' + id + '">' + esc(label) + '</label><select id="' + id + '">' + options.map(function (o) {
-    return '<option value="' + esc(o[0]) + '">' + esc(o[1]) + "</option>";
+    return Array.isArray(o[1]) ? '<optgroup label="' + esc(o[0]) + '">' + o[1].map(opt).join("") + "</optgroup>" : opt(o);
   }).join("") + "</select>";
   w.querySelector("select").addEventListener("change", function (e) { onChange(e.target.value); });
+  return w;
+}
+function searchBox(id, label, placeholder, onInput) {
+  var w = document.createElement("div");
+  w.innerHTML = '<label for="' + id + '">' + esc(label) + '</label><input type="search" id="' + id + '" placeholder="' + esc(placeholder) + '" autocomplete="off">';
+  w.querySelector("input").addEventListener("input", function (e) { onInput(e.target.value); });
   return w;
 }
 var redraws = [];
@@ -537,12 +878,48 @@ function shareTip(p) {
   return "<b style='display:inline'>" + pct(p.y) + "</b> of " + int(p.n) + (isNum(p.lo) ? ' <span class="muted">(95%: ' + pct(p.lo) + " to " + pct(p.hi) + ")</span>" : "") + (p.hollow ? ' <span class="muted">so far</span>' : "");
 }
 function fyTip(v) { return "Fiscal year " + v + " (Oct " + (v - 1) + " to Sep " + v + ")"; }
+function gapYears(a, b) { return b - a === 2 ? "FY" + (a + 1) + " not in data" : "FY" + (a + 1) + " to FY" + (b - 1) + " not in data"; }
+function ratioTip(p) { return "<b style='display:inline'>" + ratio(p.y) + "</b>" + (isNum(p.lo) ? ' <span class="muted">(95%: ' + ratio(p.lo) + " to " + ratio(p.hi) + ")</span>" : "") + (p.active === true ? ' <span class="muted">limit</span>' : ""); }
+function ratioCap(series) { var ys = []; series.forEach(function (s) { s.pts.forEach(function (p) { if (isNum(p.y)) ys.push(p.y); }); }); return Math.max(2, 1.6 * Math.max.apply(null, ys.concat([1]))); }
+function ci(lo, hi, f) { f = f || ratio; return isNum(lo) && isNum(hi) ? f(lo) + " to " + f(hi) : "n/a"; }
+function yearsText(ys) {
+  if (!ys || !ys.length) return "";
+  ys = ys.slice().sort(function (a, b) { return a - b; });
+  var out = [], s = ys[0], p = ys[0];
+  for (var i = 1; i <= ys.length; i++) {
+    if (i < ys.length && ys[i] === p + 1) { p = ys[i]; continue; }
+    out.push(s === p ? "FY" + s : "FY" + s + " to FY" + p);
+    if (i < ys.length) { s = p = ys[i]; }
+  }
+  return out.join(", ");
+}
 var SRC = { h: "Long history", r: "FY2024 to FY2026 tables", l: "This year so far" };
+var SECTOR_SHORT = { "all sectors": "All sectors", "civilian except GSA": "Civilian except GSA", "GSA": "GSA", "Department of Defense": "Defense",
+  civilian_ex_gsa: "Civilian except GSA", gsa: "GSA", defense: "Defense", civilian: "Civilian", all: "All agencies" };
 
 $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot ? " from the public data snapshot of " + esc(niceDate(D.snapshot)) : "") +
-  ". Fiscal years run from October to September: FY2026 is Oct 2025 to Sep 2026.";
+  ". Fiscal years run from October to September: FY2026 is Oct 2025 to Sep 2026. Where years are missing from a result, charts skip them and shade the gap.";
 
-/* ---------- 1. agencies ---------- */
+/* ---------- section menu: highlight the section in view ---------- */
+(function () {
+  var nav = $("secnav"), links = Array.prototype.slice.call(nav.querySelectorAll("a"));
+  function mark(id) {
+    links.forEach(function (a) {
+      var on = a.getAttribute("href") === "#" + id;
+      if (on) { a.setAttribute("aria-current", "true"); nav.scrollLeft = Math.max(0, a.parentNode.offsetLeft - nav.clientWidth / 2 + a.offsetWidth / 2); }
+      else a.removeAttribute("aria-current");
+    });
+  }
+  if (!("IntersectionObserver" in window)) return;
+  var heads = links.map(function (a) { return document.getElementById(a.getAttribute("href").slice(1)); }).filter(Boolean);
+  var io = new IntersectionObserver(function (es) {
+    var vis = es.filter(function (e) { return e.isIntersecting; });
+    if (vis.length) mark(vis[0].target.id);
+  }, { rootMargin: "-60px 0px -65% 0px" });
+  heads.forEach(function (h) { io.observe(h); });
+})();
+
+/* ---------- agencies ---------- */
 (function () {
   var A = D.agencies || [], meta = D.agency_meta || {}, chosen = [];
   ["VA", "DOJ", "USDA"].forEach(function (ab) { var a = A.find(function (x) { return x.abbr === ab; }); if (a) chosen.push(a.full); });
@@ -585,7 +962,7 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
     legend("ag-legend2", items);
     if (!sel.length) { $("ag-share").innerHTML = $("ag-count").innerHTML = '<p class="empty">Pick an agency to see its numbers.</p>'; $("ag-table").innerHTML = ""; return; }
     lineChart($("ag-share"), {
-      label: "Single-offer share by fiscal year for " + sel.map(agencyShort).join(", "), series: series, xs: xs,
+      label: "Single-offer share by fiscal year for " + sel.map(agencyShort).join(", "), series: series, xs: xs, gapLabel: gapYears,
       xFmt: function (v) { return String(v); }, xTip: fyTip, yFmt: function (v) { return Math.round(v * 100) + "%"; }, yLimit: 1,
       yTip: shareTip, breakAt: function (a, b) { return b - a > 1; },
       tipNote: function (v) { return v === (meta.sofar || {}).fy ? "So far: awards dated " + niceDate(meta.sofar.from) + " to " + niceDate(meta.sofar.to) + "." : ""; }
@@ -615,7 +992,7 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
   onResize(draw); drawList();
   var hy = meta.history_years || [], ry = meta.recent_years || [];
   var note = "Only competed awards with a usable offer count are counted (purchase orders, definitive contracts and contract vehicles). Vertical bars on each dot are 95% intervals: small agencies have wide ones. ";
-  note += hy.length ? "Fiscal years " + (ry.length ? ry[0] + " to " + ry[ry.length - 1] + " come from the every-civilian-agency tables; " : "") + "other years come from the long history (" + hy[0] + (hy.length > 1 ? " to " + hy[hy.length - 1] : "") + "), which uses the same definitions. Lines break where years are missing. "
+  note += hy.length ? "Fiscal years " + (ry.length ? ry[0] + " to " + ry[ry.length - 1] + " come from the every-civilian-agency tables; " : "") + "other years come from the long history (" + yearsText(hy) + "), which uses the same definitions. Lines break where years are missing, and the gap is shaded. "
     : "The long history (FY2008 onward) is still being built, so this shows FY" + (ry[0] || 2024) + " to FY" + (ry[ry.length - 1] || 2026) + ". ";
   if (meta.sofar) note += "The hollow dot is FY" + meta.sofar.fy + " so far (awards dated " + niceDate(meta.sofar.from) + " to " + niceDate(meta.sofar.to) + "). It rests on few awards, the newest weeks are always incomplete, and it is left out of the award counts.";
   $("ag-note").textContent = note;
@@ -630,7 +1007,7 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
   }
 })();
 
-/* ---------- 2. sectors ---------- */
+/* ---------- sectors ---------- */
 (function () {
   var S = D.sectors, card = $("sec-card");
   if (!S || !S.series) { card.innerHTML = '<p class="empty">The sector history is not available yet.</p>'; return; }
@@ -647,7 +1024,7 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
     var xs = []; series.forEach(function (s) { s.pts.forEach(function (p) { if (xs.indexOf(p.x) < 0) xs.push(p.x); }); });
     legend("sec-legend", series.map(function (s) { return { name: s.name, color: color(s.color) }; }));
     lineChart($("sec-chart"), {
-      label: "Single-offer share by fiscal year: civilian agencies except GSA, GSA, and Defense (" + KIND[kind] + ")", series: series, xs: xs,
+      label: "Single-offer share by fiscal year: civilian agencies except GSA, GSA, and Defense (" + KIND[kind] + ")", series: series, xs: xs, gapLabel: gapYears,
       xFmt: String, xTip: fyTip, yFmt: function (v) { return Math.round(v * 100) + "%"; }, yTip: shareTip, yLimit: 1, breakAt: function (a, b) { return b - a > 1; }
     });
     var rows = []; series.forEach(function (s) { s.pts.forEach(function (p) { rows.push({ s: s.name, p: p }); }); });
@@ -666,7 +1043,192 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
     "Award types other than “all” come from the long history only.";
 })();
 
-/* ---------- 3. thresholds ---------- */
+/* ---------- why only one bid? ---------- */
+(function () {
+  var R = D.drivers;
+  if (!R) { $("why-card").innerHTML = empty("The results on why awards get one offer (drivers_*.csv) are not in the results folder yet."); $("ame-card").hidden = $("blk-card").hidden = true; return; }
+  var L = R.labels || [], SOS = R.single_offer_share || {};
+  var SCOPES = ["all sectors", "civilian except GSA", "GSA", "Department of Defense"];
+  function lab(i) { return L[i] == null ? "" : L[i]; }
+  function scopeSeg(name, avail, val, fn) { return seg(name, "Agencies", avail.map(function (s) { return [s, SECTOR_SHORT[s] || s]; }), val, fn); }
+  // --- A. shares by factor
+  var F = R.factors || [];
+  if (!F.length) { $("why-card").innerHTML = empty("The single-offer shares by factor are not in the results folder yet."); }
+  else {
+    var fkey = (F.find(function (f) { return f.f === "size_band"; }) || F[0]).f, scope = "all sectors";
+    var scopesA = SCOPES.filter(function (s) { return F.some(function (f) { return f.s[s]; }); });
+    if (scopesA.indexOf(scope) < 0) scope = scopesA[0];
+    $("why-controls").appendChild(selectBox("why-f", "Factor", F.map(function (f) { return [f.f, f.name.charAt(0).toUpperCase() + f.name.slice(1)]; }), function (v) { fkey = v; drawA(); }, fkey));
+    $("why-controls").appendChild(scopeSeg("whysc", scopesA, scope, function (v) { scope = v; drawA(); }));
+    var CAP = 30;
+    var drawA = function () {
+      var f = F.find(function (x) { return x.f === fkey; }), rows = (f.s[scope] || []).slice(), shown = rows;
+      if (rows.length > CAP) { var big = rows.slice().sort(function (a, b) { return b[2] - a[2]; }).slice(0, CAP); shown = rows.filter(function (r) { return big.indexOf(r) >= 0; }); }
+      var avg = (SOS[scope] || {}).share;
+      forestChart($("why-chart"), {
+        label: "Single-offer share by " + f.name + ", " + (SECTOR_SHORT[scope] || scope), fmt: function (v) { return Math.round(v * 100) + "%"; },
+        ref: avg, clampMin: 0, clampMax: 1,
+        rows: shown.map(function (r) { return { label: lab(f.levels[r[0]]), v: r[3], lo: r[4], hi: r[5],
+          tip: "<div>" + pct(r[3]) + " of " + int(r[2]) + " competed awards got one offer</div><div class='muted'>95%: " + pct(r[4]) + " to " + pct(r[5]) + "</div>" }; })
+      });
+      table($("why-table"), [
+        { label: "Level", get: function (r) { return r[0]; }, fmt: function (r) { return esc(lab(f.levels[r[0]])); } },
+        { label: "Single-offer share", num: true, get: function (r) { return r[3]; }, fmt: function (r) { return "<b>" + pct(r[3]) + "</b>"; } },
+        { label: "95% interval", num: true, get: function (r) { return r[4]; }, fmt: function (r) { return ci(r[4], r[5], pct); } },
+        { label: "Competed awards", num: true, get: function (r) { return r[2]; }, fmt: function (r) { return int(r[2]); } },
+        { label: "Single offer", num: true, get: function (r) { return r[1]; }, fmt: function (r) { return int(r[1]); } }
+      ], rows, { stack: true, limit: 30 });
+      $("why-note").textContent = (rows.length > shown.length ? "The chart shows the " + shown.length + " largest of " + rows.length + " levels; the table has all of them. " : "") +
+        (isNum(avg) ? "The dashed line is the share for all competed awards in this group: " + pct(avg) + ". " : "") +
+        "Competed awards with a usable offer count" + (R.years_in_shares ? ", " + yearsText(R.years_in_shares) : "") + ". " +
+        (R.defense_years_left_out_incomplete && R.defense_years_left_out_incomplete.length ? "Defense years left out because they are incomplete: " + R.defense_years_left_out_incomplete.join(", ") + ". " : "") +
+        "A group's share can be high because of what it buys, where it buys, or how staff record offers. It does not show that anything went wrong.";
+    };
+    onResize(drawA);
+  }
+  // --- B. the model's average marginal effects
+  var M = R.model || {}, BN = R.blocks_names || [], mScopes = SCOPES.filter(function (s) { return M[s]; });
+  if (!mScopes.length) { $("ame-card").innerHTML = empty("The model results (drivers_model.csv) are not in the results folder yet."); }
+  else {
+    var mscope = mScopes[0], ranked = (R.blocks || []).map(function (b) { return b.block; });
+    var blocks = BN.slice().sort(function (a, b) { var ia = ranked.indexOf(a), ib = ranked.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
+    var block = blocks[0];
+    $("ame-controls").appendChild(selectBox("ame-b", "Block of factors", blocks.map(function (b) { return [b, b.charAt(0).toUpperCase() + b.slice(1)]; }), function (v) { block = v; drawB(); }, block));
+    $("ame-controls").appendChild(scopeSeg("amesc", mScopes, mscope, function (v) { mscope = v; drawB(); }));
+    var MAXR = 40;
+    var drawB = function () {
+      var bi = BN.indexOf(block), rows = (M[mscope] || []).filter(function (r) { return r[0] === bi; });
+      var shown = rows;
+      if (rows.length > MAXR) shown = rows.slice().sort(function (a, b) { return Math.abs(b[6]) - Math.abs(a[6]); }).slice(0, MAXR);
+      shown = shown.slice().sort(function (a, b) { return a[1] - b[1] || b[6] - a[6]; });
+      forestChart($("ame-chart"), {
+        label: "Average marginal effects on the chance of a single offer, " + block + ", " + (SECTOR_SHORT[mscope] || mscope), ref: 0,
+        fmt: function (v) { return (v > 0 ? "+" : "") + trimNum(v) + " pts"; }, empty: "No rows for this block in this group.",
+        rows: shown.map(function (r) { return { label: lab(r[2]), v: r[6], lo: r[7], hi: r[8], group: lab(r[1]).charAt(0).toUpperCase() + lab(r[1]).slice(1) + ", compared with " + lab(r[3]),
+          muted: isNum(r[7]) && r[7] <= 0 && r[8] >= 0,
+          tip: "<div><b style='display:inline'>" + signed(r[6], 1) + " points</b> <span class='muted'>(95%: " + signed(r[7], 1) + " to " + signed(r[8], 1) + ")</span></div><div class='muted'>Compared with " + esc(lab(r[3])) + ". " + int(r[4]) + " sampled awards; " + pct(r[5]) + " of them got one offer.</div>" }; })
+      });
+      table($("ame-table"), [
+        { label: "Factor", get: function (r) { return lab(r[1]); }, fmt: function (r) { return esc(lab(r[1])); } },
+        { label: "Level", get: function (r) { return lab(r[2]); }, fmt: function (r) { return esc(lab(r[2])); } },
+        { label: "Compared with", get: function (r) { return lab(r[3]); }, fmt: function (r) { return esc(lab(r[3])); } },
+        { label: "Effect (points)", num: true, get: function (r) { return r[6]; }, fmt: function (r) { return "<b>" + signed(r[6], 1) + "</b>"; } },
+        { label: "95% interval", num: true, get: function (r) { return r[7]; }, fmt: function (r) { return ci(r[7], r[8], function (v) { return signed(v, 1); }); } },
+        { label: "Sampled awards", num: true, get: function (r) { return r[4]; }, fmt: function (r) { return int(r[4]); } },
+        { label: "Single-offer share", num: true, get: function (r) { return r[5]; }, fmt: function (r) { return pct(r[5]); } }
+      ], rows, { stack: true, limit: 30, sortCol: 3, sortDir: -1 });
+      var mn = R.model_notes || {}, sm = R.sample || {};
+      $("ame-note").textContent = (rows.length > shown.length ? "The chart shows the " + shown.length + " largest of " + rows.length + " effects; the table has all of them. " : "") +
+        "Gray rows: the interval crosses zero. Fitted on a random sample" + (sm.quota_per_stratum ? " (" + int(sm.quota_per_stratum) + " awards per sector and year)" : "") + (R.years_in_model ? " of " + yearsText(R.years_in_model) : "") + ". " +
+        (mn.controls ? "Held equal: " + mn.controls + ". " : "") + (mn.standard_errors ? "Intervals: standard errors " + mn.standard_errors + ". " : "") +
+        "Rare levels are pooled into “other”. Coding differences between agencies can look like drivers.";
+    };
+    onResize(drawB);
+  }
+  // --- C. blocks
+  var B = R.blocks || [];
+  if (!B.length) { $("blk-card").innerHTML = empty("The block comparison (drivers_blocks.csv) is not in the results folder yet."); }
+  else {
+    onResize(function () {
+      hbarChart($("blk-chart"), { label: "Share of the model's gain lost when each block of factors is left out", fmt: function (v) { return pct(v, 0); }, minTop: 0.05,
+        rows: B.map(function (b) { return { label: b.block.charAt(0).toUpperCase() + b.block.slice(1), v: b.lost,
+          tip: "<div>" + pct(b.lost, 0) + " of the gain lost without it</div><div class='muted'>Alone it gives " + pct(b.alone, 0) + " of the gain. AUC drop " + ratio(b.auc_drop * 100) + " points.</div>" }; }) });
+    });
+    table($("blk-table"), [
+      { label: "Block", get: function (b) { return b.block; }, fmt: function (b) { return esc(b.block); } },
+      { label: "Gain lost without it", num: true, get: function (b) { return b.lost; }, fmt: function (b) { return "<b>" + pct(b.lost, 0) + "</b>"; } },
+      { label: "Log loss rise without it (95%)", num: true, get: function (b) { return b.ll_up; }, fmt: function (b) { return signed(b.ll_up, 4) + " (" + ci(b.ll_lo, b.ll_hi, function (v) { return v.toFixed(4); }) + ")"; } },
+      { label: "AUC drop without it (95%)", num: true, get: function (b) { return b.auc_drop; }, fmt: function (b) { return signed(b.auc_drop, 3) + " (" + ci(b.auc_lo, b.auc_hi, function (v) { return v.toFixed(3); }) + ")"; } },
+      { label: "Gain from it alone", num: true, get: function (b) { return b.alone; }, fmt: function (b) { return pct(b.alone, 0); } },
+      { label: "Factors", get: function (b) { return b.factors; }, fmt: function (b) { return esc(b.factors); } }
+    ], B, { stack: true });
+    $("blk-note").textContent = (R.split ? "Split: " + R.split + " (" + int(R.n_train) + " awards to train, " + int(R.n_test) + " to test). " : "") +
+      (isNum(R.auc_full) ? "The full model's AUC on the test year is " + ratio(R.auc_full) + " (0.5 is a coin flip, 1.0 is perfect). " : "") +
+      "The gain is the drop in log loss from a plain average to the full model. A negative “alone” share means the block on its own does worse than the plain average on the test year. Agency is held in every model and counted as its own block.";
+  }
+})();
+
+/* ---------- after award ---------- */
+(function () {
+  var O = D.outcomes;
+  if (!O || !O.rows || !O.rows.length) { $("out-card").innerHTML = empty("The after-award results (outcomes_*.csv) are not in the results folder yet."); return; }
+  var OC = O.outcomes, FUs = O.follow_ups, SC = O.scopes, ST = O.scope_type || {};
+  var ROLE = { outcome: "Outcome", placebo: "Placebo check", balance: "Balance check" };
+  function unitVal(o, v) { return !isNum(v) ? null : (o.unit === "share" || o.unit === "log") ? v * 100 : v; }
+  function unitName(o) { return { share: "percentage points", log: "% (approximately)", ratio: "times the initial value", count: "modifications", years: "years", months: "months" }[o.unit] || o.unit; }
+  function unitShort(o) { return { share: " pts", log: "%", ratio: "", count: "", years: " yr", months: " mo" }[o.unit] || ""; }
+  function fmtU(o, v, d) { if (!isNum(v)) return "n/a"; var u = unitVal(o, v); return signed(u, d != null ? d : (o.unit === "ratio" ? 3 : 2)) + unitShort(o); }
+  function meanFmt(o, v) { if (!isNum(v)) return "n/a"; return o.unit === "share" ? pct(v) : o.unit === "log" ? "$" + int(Math.exp(v)) + " (typical)" : trimNum(v); }
+  function fuLabel(fu) { var m = /t\s*to\s*t\+(\d+)/.exec(fu || ""); return m ? "Award year and the next " + (m[1] === "1" ? "year" : m[1] + " years") : fu; }
+  var GROUP = { pooled: "All sectors together", sector: "By sector", "size band": "By size of award", check: "Checks of the method" };
+  var okey = OC.findIndex(function (o) { return o.key === "oblig_ratio_w"; }); if (okey < 0) okey = 0;
+  var fu = FUs.indexOf(O.headline_follow_up) >= 0 ? FUs.indexOf(O.headline_follow_up) : 0;
+  var groups = [["Outcomes", []], ["Placebo checks (should be near zero)", []], ["Balance checks (fixed at award)", []]];
+  OC.forEach(function (o, i) { groups[o.role === "placebo" ? 1 : o.role === "balance" ? 2 : 0][1].push([i, o.label]); });
+  $("out-controls").appendChild(selectBox("out-o", "Outcome", groups.filter(function (g) { return g[1].length; }), function (v) { okey = +v; draw(); drawC(); }, okey));
+  $("out-controls").appendChild(seg("outfu", "Follow-up", FUs.map(function (f, i) { return [i, fuLabel(f)]; }), fu, function (v) { fu = +v; draw(); drawC(); }));
+  function rowsFor(oi, fi) { return O.rows.filter(function (r) { return r[0] === oi && r[1] === fi; }); }
+  function draw() {
+    var o = OC[okey], rows = rowsFor(okey, fu), order = ["pooled", "sector", "size band", "check"];
+    rows.sort(function (a, b) { return order.indexOf(ST[SC[a[2]]]) - order.indexOf(ST[SC[b[2]]]); });
+    $("out-banner").innerHTML = o.role === "placebo" ? '<div class="banner"><b>Placebo check.</b> Competition cannot change this, so the difference should be close to zero. A clear difference would mean the comparison itself is off.</div>'
+      : o.role === "balance" ? '<div class="banner"><b>Balance check.</b> This is fixed when the award is made. A difference means single-offer and multi-offer awards differ in ways the comparison does not remove.</div>' : "";
+    forestChart($("out-chart"), {
+      label: "Single-offer minus multi-offer: " + o.label + ", " + fuLabel(FUs[fu]), ref: 0, fmt: function (v) { return (v > 0 ? "+" : "") + trimNum(v) + unitShort(o); },
+      rows: rows.map(function (r) { var sc = SC[r[2]]; return { label: SECTOR_SHORT[sc] || sc, group: GROUP[ST[sc]] || ST[sc], v: unitVal(o, r[3]), lo: unitVal(o, r[4]), hi: unitVal(o, r[5]),
+        color: o.role === "outcome" ? null : "var(--s4)", muted: isNum(r[4]) && r[4] <= 0 && r[5] >= 0 && o.role === "outcome",
+        tip: "<div><b style='display:inline'>" + fmtU(o, r[3]) + "</b> <span class='muted'>(95%: " + fmtU(o, r[4]) + " to " + fmtU(o, r[5]) + ")</span></div><div class='muted'>Multi-offer average " + meanFmt(o, r[6]) + ". " + int(r[7]) + " awards in " + int(r[8]) + " comparison cells, " + int(r[9]) + " buying offices.</div>" }; })
+    });
+    table($("out-table"), [
+      { label: "Awards compared", get: function (r) { return r[2]; }, fmt: function (r) { return esc(SC[r[2]]); } },
+      { label: "Difference", num: true, get: function (r) { return r[3]; }, fmt: function (r) { return "<b>" + fmtU(o, r[3]) + "</b>"; } },
+      { label: "95% interval", num: true, get: function (r) { return r[4]; }, fmt: function (r) { return fmtU(o, r[4]) + " to " + fmtU(o, r[5]); } },
+      { label: "Multi-offer average", num: true, get: function (r) { return r[6]; }, fmt: function (r) { return meanFmt(o, r[6]); } },
+      { label: "Raw averages: one offer / more", num: true, get: function (r) { return r[10]; }, fmt: function (r) { return meanFmt(o, r[10]) + " / " + meanFmt(o, r[11]); } },
+      { label: "Awards in the comparison", num: true, get: function (r) { return r[7]; }, fmt: function (r) { return int(r[7]); } },
+      { label: "Buying offices", num: true, get: function (r) { return r[9]; }, fmt: function (r) { return int(r[9]); } }
+    ], rows, { stack: true });
+    var pooledIx = SC.indexOf("all sectors"), glance = O.rows.filter(function (r) { return r[1] === fu && r[2] === pooledIx; });
+    $("out-glance-sub").textContent = "All sectors together, " + fuLabel(FUs[fu]).toLowerCase() + (O.cohorts_text[FUs[fu]] ? ", awards made in " + O.cohorts_text[FUs[fu]].replace("-", " to ") : "") + ". Placebo rows are shaded: they should be near zero.";
+    table($("out-glance"), [
+      { label: "What is compared", get: function (r) { return OC[r[0]].label; }, fmt: function (r) { return esc(OC[r[0]].label); } },
+      { label: "Kind", get: function (r) { return OC[r[0]].role; }, fmt: function (r) { var ro = OC[r[0]].role; return '<span class="pill' + (ro === "placebo" ? " r-placebo" : ro === "balance" ? " r-balance" : "") + '">' + esc(ROLE[ro] || ro) + "</span>"; } },
+      { label: "Difference (95%)", num: true, get: function (r) { return r[3]; }, fmt: function (r) { var oo = OC[r[0]]; return "<b>" + fmtU(oo, r[3]) + "</b> (" + fmtU(oo, r[4]) + " to " + fmtU(oo, r[5]) + ")"; } },
+      { label: "Multi-offer average", num: true, get: function (r) { return r[6]; }, fmt: function (r) { return meanFmt(OC[r[0]], r[6]); } },
+      { label: "Unit", get: function (r) { return OC[r[0]].unit; }, fmt: function (r) { return esc(unitName(OC[r[0]])); } }
+    ], glance, { stack: true, rowClass: function (r) { return OC[r[0]].role === "placebo" ? "placebo" : ""; } });
+  }
+  var csc = SC.indexOf("all sectors") >= 0 ? SC.indexOf("all sectors") : 0;
+  var cScopes = []; (O.cohort || []).forEach(function (r) { if (cScopes.indexOf(r[2]) < 0) cScopes.push(r[2]); });
+  cScopes.sort(function (a, b) { return ["all sectors", "civilian except GSA", "GSA", "Department of Defense"].indexOf(SC[a]) - ["all sectors", "civilian except GSA", "GSA", "Department of Defense"].indexOf(SC[b]); });
+  if (cScopes.length > 1) $("outc-controls").appendChild(seg("outcsc", "Agencies", cScopes.map(function (i) { return [i, SECTOR_SHORT[SC[i]] || SC[i]]; }), csc, function (v) { csc = +v; drawC(); }));
+  function drawC() {
+    var o = OC[okey], rows = (O.cohort || []).filter(function (r) { return r[0] === okey && r[1] === fu && r[2] === csc; }).sort(function (a, b) { return a[3] - b[3]; });
+    var pts = rows.map(function (r) { return { x: r[3], y: unitVal(o, r[4]), lo: unitVal(o, r[5]), hi: unitVal(o, r[6]), n: r[7], hollow: r[8] === 1 }; });
+    lineChart($("outc-chart"), {
+      label: "Single-offer minus multi-offer by award year: " + o.label, series: [{ name: o.label, color: o.role === "outcome" ? 0 : 3, pts: pts }],
+      xs: pts.map(function (p) { return p.x; }), xFmt: String, xTip: function (v) { return "Awards made in FY" + v; }, signed: true, ref: 0, refLabel: "0 = no difference", gapLabel: gapYears,
+      yFmt: function (v) { return trimNum(v) + unitShort(o); }, yTip: function (p) { return "<b style='display:inline'>" + signed(p.y, 2) + unitShort(o) + "</b> <span class='muted'>(95%: " + signed(p.lo, 2) + " to " + signed(p.hi, 2) + ")</span> " + int(p.n) + " awards" + (p.hollow ? " <span class='muted'>follow-up ends in the newest year</span>" : ""); },
+      breakAt: function (a, b) { return b - a > 1; }, empty: "No results by award year for this choice."
+    });
+    table($("outc-table"), [
+      { label: "Award year", num: true, get: function (r) { return r[3]; }, fmt: function (r) { return "FY" + r[3]; } },
+      { label: "Difference", num: true, get: function (r) { return r[4]; }, fmt: function (r) { return "<b>" + fmtU(o, r[4]) + "</b>"; } },
+      { label: "95% interval", num: true, get: function (r) { return r[5]; }, fmt: function (r) { return fmtU(o, r[5]) + " to " + fmtU(o, r[6]); } },
+      { label: "Awards in the comparison", num: true, get: function (r) { return r[7]; }, fmt: function (r) { return int(r[7]); } },
+      { label: "Follow-up", get: function (r) { return r[8]; }, fmt: function (r) { return r[8] ? "ends in the newest year (short for Defense)" : "complete"; } }
+    ], rows, { stack: true });
+  }
+  onResize(draw); onResize(drawC);
+  var fm = (O.follow_meta || {})[FUs[fu]] || {};
+  $("out-note").textContent = "Purchase orders and definitive contracts that were competed, had a usable offer count and an initial value of " + (O.size_floor ? moneyFull(O.size_floor) : "$25,000") + " or more. " +
+    (isNum(fm.share_of_awards_carrying_the_estimate) ? "Only " + pct(fm.share_of_awards_carrying_the_estimate, 0) + " of those awards carry the estimate: the ones in comparison cells that hold both a single-offer and a multi-offer award. " : "") +
+    "Units: shares are in percentage points; the money ratios are multiples of the initial value. " +
+    (O.years_present && O.years_present.base_actions ? "Award years present: " + yearsText(O.years_present.base_actions) + ". " : "") +
+    "What this cannot show: single-offer awards may differ in ways the cells do not capture (urgency, special needs, an incumbent). Extra money and scope changes are often legitimate. There are no unit prices, so none of this is a price comparison.";
+})();
+
+/* ---------- dollar limits (bunching, history and quarters) ---------- */
 (function () {
   var T = D.thresholds || {}, H = T.history, Q = T.quarterly;
   var fyYears = []; if (H) Object.keys(H).forEach(function (s) { Object.keys(H[s]).forEach(function (l) { H[s][l].forEach(function (p) { if (fyYears.indexOf(p[0]) < 0) fyYears.push(p[0]); }); }); });
@@ -680,8 +1242,6 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
   function qx(fyq) { var m = /FY(\d{4})Q(\d)/.exec(fyq); return m ? (+m[1]) * 4 + (+m[2] - 1) : 0; }
   function qLabel(x) { return "FY" + Math.floor(x / 4) + " Q" + (x % 4 + 1); }
   function qTip(x) { var fy = Math.floor(x / 4), q = x % 4; var mm = [["Oct", "Dec", fy - 1], ["Jan", "Mar", fy], ["Apr", "Jun", fy], ["Jul", "Sep", fy]][q]; return qLabel(x) + " (" + mm[0] + " to " + mm[1] + " " + mm[2] + ")"; }
-  function ratioTip(p) { return "<b style='display:inline'>" + ratio(p.y) + "</b>" + (isNum(p.lo) ? ' <span class="muted">(95%: ' + ratio(p.lo) + " to " + ratio(p.hi) + ")</span>" : "") + (p.active === true ? ' <span class="muted">limit</span>' : ""); }
-  function cap(series) { var ys = []; series.forEach(function (s) { s.pts.forEach(function (p) { if (isNum(p.y)) ys.push(p.y); }); }); return Math.max(2, 1.6 * Math.max.apply(null, ys.concat([1]))); }
   function draw() {
     secBox.hidden = view !== "fy";
     var series, xs = [], cfg, rows = [];
@@ -690,12 +1250,12 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
       series = lines.map(function (l, i) { return { name: money(l) + " line", short: money(l), color: i, pts: d[String(l)].map(function (p) { return { x: p[0], y: p[1], lo: p[2], hi: p[3], active: p[4], hollow: !p[4], obs: p[5], cf: p[6] }; }) }; });
       series.forEach(function (s) { s.pts.forEach(function (p) { if (xs.indexOf(p.x) < 0) xs.push(p.x); rows.push({ s: s, p: p, xl: String(p.x) }); }); });
       var markers = (T.changes || []).map(function (c) { return { x: c.fy - 0.5, label: c.label, short: c.label.replace(" to ", "→") }; });
-      cfg = { xs: xs, xFmt: String, xTip: fyTip, breakAt: function (a, b) { return b - a > 1; }, markers: markers,
+      cfg = { xs: xs, xFmt: String, xTip: fyTip, breakAt: function (a, b) { return b - a > 1; }, markers: markers, gapLabel: gapYears,
         label: "Bunching ratio by fiscal year for each dollar line, " + (sector === "defense" ? "Defense" : "civilian agencies"),
         tipNote: function (v) { var c = (T.changes || []).find(function (c) { return c.fy === v; }); return c ? "Limit changed: " + c.label + ". " + c.note : ""; } };
       legend("th-legend", series.map(function (s) { return { name: s.name, color: color(s.color) }; }).concat([{ name: "Filled dot: the line was the limit that year", dot: "background:var(--muted)", always: true }, { name: "Hollow: it was not", dot: "border:1.8px solid var(--muted);background:var(--card)", always: true }]));
       $("th-note").textContent = "Purchase orders and definitive contracts (base awards), " + (sector === "defense" ? "Department of Defense" : "civilian agencies") + ". Dotted vertical lines mark when the limit changed. " +
-        (T.changes || []).map(function (c) { return c.label + ": " + c.note; }).join(" ") + (fyYears.length < 3 ? " More years are being added." : "");
+        (T.changes || []).map(function (c) { return c.label + ": " + c.note; }).join(" ") + (fyYears.length < 3 ? " More years are being added." : "") + " For every other dollar limit, see Every dollar limit below.";
     } else {
       var order = ["250000", "350000", "200000", "450000"].filter(function (l) { return Q[l]; }).concat(Object.keys(Q).filter(function (l) { return ["250000", "350000", "200000", "450000"].indexOf(l) < 0; }));
       series = order.map(function (l, i) {
@@ -710,7 +1270,7 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
       legend("th-legend", series.map(function (s) { return { name: s.name, color: color(s.color) }; }));
       $("th-note").textContent = "All civilian agencies, purchase orders and definitive contracts, by fiscal quarter (Q1 is October to December). The limit rose from $250K to $350K on October 1, 2025 (dotted line). $200K and $450K are comparison lines where nothing changed. Quarterly ratios rest on fewer awards, so their intervals are wide.";
     }
-    cfg.series = series; cfg.ref = 1; cfg.refLabel = "1.0 = no pile-up"; cfg.yFmt = function (v) { return v.toFixed(1); }; cfg.yTip = ratioTip; cfg.yCap = cap;
+    cfg.series = series; cfg.ref = 1; cfg.refLabel = "1.0 = no pile-up"; cfg.yFmt = function (v) { return v.toFixed(1); }; cfg.yTip = ratioTip; cfg.yCap = ratioCap;
     lineChart($("th-chart"), cfg);
     table($("th-table"), [
       { label: view === "fy" ? "Fiscal year" : "Quarter", num: true, get: function (r) { return r.p.x; }, fmt: function (r) { return esc(r.xl); } },
@@ -731,34 +1291,410 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
       { label: "Change (95% interval)", num: true, get: function (r) { return r[3]; }, fmt: function (r) { return "<b>" + (r[3] > 0 ? "+" : "") + ratio(r[3]) + "</b> (" + ratio(r[4]) + " to " + ratio(r[5]) + ")"; } }
     ], T.moved, { stack: true });
   }
-  var ST = T.staggered;
-  if (ST && ST.actual) {
-    $("st-card").hidden = false;
-    var dates = "actual", ssec = ST.actual.civilian ? "civilian" : Object.keys(ST.actual)[0];
-    if (ST.placebo) $("st-controls").appendChild(seg("stdates", "Switch dates", [["actual", "Real dates"], ["placebo", "Comparison: one year earlier"]], dates, function (v) { dates = v; drawSt(); }));
-    var stSecs = Object.keys(ST.actual);
-    if (stSecs.length > 1) $("st-controls").appendChild(seg("stsec", "Agencies", stSecs.map(function (s) { return [s, s === "defense" ? "Defense" : "Civilian"]; }), ssec, function (v) { ssec = v; drawSt(); }));
-    var drawSt = function () {
-      var d = (ST[dates] || {})[ssec] || {}, lines = Object.keys(d).sort(function (a, b) { return a - b; }), xs = [], rows = [];
-      var series = lines.map(function (l, i) { return { name: money(+l) + " line", short: money(+l), color: i, pts: d[l].map(function (p) { return { x: p[0], y: p[1], lo: p[2], hi: p[3], n: p[4] }; }) }; });
-      series.forEach(function (s) { s.pts.forEach(function (p) { if (xs.indexOf(p.x) < 0) xs.push(p.x); rows.push({ s: s, p: p }); }); });
-      legend("st-legend", series.map(function (s) { return { name: s.name, color: color(s.color) }; }));
-      lineChart($("st-chart"), { series: series, xs: xs, ref: 1, refLabel: "1.0 = no pile-up", yCap: cap, label: "Bunching ratio by quarter before and after each agency switched to the $250K limit",
-        xFmt: function (v) { return (v > 0 ? "+" : "") + v; }, xTip: function (v) { return "Quarter " + (v > 0 ? "+" : "") + v + " from the switch"; }, xLabelW: 28,
-        markers: [{ x: -0.5, label: dates === "actual" ? "Agency switched" : "Pretend switch", short: "Switch" }], yFmt: function (v) { return v.toFixed(1); }, yTip: ratioTip });
-      table($("st-table"), [
-        { label: "Quarter from switch", num: true, get: function (r) { return r.p.x; }, fmt: function (r) { return (r.p.x > 0 ? "+" : "") + r.p.x; } },
-        { label: "Line", num: true, get: function (r) { return r.s.short; }, fmt: function (r) { return esc(r.s.short); } },
-        { label: "Bunching ratio", num: true, get: function (r) { return r.p.y; }, fmt: function (r) { return "<b>" + ratio(r.p.y) + "</b>"; } },
-        { label: "95% interval", num: true, get: function (r) { return r.p.lo; }, fmt: function (r) { return isNum(r.p.lo) ? ratio(r.p.lo) + " to " + ratio(r.p.hi) : "n/a"; } },
-        { label: "Awards", num: true, get: function (r) { return r.p.n; }, fmt: function (r) { return int(r.p.n); } }
-      ], rows, { stack: true });
-    };
-    onResize(drawSt);
-  }
 })();
 
-/* ---------- 4. data-quality flags ---------- */
+/* ---------- every dollar limit (scan) ---------- */
+var VERDICT = { "moved": ["moved", "v-moved"], "no clear move": ["did not move", "v-none"], "moved the wrong way": ["moved the wrong way", "v-wrong"], "not testable": ["not testable", "v-na"] };
+function beforeAfter(a, b) { return isNum(a) || isNum(b) ? ratio(a) + " to " + ratio(b) : "n/a"; }
+function verdictPill(v) { var x = VERDICT[v] || [v || "n/a", "v-na"]; return '<span class="pill ' + x[1] + '">' + esc(x[0]) + "</span>"; }
+function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) : (s || ""); }
+(function () {
+  var S = D.scan, card = $("scan-card");
+  if (!S || !S.families || !Object.keys(S.families).length) { card.innerHTML = empty("The scan of every dollar limit (threshold_scan.csv) is not in the results folder yet."); return; }
+  var Y = S.years || [], FAM = S.families, fams = Object.keys(FAM), NAMES = S.names || {}, SCALE = S.scale || 1;
+  function sc(v) { return isNum(v) ? v / SCALE : null; }   // ratios are stored as whole hundredths
+  var fam = fams.indexOf("simplified_acquisition") >= 0 ? "simplified_acquisition" : fams[0], sector = "civilian", showPl = "yes";
+  var ctl = $("scan-controls"), secBox = document.createElement("div");
+  ctl.appendChild(selectBox("scan-fam", "Dollar limit", fams.map(function (f) { return [f, FAM[f].name]; }), function (v) { fam = v; drawSec(); draw(); }, fam));
+  ctl.appendChild(secBox);
+  ctl.appendChild(seg("scanpl", "Placebo values", [["yes", "Show"], ["no", "Hide"]], showPl, function (v) { showPl = v; draw(); }));
+  function drawSec() {
+    var secs = ["civilian", "defense", "all"].filter(function (s) { return FAM[fam].sectors[s]; });
+    Object.keys(FAM[fam].sectors).forEach(function (s) { if (secs.indexOf(s) < 0) secs.push(s); });
+    if (secs.indexOf(sector) < 0) sector = secs[0];
+    secBox.innerHTML = "";
+    secBox.appendChild(seg("scansec", "Agencies", secs.map(function (s) { return [s, SECTOR_SHORT[s] || s]; }), sector, function (v) { sector = v; draw(); }));
+  }
+  function names(s) { return (s || "").split(";").filter(Boolean).map(function (f) { return NAMES[f] || f; }).join(", "); }
+  function stText(st) { return st === 1 ? "the limit all year" : st > 0 ? "the limit for " + pct(st, 0) + " of the year's awards" : "not the limit"; }
+  function pts(s, isPl) {
+    var out = [];
+    Y.forEach(function (fy, i) {
+      var st = isPl ? ((s.r[i] != null || (s.nt && s.nt[i])) ? 0 : null) : (s.st ? s.st[i] : null);
+      if (st == null) return;
+      var r = sc(s.r[i]), nt = s.nt ? s.nt[i] : 0;
+      out.push({ x: fy, y: r, lo: s.lo ? sc(s.lo[i]) : null, hi: s.hi ? sc(s.hi[i]) : null, st: st, obs: s.o ? s.o[i] : null,
+        why: (S.notes[nt] || "") || (isNum(r) ? "" : "no ratio"), of: s.of ? S.others[s.of[i]] : "",
+        hollow: !isPl && st === 0, half: !isPl && st > 0 && st < 1 });
+    });
+    return out;
+  }
+  function draw() {
+    var F = FAM[fam], ser = F.sectors[sector] || [], lines = ser.filter(function (s) { return !s.p; }), pls = ser.filter(function (s) { return s.p; });
+    var series = [], xs = [], rows = [];
+    lines.forEach(function (s, i) { series.push({ name: money(s.v) + " line", short: money(s.v), color: i, v: s.v, pts: pts(s, false) }); });
+    if (showPl === "yes") pls.forEach(function (s) { series.push({ name: money(s.v) + " placebo", short: money(s.v) + " (placebo)", muted: true, dash: true, v: s.v, pl: s, pts: pts(s, true) }); });
+    series.forEach(function (s) { s.pts.forEach(function (p) { if (xs.indexOf(p.x) < 0) xs.push(p.x); rows.push({ s: s, p: p }); }); });
+    legend("scan-legend", series.filter(function (s) { return !s.muted; }).map(function (s) { return { name: s.name, color: color(s.color) }; })
+      .concat([{ name: "Filled: the limit that year", dot: "background:var(--muted)", always: true }, { name: "Half: part of the year", dot: "background:var(--muted);opacity:.45", always: true },
+        { name: "Hollow: not the limit", dot: "border:1.8px solid var(--muted);background:var(--card)", always: true }])
+      .concat(showPl === "yes" && pls.length ? [{ name: "Placebo values", dash: true, always: true }] : []));
+    var changes = (S.changes || []).filter(function (c) { return c[0] === fam && c[1] === sector; });
+    lineChart($("scan-chart"), {
+      label: "Bunching ratio by fiscal year for each value of the " + F.name + ", " + (SECTOR_SHORT[sector] || sector), series: series, xs: xs, direct: false, skipMissing: true,
+      xFmt: String, xTip: fyTip, breakAt: function (a, b) { return b - a > 1; }, ref: 1, refLabel: "1.0 = no pile-up", yCap: ratioCap, gapLabel: gapYears,
+      yFmt: function (v) { return v.toFixed(1); },
+      yTip: function (p, sr) { return "<b style='display:inline'>" + ratio(p.y) + "</b>" + (isNum(p.lo) ? ' <span class="muted">(' + ratio(p.lo) + " to " + ratio(p.hi) + ")</span>" : "") + (sr.muted ? "" : ' <span class="muted">' + esc(stText(p.st)) + "</span>") + (p.why ? ' <span class="muted">' + esc(p.why) + "</span>" : ""); },
+      tipNote: function (v) { var c = changes.filter(function (c) { return fyOf(c[4]) === v; }); return c.length ? "Limit changed: " + c.map(function (c) { return money(c[2]) + " to " + money(c[3]) + " on " + changeDate(c[4]); }).join("; ") + "." : ""; },
+      markers: changes.filter(function (c) { return /\d{4}/.test(c[4]); }).map(function (c) { return { x: fyOf(c[4]) - 0.5, label: money(c[2]) + " to " + money(c[3]) + (/^\d{4}-/.test(c[4]) ? "" : " (by agency)"), short: money(c[3]) }; })
+        .filter(function (m, i, a) { return a.findIndex(function (b) { return b.x === m.x; }) === i; })
+    });
+    table($("scan-table"), [
+      { label: "Fiscal year", num: true, get: function (r) { return r.p.x; }, fmt: function (r) { return r.p.x; } },
+      { label: "Value", num: true, get: function (r) { return r.s.v; }, fmt: function (r) { return esc(money(r.s.v)) + (r.s.muted ? " (placebo)" : ""); } },
+      { label: "Status", get: function (r) { return r.s.muted ? -1 : r.p.st; }, fmt: function (r) { return r.s.muted ? "placebo: never a limit" : esc(stText(r.p.st)); } },
+      { label: "Bunching ratio", num: true, get: function (r) { return r.p.y; }, fmt: function (r) { return isNum(r.p.y) ? "<b>" + ratio(r.p.y) + "</b>" : '<span class="muted">none</span>'; } },
+      { label: "95% interval", num: true, get: function (r) { return r.p.lo; }, fmt: function (r) { return ci(r.p.lo, r.p.hi); } },
+      { label: "Awards just under", num: true, get: function (r) { return r.p.obs; }, fmt: function (r) { return isNum(r.p.obs) ? int(r.p.obs) : ""; } },
+      { label: "Expected", num: true, get: function (r) { return isNum(r.p.obs) && isNum(r.p.y) && r.p.y > 0 ? r.p.obs / r.p.y : null; }, fmt: function (r) { return isNum(r.p.obs) && isNum(r.p.y) && r.p.y > 0 ? int(r.p.obs / r.p.y) : ""; } },
+      { label: "Note", wide: true, get: function (r) { return r.p.why; }, fmt: function (r) { return esc([r.p.why, r.p.of ? "same value was also a limit of: " + names(r.p.of) : ""].filter(Boolean).join(". ")); } }
+    ], rows, { stack: true, limit: 25, sortCol: 0, sortDir: 1 });
+    $("scan-note").textContent = "Awards counted: " + (F.universe || "purchase orders and definitive contracts") + ". Values are base and all options at award. " +
+      "The zone just under a line is the 8% of the line below it, and the smooth curve leaves out the bins near any other limit and near round numbers. " +
+      "Years present: " + yearsText(S.present || Y) + (S.missing && S.missing.length ? ". Not present yet: " + yearsText(S.missing) : "") + ". Thin rows say so in the table: no ratio is given when too few awards sit near the line.";
+    // changes
+    var all = S.changes || [], cnt = {};
+    all.forEach(function (c) { cnt[c[5]] = (cnt[c[5]] || 0) + 1; });
+    var ntc = S.not_testable_counts || {};
+    $("scan-ch-sub").innerHTML = "The test compares the pile-up under the old and the new value in the two years before and after each change. The shift is (new line: after minus before) minus (old line: after minus before). Above zero, with an interval above zero, means the pile-up moved with the limit. " +
+      "<br>Across all " + all.length + " changes of every limit and sector: " + ["moved", "no clear move", "moved the wrong way", "not testable"].map(function (v) { return "<b>" + (cnt[v] || 0) + "</b> " + esc(VERDICT[v][0]); }).join(", ") + "." +
+      (Object.keys(ntc).length ? " Not testable because: " + Object.keys(ntc).map(function (k) { return esc(k) + " (" + ntc[k] + ")"; }).join("; ") + "." : "");
+    table($("scan-changes"), [
+      { label: "Change", num: true, get: function (c) { return c[3]; }, fmt: function (c) { return esc(money(c[2]) + " to " + money(c[3])); } },
+      { label: "When", get: function (c) { return c[4]; }, fmt: function (c) { return esc(changeDate(c[4])); } },
+      { label: "Result", get: function (c) { return c[5]; }, fmt: function (c) { return verdictPill(c[5]); } },
+      { label: "Shift (95%)", num: true, get: function (c) { return c[6]; }, fmt: function (c) { return isNum(c[6]) ? "<b>" + signed(c[6]) + "</b> (" + ci(c[7], c[8], function (v) { return signed(v); }) + ")" : "n/a"; } },
+      { label: "Placebo shift (95%)", num: true, get: function (c) { return c[9]; }, fmt: function (c) { return isNum(c[9]) ? signed(c[9]) + " (" + ci(c[10], c[11], function (v) { return signed(v); }) + ")" : "n/a"; } },
+      { label: "Old line, before to after", num: true, get: function (c) { return c[12]; }, fmt: function (c) { return beforeAfter(c[12], c[13]); } },
+      { label: "New line, before to after", num: true, get: function (c) { return c[14]; }, fmt: function (c) { return beforeAfter(c[14], c[15]); } },
+      { label: "Notes", wide: true, get: function (c) { return S.txt[c[16]]; }, fmt: function (c) {
+        var t = [(S.txt[c[16]] || "").replace(/;/g, ", ")];
+        if (c[5] === "not testable" && isNum(c[6]) && !/part of the windows/.test(t[0])) t.push("the numbers use part of the windows only");
+        if (c[23] > 0) t.push(c[23] + " other limit" + (c[23] > 1 ? "s" : "") + " changed the same day");
+        t.push("before: " + S.txt[c[20]] + "; after: " + S.txt[c[21]]);
+        return esc(t.filter(Boolean).join(". ")); } }
+    ], changes, { stack: true, emptyText: "No change of this limit falls in the period for these agencies." });
+    // levels
+    var lv = (S.levels || []).filter(function (l) { return l[0] === fam; });
+    $("scan-lv-details").hidden = !lv.length;
+    table($("scan-levels"), [
+      { label: "Agencies", get: function (l) { return l[1]; }, fmt: function (l) { return esc(SECTOR_SHORT[l[1]] || l[1]); } },
+      { label: "Years in force minus other years (95%)", num: true, get: function (l) { return l[4]; }, fmt: function (l) { return isNum(l[4]) ? "<b>" + signed(l[4]) + "</b> (" + ci(l[5], l[6], function (v) { return signed(v); }) + ")" : "not testable"; } },
+      { label: "In force minus placebo values (95%)", num: true, get: function (l) { return l[7]; }, fmt: function (l) { return isNum(l[7]) ? "<b>" + signed(l[7]) + "</b> (" + ci(l[8], l[9], function (v) { return signed(v); }) + ")" : "not testable"; } },
+      { label: "Year cells in force / not", num: true, get: function (l) { return l[2]; }, fmt: function (l) { return int(l[2]) + " / " + int(l[3]); } }
+    ], lv, { stack: true });
+  }
+  function fyOf(d) {   // fiscal year of a date; "by agency, 2018-2020" gives the first year (the switches began in FY2018)
+    if (!/^\d{4}-\d\d/.test(d)) { var m = /(\d{4})/.exec(d); return m ? +m[1] : null; }
+    var p = d.split("-"); return +p[0] + (+p[1] >= 10 ? 1 : 0);
+  }
+  drawSec(); onResize(draw);
+  $("scan-caveats").textContent = "What this cannot show: why a pile-up happens. Budgets written to fit the rules, set-aside rules tied to a line, and contracts split to stay under it all look the same here. " + (S.caveats || []).slice(1).join(" ");
+})();
+
+/* ---------- the 2018 switch ---------- */
+(function () {
+  var ST = (D.thresholds || {}).staggered, S = D.scan;
+  var rows18 = S ? (S.changes || []).filter(function (c) { return /2018/.test(c[4]) && (c[0] === "simplified_acquisition" || c[0] === "micro_purchase"); }) : [];
+  if (rows18.length) {
+    $("st-scan").hidden = false;
+    table($("st-scan-table"), [
+      { label: "Limit", get: function (c) { return c[0]; }, fmt: function (c) { return esc((S.names || {})[c[0]] || c[0]); } },
+      { label: "Agencies", get: function (c) { return c[1]; }, fmt: function (c) { return esc(SECTOR_SHORT[c[1]] || c[1]); } },
+      { label: "Change", get: function (c) { return c[3]; }, fmt: function (c) { return esc(money(c[2]) + " to " + money(c[3]) + ", " + changeDate(c[4])); } },
+      { label: "Result", get: function (c) { return c[5]; }, fmt: function (c) { return verdictPill(c[5]); } },
+      { label: "Shift (95%)", num: true, get: function (c) { return c[6]; }, fmt: function (c) { return isNum(c[6]) ? "<b>" + signed(c[6]) + "</b> (" + ci(c[7], c[8], function (v) { return signed(v); }) + ")" : "n/a"; } },
+      { label: "Notes", wide: true, get: function (c) { return S.txt[c[16]]; }, fmt: function (c) { return esc((S.txt[c[16]] || "").replace(/;/g, ", ")); } }
+    ], rows18, { stack: true });
+  }
+  if (!ST || !ST.actual) {
+    $("st-chart").innerHTML = $("st-chart2").innerHTML = "";
+    $("st-details").hidden = true;
+    document.querySelector("#st-card .two").hidden = true;
+    $("st-note").textContent = "The quarter-by-quarter test (threshold_staggered.csv, from scripts/21_threshold_staggered.py) is not in the results folder yet. It needs fiscal years 2016 to 2021." + (rows18.length ? " The scan of every dollar limit already tests the same switch year by year (table above)." : "");
+    return;
+  }
+  var ssec = ST.actual.civilian ? "civilian" : Object.keys(ST.actual)[0], stSecs = Object.keys(ST.actual);
+  if (stSecs.length > 1) $("st-controls").appendChild(seg("stsec", "Agencies", stSecs.map(function (s) { return [s, s === "defense" ? "Defense" : "Civilian"]; }), ssec, function (v) { ssec = v; drawSt(); }));
+  function series(dates) {
+    var d = (ST[dates] || {})[ssec] || {}, lines = Object.keys(d).sort(function (a, b) { return a - b; });
+    return lines.map(function (l, i) { return { name: money(+l) + " line", short: money(+l), color: i, line: +l, dates: dates, pts: d[l].map(function (p) { return { x: p[0], y: p[1], lo: p[2], hi: p[3], n: p[4] }; }) }; });
+  }
+  function drawSt() {
+    var rows = [], a = series("actual"), p = series("placebo"), yMax = 0;
+    a.concat(p).forEach(function (s) { s.pts.forEach(function (q) { rows.push({ s: s, p: q }); if (isNum(q.y)) yMax = Math.max(yMax, q.y); }); });
+    legend("st-legend", a.map(function (s) { return { name: s.name, color: color(s.color) }; }));
+    var common = { ref: 1, refLabel: "1.0 = no pile-up", yMax: niceMax(Math.max(2, yMax * 1.1)), direct: false, xLabelW: 28, yFmt: function (v) { return v.toFixed(1); }, yTip: ratioTip,
+      xFmt: function (v) { return (v > 0 ? "+" : "") + v; }, xTip: function (v) { return "Quarter " + (v > 0 ? "+" : "") + v + " from the switch"; } };
+    [[a, "st-chart", "Agency switched"], [p, "st-chart2", "Pretend switch"]].forEach(function (z) {
+      var xs = []; z[0].forEach(function (s) { s.pts.forEach(function (q) { if (xs.indexOf(q.x) < 0) xs.push(q.x); }); });
+      lineChart($(z[1]), Object.assign({}, common, { series: z[0], xs: xs, label: "Bunching ratio by quarter from each agency's " + (z[1] === "st-chart" ? "real" : "placebo") + " switch date",
+        markers: [{ x: -0.5, label: z[2], short: "Switch" }], empty: "No placebo results in the file." }));
+    });
+    table($("st-table"), [
+      { label: "Dates", get: function (r) { return r.s.dates; }, fmt: function (r) { return r.s.dates === "actual" ? "real" : "placebo"; } },
+      { label: "Quarter from switch", num: true, get: function (r) { return r.p.x; }, fmt: function (r) { return (r.p.x > 0 ? "+" : "") + r.p.x; } },
+      { label: "Line", num: true, get: function (r) { return r.s.line; }, fmt: function (r) { return esc(r.s.short); } },
+      { label: "Bunching ratio", num: true, get: function (r) { return r.p.y; }, fmt: function (r) { return "<b>" + ratio(r.p.y) + "</b>"; } },
+      { label: "95% interval", num: true, get: function (r) { return r.p.lo; }, fmt: function (r) { return ci(r.p.lo, r.p.hi); } },
+      { label: "Awards", num: true, get: function (r) { return r.p.n; }, fmt: function (r) { return int(r.p.n); } }
+    ], rows, { stack: true, limit: 34 });
+  }
+  onResize(drawSt);
+  $("st-note").textContent = "Civilian purchase orders and definitive contracts of agencies with a documented switch date; agencies without one are left out, never guessed. What this cannot show: why the pile-up moves. Budgets written to fit the new rules and contracts split to stay under them look the same here.";
+})();
+
+/* ---------- split purchases ---------- */
+(function () {
+  var P = D.split;
+  if (!P || !P.series || !Object.keys(P.series).length) { $("split-card").innerHTML = empty("The split-purchase screen (split_screen.csv) is not in the results folder yet."); return; }
+  var TYP = { MPT: "Micro-purchase line", SAT: "Simplified acquisition line" }, M = P.multiples || [], SHS = P.share_scale || 1;
+  Object.keys(P.series).forEach(function (k) { P.series[k].forEach(function (p) { p[10] = p[10].map(function (v) { return isNum(v) ? v / SHS : null; }); }); });   // shares are stored in hundredths of a percent
+  var keys = Object.keys(P.series), secs = [], typs = [];
+  keys.forEach(function (k) { var p = k.split("|"); if (secs.indexOf(p[0]) < 0) secs.push(p[0]); if (typs.indexOf(p[1]) < 0) typs.push(p[1]); });
+  secs.sort(function (a, b) { return ["civilian_ex_gsa", "gsa", "defense"].indexOf(a) - ["civilian_ex_gsa", "gsa", "defense"].indexOf(b); });
+  var sector = secs[0], typ = typs.indexOf("SAT") >= 0 ? "SAT" : typs[0], plYear = null, plVar = "all";
+  $("split-controls").appendChild(seg("splsec", "Agencies", secs.map(function (s) { return [s, SECTOR_SHORT[s] || s]; }), sector, function (v) { sector = v; draw(); drawPl(); }));
+  $("split-controls").appendChild(seg("spltyp", "Limit", typs.map(function (t) { return [t, TYP[t] || t]; }), typ, function (v) { typ = v; draw(); drawPl(); }));
+  var VAR = { all: "All awards at or under the line", donut: "Leaving out awards just under the line" };
+  function get(v) { return P.series[sector + "|" + typ + "|" + v] || []; }
+  function lineText(p) { return isNum(p[8]) && p[8] < 0.999 ? money(p[7]) + " for " + pct(p[8], 0) + " of awards, the new line for the rest" : money(p[7]); }
+  function draw() {
+    var series = ["all", "donut"].map(function (v, i) {
+      return { name: VAR[v], short: v === "all" ? "All awards" : "Leaving out just-under", color: i, v: v,
+        pts: get(v).map(function (p) { return { x: p[0], y: p[1], lo: p[2], hi: p[3], raw: p, why: isNum(p[1]) ? "" : "too few clusters" }; }) };
+    });
+    var xs = [], rows = [];
+    series.forEach(function (s) { s.pts.forEach(function (p) { if (xs.indexOf(p.x) < 0) xs.push(p.x); rows.push({ s: s, p: p.raw }); }); });
+    legend("split-legend", series.map(function (s) { return { name: s.name, color: color(s.color) }; }));
+    lineChart($("split-chart"), {
+      label: "Excess ratio of split-like clusters by fiscal year, " + (TYP[typ] || typ) + ", " + (SECTOR_SHORT[sector] || sector), series: series, xs: xs, direct: false,
+      xFmt: String, xTip: fyTip, ref: 1, refLabel: "1.0 = no excess", yCap: ratioCap, breakAt: function (a, b) { return b - a > 1; }, gapLabel: gapYears, yFmt: function (v) { return v.toFixed(1); },
+      yTip: function (p) { var r = p.raw, i1 = M.indexOf(1); return "<b style='display:inline'>" + ratio(p.y) + "</b>" + (isNum(p.lo) ? ' <span class="muted">(' + ratio(p.lo) + " to " + ratio(p.hi) + ")</span>" : "") +
+        '<div class="muted">' + pct(r[10][i1]) + " of awards in split-like clusters; " + pct(r[4]) + " expected. Line: " + esc(lineText(r)) + ".</div>"; }
+    });
+    var i1 = M.indexOf(1);
+    table($("split-table"), [
+      { label: "Fiscal year", num: true, get: function (r) { return r.p[0]; }, fmt: function (r) { return r.p[0]; } },
+      { label: "Awards counted", get: function (r) { return r.s.v; }, fmt: function (r) { return esc(r.s.short); } },
+      { label: "Excess ratio", num: true, get: function (r) { return r.p[1]; }, fmt: function (r) { return isNum(r.p[1]) ? "<b>" + ratio(r.p[1]) + "</b>" : '<span class="muted">none</span>'; } },
+      { label: "95% interval", num: true, get: function (r) { return r.p[2]; }, fmt: function (r) { return ci(r.p[2], r.p[3]); } },
+      { label: "In split-like clusters", num: true, get: function (r) { return r.p[10][i1]; }, fmt: function (r) { return pct(r.p[10][i1], 2); } },
+      { label: "Expected from fake lines", num: true, get: function (r) { return r.p[4]; }, fmt: function (r) { return pct(r.p[4], 2); } },
+      { label: "Awards at or under the line", num: true, get: function (r) { return r.p[5]; }, fmt: function (r) { return int(r.p[5]); } },
+      { label: "Split-like clusters", num: true, get: function (r) { return r.p[6]; }, fmt: function (r) { return int(r.p[6]); } },
+      { label: "Line in force", get: function (r) { return r.p[7]; }, fmt: function (r) { return esc(lineText(r.p)); } }
+    ], rows, { stack: true, sortCol: 0, sortDir: 1 });
+  }
+  var plBox = $("split-pl-controls"), yearBox = document.createElement("div");
+  plBox.appendChild(yearBox);
+  plBox.appendChild(seg("splvar", "Awards counted", [["all", "All"], ["donut", "Leaving out just-under"]], plVar, function (v) { plVar = v; drawPl(); }));
+  function drawPl() {
+    var ser = get(plVar), years = ser.map(function (p) { return p[0]; });
+    if (!years.length) { $("split-pl-chart").innerHTML = empty("No data for this choice."); yearBox.innerHTML = ""; return; }
+    if (years.indexOf(plYear) < 0) plYear = years[years.length - 1];
+    yearBox.innerHTML = "";
+    yearBox.appendChild(selectBox("spl-year", "Fiscal year", years.slice().reverse().map(function (y) { return [y, "FY" + y]; }), function (v) { plYear = +v; drawPl(); }, plYear));
+    var p = ser.find(function (q) { return q[0] === plYear; }), sh = p[10], used = p[11] || "";
+    var pts = M.map(function (m, i) {
+      var real = Math.abs(m - 1) < 1e-9, u = used.charAt(i) === "1";
+      return { x: Math.log2(m), m: m, y: sh[i], big: real, hollow: !real && u, color: real ? "var(--s1)" : u ? "var(--s2)" : "var(--muted)",
+        kind: real ? "the real limit" : u ? "fake line, used for the expected value" : "fake line near another real limit, not used" };
+    });
+    // the expected values: a straight line through log(share) against log(multiple) at the fake lines used
+    var fit = pts.filter(function (q) { return q.hollow && isNum(q.y) && q.y > 0; }), fitPts = [];
+    if (fit.length >= 2) {
+      var mx = 0, my = 0; fit.forEach(function (q) { mx += q.x; my += Math.log(q.y); }); mx /= fit.length; my /= fit.length;
+      var sxy = 0, sxx = 0; fit.forEach(function (q) { sxy += (q.x - mx) * (Math.log(q.y) - my); sxx += (q.x - mx) * (q.x - mx); });
+      var b = sxx ? sxy / sxx : 0;
+      fitPts = pts.map(function (q) { return { x: q.x, y: Math.exp(my + b * (q.x - mx)) }; });
+    }
+    var line = p[7];
+    lineChart($("split-pl-chart"), {
+      label: "Share of awards in split-like clusters at the real limit and at fake lines, FY" + plYear, linear: true, direct: false, dodge: false,
+      series: [{ name: "Expected from the fake lines", muted: true, dash: true, noDots: true, noTip: true, pts: fitPts },
+               { name: "Share in split-like clusters", color: 0, pts: pts }],
+      xs: pts.map(function (q) { return q.x; }), xLabelW: 34,
+      xFmt: function (x) { var m = Math.pow(2, x); return Math.abs(m - 1) < 1e-6 ? "limit" : trimNum(m) + "×"; },
+      xTip: function (x) { var m = Math.pow(2, x); return (Math.abs(m - 1) < 1e-6 ? "The real limit" : trimNum(m) + " times the limit") + (isNum(line) ? " (" + money(m * line) + ")" : ""); },
+      yFmt: function (v) { return trimNum(v * 100) + "%"; },
+      yTip: function (q) { return q.kind ? "<b style='display:inline'>" + pct(q.y, 2) + "</b> <span class='muted'>" + esc(q.kind) + "</span>" : pct(q.y, 2); },
+      tipNote: function (x) { return Math.abs(Math.pow(2, x) - 1) < 1e-6 && isNum(p[4]) ? "Expected at the limit: " + pct(p[4], 2) + ". Excess ratio " + ratio(p[1]) + "." : ""; }
+    });
+  }
+  onResize(draw); onResize(drawPl);
+  table($("split-pooled"), [
+    { label: "Agencies", get: function (r) { return r[0]; }, fmt: function (r) { return esc(SECTOR_SHORT[r[0]] || r[0]); } },
+    { label: "Limit", get: function (r) { return r[1]; }, fmt: function (r) { return esc(TYP[r[1]] || r[1]); } },
+    { label: "Awards counted", get: function (r) { return r[2]; }, fmt: function (r) { return r[2] === "donut" ? "leaving out just-under" : "all"; } },
+    { label: "Excess ratio (95%)", num: true, get: function (r) { return r[3]; }, fmt: function (r) { return "<b>" + ratio(r[3]) + "</b> (" + ci(r[4], r[5]) + ")"; } },
+    { label: "Years", num: true, get: function (r) { return r[6]; }, fmt: function (r) { return int(r[6]); } },
+    { label: "Awards in clusters / expected", num: true, get: function (r) { return r[7]; }, fmt: function (r) { return int(r[7]) + " / " + int(r[8]); } }
+  ], P.pooled || [], { stack: true });
+  table($("split-nat"), [
+    { label: "Change", get: function (r) { return r[1]; }, fmt: function (r) { return esc((TYP[r[0]] || r[0]) + ": " + money(r[1]) + " to " + money(r[2]) + " (" + (r[3] || "") + ")"); } },
+    { label: "Agencies", get: function (r) { return r[4]; }, fmt: function (r) { return esc((SECTOR_SHORT[r[4]] || r[4]) + (r[5] === "donut" ? ", leaving out just-under" : "")); } },
+    { label: "Before", num: true, get: function (r) { return r[6]; }, fmt: function (r) { return isNum(r[6]) ? ratio(r[6]) + " (" + ci(r[7], r[8]) + ")" : "not testable yet"; } },
+    { label: "After", num: true, get: function (r) { return r[10]; }, fmt: function (r) { return isNum(r[10]) ? ratio(r[10]) + " (" + ci(r[11], r[12]) + ")" : "not testable yet"; } },
+    { label: "After minus before", num: true, get: function (r) { return r[14]; }, fmt: function (r) { return isNum(r[14]) ? "<b>" + signed(r[14]) + "</b> (" + ci(r[15], r[16], function (v) { return signed(v); }) + ")" : "not testable yet"; } },
+    { label: "Years used", get: function (r) { return r[9]; }, fmt: function (r) { return "before " + int(r[9] || 0) + ", after " + int(r[13] || 0); } }
+  ], P.natural || [], { stack: true, limit: 12 });
+  var dz = P.design || {};
+  $("split-note").textContent = "Purchase orders and definitive contracts with a company and a positive value. Clusters: same company, same buying office and same 4-character product code, with at most " + (dz.gap_days || 30) + " days between awards. " +
+    "“Leaving out just-under” counts only awards at least " + (dz.donut_cap ? Math.round((1 - dz.donut_cap) * 100) : 10) + "% under the line, because single awards piled up just under a line make split-like clusters more common even without splitting. " +
+    "Years present: " + yearsText(P.years_used) + (P.years_missing && P.years_missing.length ? "; not present yet: " + yearsText(P.years_missing) : "") + ". " +
+    "What this cannot show: whether any purchase was split. Legitimate repeat buying makes the same pattern. Company and office codes are used only inside the computation; nothing below sector level is published.";
+})();
+
+/* ---------- forecast model, version 2 (optional) ---------- */
+(function () {
+  var M = D.model2;
+  if (!M || (!M.card && !(M.eval || []).length && !(M.cal || []).length)) { hideOpt("model"); return; }
+  var C = M.card || {}, MD = M.models || [], SE = M.sectors || [];
+  var pooledAll = (M.eval || []).filter(function (r) { return r[0] === "pooled" && SE[r[1]] === "all"; });
+  function evalRow(name) { return pooledAll.find(function (r) { return MD[r[2]] === name; }); }
+  var shipped = (C.shipped || {}).name_in_evaluation || "logistic v2", sh = evalRow(shipped) || evalRow("logistic v2");
+  var best = ["sector rate (baseline)", "agency rate (baseline)", "office history only (baseline)"].map(evalRow).filter(Boolean).sort(function (a, b) { return a[7] - b[7]; })[0];
+  var k = [], d = C.data || {};
+  if (isNum(d.resolved_solicitations)) k.push('<div class="card kpi"><b>' + int(d.resolved_solicitations) + "</b><span>solicitations matched to a competed award and used to train and test</span></div>");
+  else if (sh) k.push('<div class="card kpi"><b>' + int(sh[3]) + "</b><span>solicitations scored in the test years</span></div>");
+  if (sh) k.push('<div class="card kpi"><b>' + ratio(sh[6]) + "</b><span>AUC of " + esc(MD[sh[2]]) + " in the test years (0.5 is a coin flip)</span></div>");
+  if (sh && best) k.push('<div class="card kpi"><b>' + pct(1 - sh[7] / best[7], 0) + "</b><span>lower Brier score than the best plain baseline (" + esc(MD[best[2]].replace(" (baseline)", "")) + ")</span></div>");
+  $("m2-kpis").innerHTML = k.join("");
+  $("m2-what").textContent = C.what_it_predicts || C.description || "The chance that a solicitation's competed award receives exactly one offer. A risk indicator about the market for a requirement, not a statement about anyone's conduct.";
+  var dl = [];
+  if (C.model) dl.push(["Model", C.model]);
+  if (C.shipped) dl.push(["Shipped", [C.shipped.kind, C.shipped.training_window ? "trained on " + C.shipped.training_window : ""].filter(Boolean).join(", ")]);
+  if (d.award_years_present) dl.push(["Award years", yearsText(d.award_years_present)]);
+  if (isNum(d.single_offer_share)) dl.push(["Single-offer share", pct(d.single_offer_share)]);
+  if (C.built_utc) dl.push(["Built", niceDate(String(C.built_utc).slice(0, 10))]);
+  Object.keys(C.metrics || {}).forEach(function (key) { dl.push([key.replace(/_/g, " "), isNum(C.metrics[key]) ? trimNum(C.metrics[key]) : C.metrics[key]]); });
+  (C.extra || []).forEach(function (e) { if (["model", "description", "what_it_predicts"].indexOf(e[0]) < 0) dl.push([e[0].replace(/_/g, " "), e[1]]); });
+  if (!M.card) dl.push(["Model card", "not published yet (results/model_v2_card.json). The test results below are."]);
+  $("m2-dl").innerHTML = dl.map(function (x) { return "<dt>" + esc(x[0]) + "</dt><dd>" + esc(x[1]) + "</dd>"; }).join("");
+  var more = [];
+  if (C.outcome_rule) more.push("<p><b>Outcome.</b> " + esc(C.outcome_rule) + "</p>");
+  if (C.no_leakage) more.push("<p><b>No peeking.</b> " + esc(C.no_leakage) + "</p>");
+  if (C.shipped && C.shipped.why) more.push("<p><b>Why this model.</b> " + esc(C.shipped.why.join(" ")) + "</p>");
+  if (C.evaluation && C.evaluation.design) more.push("<p><b>Testing.</b> " + esc(C.evaluation.design) + "</p>");
+  if (C.caveats) more.push("<p><b>Limits.</b></p><ul class='links'>" + C.caveats.map(function (c) { return "<li>" + esc(c) + "</li>"; }).join("") + "</ul>");
+  if (more.length) { $("m2-more").hidden = false; $("m2-more-body").innerHTML = more.join(""); }
+  // evaluation by test year
+  var E = M.eval || [];
+  if (!E.length) { $("m2-eval-card").innerHTML = empty("The rolling-origin test (model_v2_evaluation.csv) is not in the results folder yet."); }
+  else {
+    var metric = "brier", esec = SE.indexOf("all") >= 0 ? SE.indexOf("all") : 0;
+    var METRIC = { brier: [7, "Brier score", 3], logloss: [8, "Log loss", 3], auc: [6, "AUC", 3] };
+    var SHOW = ["logistic v2", "gradient boosting", "version 1 feature set (refit)", "agency rate (baseline)", "sector rate (baseline)", "office history only (baseline)"].filter(function (m) { return MD.indexOf(m) >= 0; });
+    var eSecs = []; E.forEach(function (r) { if (eSecs.indexOf(r[1]) < 0) eSecs.push(r[1]); });
+    $("m2-controls").appendChild(seg("m2m", "Measure", Object.keys(METRIC).map(function (m) { return [m, METRIC[m][1]]; }), metric, function (v) { metric = v; drawE(); }));
+    $("m2-controls").appendChild(seg("m2s", "Agencies", eSecs.map(function (i) { return [i, SECTOR_SHORT[SE[i]] || SE[i]]; }), esec, function (v) { esec = +v; drawE(); }));
+    var drawE = function () {
+      var mi = METRIC[metric][0], series = SHOW.map(function (name, i) {
+        var base = /baseline/.test(name);
+        return { name: name.charAt(0).toUpperCase() + name.slice(1), short: name.replace(" (baseline)", "").replace(" feature set (refit)", ""), color: i, dash: base,
+          pts: E.filter(function (r) { return r[1] === esec && MD[r[2]] === name && typeof r[0] === "number"; }).sort(function (a, b) { return a[0] - b[0]; })
+            .map(function (r) { return { x: r[0], y: r[mi], n: r[3], hollow: r[10] === 0, raw: r }; }) };
+      }).filter(function (s) { return s.pts.length; });
+      var xs = []; series.forEach(function (s) { s.pts.forEach(function (p) { if (xs.indexOf(p.x) < 0) xs.push(p.x); }); });
+      legend("m2-legend", series.map(function (s) { return { name: s.name, color: color(s.color) }; }).concat([{ name: "Hollow: the year's outcomes are not all known yet", dot: "border:1.8px solid var(--muted);background:var(--card)", always: true }]));
+      var vals = []; series.forEach(function (s) { s.pts.forEach(function (p) { if (isNum(p.y)) vals.push(p.y); }); });
+      lineChart($("m2-chart"), { label: METRIC[metric][1] + " by test year, " + (SECTOR_SHORT[SE[esec]] || SE[esec]), series: series, xs: xs, direct: false, gapLabel: gapYears,
+        xFmt: String, xTip: function (v) { return "Test year FY" + v; }, breakAt: function (a, b) { return b - a > 1; }, ref: metric === "auc" ? 0.5 : null, refLabel: metric === "auc" ? "0.5 = coin flip" : null,
+        yMax: metric === "auc" ? 1 : null, zoom: true, yFmt: function (v) { return String(+v.toFixed(3)); }, yTip: function (p) { return "<b style='display:inline'>" + p.y.toFixed(METRIC[metric][2]) + "</b> <span class='muted'>" + int(p.n) + " solicitations</span>"; } });
+      var rows = E.filter(function (r) { return r[1] === esec; });
+      table($("m2-table"), [
+        { label: "Test year", num: true, get: function (r) { return r[0] === "pooled" ? 9999 : r[0]; }, fmt: function (r) { return r[0] === "pooled" ? "<b>all test years</b>" : "FY" + r[0] + (r[10] === 0 ? " (outcomes not all known)" : ""); } },
+        { label: "Model", get: function (r) { return MD[r[2]]; }, fmt: function (r) { return esc(MD[r[2]]); } },
+        { label: "Brier", num: true, get: function (r) { return r[7]; }, fmt: function (r) { return isNum(r[7]) ? r[7].toFixed(4) : "n/a"; } },
+        { label: "Log loss", num: true, get: function (r) { return r[8]; }, fmt: function (r) { return isNum(r[8]) ? r[8].toFixed(4) : "n/a"; } },
+        { label: "AUC", num: true, get: function (r) { return r[6]; }, fmt: function (r) { return isNum(r[6]) ? r[6].toFixed(3) : "n/a"; } },
+        { label: "Calibration slope", num: true, get: function (r) { return r[9]; }, fmt: function (r) { return isNum(r[9]) ? r[9].toFixed(2) : "n/a"; } },
+        { label: "Average forecast / observed", num: true, get: function (r) { return r[5]; }, fmt: function (r) { return pct(r[5]) + " / " + pct(r[4]); } },
+        { label: "Solicitations", num: true, get: function (r) { return r[3]; }, fmt: function (r) { return int(r[3]); } }
+      ], rows, { stack: true, limit: 30, sortCol: 0, sortDir: -1 });
+    };
+    onResize(drawE);
+    var DR = M.drops || [];
+    if (!DR.length) $("m2-drop-details").hidden = true;
+    else table($("m2-drops"), [
+      { label: "Inputs left out", get: function (r) { return r[2]; }, fmt: function (r) { return esc(r[2]); } },
+      { label: "Test year", num: true, get: function (r) { return r[0] === "pooled" ? 9999 : r[0]; }, fmt: function (r) { return r[0] === "pooled" ? "pooled" : "FY" + r[0]; } },
+      { label: "Agencies", get: function (r) { return r[1]; }, fmt: function (r) { return esc(SECTOR_SHORT[SE[r[1]]] || SE[r[1]]); } },
+      { label: "Log loss change", num: true, get: function (r) { return r[5]; }, fmt: function (r) { return "<b>" + signed(r[5], 4) + "</b>"; } },
+      { label: "AUC change", num: true, get: function (r) { return r[6]; }, fmt: function (r) { return signed(r[6], 4); } }
+    ], DR, { stack: true, limit: 15, sortCol: 3, sortDir: -1 });
+    var tr = M.train || {}, ty = Object.keys(tr).sort();
+    $("m2-note").textContent = "Solicitations from SAM.gov's archive that could be matched to a competed award. " + (ty.length ? "Test years: " + ty.join(", ") + ". The last test year was trained on " + tr[ty[ty.length - 1]][0].replace("-", " to ") + ". " : "") +
+      "Thin groups (GSA in some years) give noisy scores. What this cannot show: whether a solicitation leads to an award at all. It is a risk indicator about markets, not a statement about anyone's conduct.";
+  }
+  // calibration
+  var CA = M.cal || [];
+  if (!CA.length) { $("m2-cal-card").innerHTML = empty("The reliability table (model_v2_calibration.csv) is not in the results folder yet."); return; }
+  var cSecs = []; CA.forEach(function (r) { if (cSecs.indexOf(r[1]) < 0) cSecs.push(r[1]); });
+  var csec = cSecs.indexOf(SE.indexOf("all")) >= 0 ? SE.indexOf("all") : cSecs[0];
+  var cModels = []; CA.forEach(function (r) { if (cModels.indexOf(r[0]) < 0) cModels.push(r[0]); });
+  $("m2c-controls").appendChild(seg("m2cs", "Agencies", cSecs.map(function (i) { return [i, SECTOR_SHORT[SE[i]] || SE[i]]; }), csec, function (v) { csec = +v; drawC(); }));
+  function drawC() {
+    var series = cModels.map(function (mi, i) { return { name: MD[mi].charAt(0).toUpperCase() + MD[mi].slice(1), color: i, pts: CA.filter(function (r) { return r[0] === mi && r[1] === csec; }).map(function (r) { return { band: r[2], n: r[3], x: r[4], y: r[5] }; }) }; });
+    legend("m2c-legend", series.map(function (s) { return { name: s.name, color: color(s.color) }; }));
+    calChart($("m2c-chart"), { label: "Average forecast against the observed single-offer share, " + (SECTOR_SHORT[SE[csec]] || SE[csec]), series: series });
+    table($("m2c-table"), [
+      { label: "Model", get: function (r) { return MD[r[0]]; }, fmt: function (r) { return esc(MD[r[0]]); } },
+      { label: "Forecast band", get: function (r) { return r[2]; }, fmt: function (r) { return esc(r[2]); } },
+      { label: "Average forecast", num: true, get: function (r) { return r[4]; }, fmt: function (r) { return pct(r[4]); } },
+      { label: "Observed share", num: true, get: function (r) { return r[5]; }, fmt: function (r) { return "<b>" + pct(r[5]) + "</b>"; } },
+      { label: "Solicitations", num: true, get: function (r) { return r[3]; }, fmt: function (r) { return int(r[3]); } }
+    ], CA.filter(function (r) { return r[1] === csec; }), { stack: true });
+  }
+  onResize(drawC);
+  $("m2c-note").textContent = "Held-out forecasts from the test years" + (M.cal_years && M.cal_years.length ? " (" + M.cal_years.join(", ").replace(/-/g, " to ") + ")" : "") + ". “Raw” is the model before its calibration step. Bands with few solicitations bounce around.";
+})();
+
+/* ---------- forecast scoreboard (optional) ---------- */
+(function () {
+  var B = D.scoreboard;
+  if (!B) { hideOpt("score"); return; }
+  var t = B.totals || {}, k = [];
+  if (isNum(t.batches)) k.push('<div class="card kpi"><b>' + int(t.batches) + "</b><span>daily batches sealed</span></div>");
+  if (isNum(t.forecasts)) k.push('<div class="card kpi"><b>' + int(t.forecasts) + "</b><span>forecasts" + (isNum(t.resolved) ? ", " + int(t.resolved) + " resolved so far" : "") + "</span></div>");
+  if (isNum(t.brier)) k.push('<div class="card kpi"><b>' + t.brier.toFixed(3) + "</b><span>Brier score" + (isNum(t.baseline) ? " (baseline " + t.baseline.toFixed(3) + ")" : "") + "</span></div>");
+  $("sb-kpis").innerHTML = k.join("");
+  var ms = B.months || [];
+  if (!ms.length) { $("sb-chart").innerHTML = empty("No month has resolved forecasts yet."); }
+  else {
+    var mlab = function (s) { var p = String(s).split("-"); return p.length >= 2 && /^\d{4}$/.test(p[0]) ? MONTHS[+p[1] - 1] + " " + p[0] : s; };
+    var series = [{ name: "Brier score of the forecasts", short: "Forecasts", color: 0, pts: ms.map(function (m, i) { return { x: i, y: m[4], n: m[3] }; }) },
+                  { name: "Brier score of the baseline" + (B.baseline_name ? " (" + B.baseline_name + ")" : ""), short: "Baseline", color: 1, dash: true, pts: ms.map(function (m, i) { return { x: i, y: m[5], n: m[3] }; }) }];
+    legend("sb-legend", series.map(function (s) { return { name: s.name, color: color(s.color) }; }));
+    onResize(function () {
+      lineChart($("sb-chart"), { label: "Brier score by month, forecasts and baseline", series: series, xs: ms.map(function (m, i) { return i; }), direct: false, xLabelW: 60,
+        xFmt: function (i) { return mlab(ms[i][0]); }, yFmt: function (v) { return trimNum(v); }, yTip: function (p) { return "<b style='display:inline'>" + p.y.toFixed(3) + "</b> <span class='muted'>" + int(p.n) + " resolved</span>"; } });
+    });
+    table($("sb-table"), [
+      { label: "Month", get: function (m) { return m[0]; }, fmt: function (m) { return esc(mlab(m[0])); } },
+      { label: "Batches", num: true, get: function (m) { return m[1]; }, fmt: function (m) { return int(m[1]); } },
+      { label: "Forecasts", num: true, get: function (m) { return m[2]; }, fmt: function (m) { return int(m[2]); } },
+      { label: "Resolved", num: true, get: function (m) { return m[3]; }, fmt: function (m) { return int(m[3]); } },
+      { label: "Brier", num: true, get: function (m) { return m[4]; }, fmt: function (m) { return isNum(m[4]) ? "<b>" + m[4].toFixed(3) + "</b>" : "not yet"; } },
+      { label: "Baseline Brier", num: true, get: function (m) { return m[5]; }, fmt: function (m) { return isNum(m[5]) ? m[5].toFixed(3) : "n/a"; } }
+    ], ms, { stack: true, sortCol: 0, sortDir: -1 });
+  }
+  $("sb-note").textContent = (B.updated ? "Updated " + niceDate(String(B.updated).slice(0, 10)) + ". " : "") + (B.notes || []).join(" ") +
+    " A month's score changes as more of its forecasts resolve. Months with few resolved forecasts are noisy. What this cannot show: how good the forecasts are on solicitations that never lead to a competed award.";
+})();
+
+/* ---------- data-quality flags ---------- */
 (function () {
   var QF = D.quality;
   if (!QF || !QF.flags) { $("q-table").innerHTML = '<p class="empty">No data-quality results yet.</p>'; return; }
@@ -792,7 +1728,7 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
     (R.volume_pct || 40) + "% or more. Both sides need at least " + (R.min_n || 200) + " awards. Sorted by the size of the change; select a column heading to sort another way. Civilian agencies, FY2024 to FY2026.";
 })();
 
-/* ---------- 5. open solicitations ---------- */
+/* ---------- open solicitations ---------- */
 (function () {
   var S = D.sam;
   if (!S) { $("sam-card").innerHTML = '<p class="empty">The daily SAM.gov file is not available yet.</p>'; $("daily-card").hidden = true; return; }
@@ -836,7 +1772,77 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
   }
 })();
 
-/* ---------- 6. get the data ---------- */
+/* ---------- market depth ---------- */
+(function () {
+  var MD = D.market_depth;
+  if (!MD || !MD.codes || !MD.codes.length) { $("md-card").innerHTML = empty("The market-depth table (reference/market_depth_naics.csv) is not available yet."); return; }
+  var C = MD.codes, col = 2;
+  var BK = [[1, 9], [10, 49], [50, 99], [100, 499], [500, 999], [1000, 4999], [5000, 9999], [10000, Infinity]];
+  function bl(b) { return b[1] === Infinity ? int(b[0]) + "+" : int(b[0]) + " to " + int(b[1]); }
+  function med(a) { a = a.slice().sort(function (x, y) { return x - y; }); var n = a.length; return n ? (n % 2 ? a[(n - 1) / 2] : (a[n / 2 - 1] + a[n / 2]) / 2) : null; }
+  var anyVals = C.map(function (c) { return c[2]; });
+  $("md-kpis").innerHTML = '<div class="card kpi"><b>' + int(C.length) + "</b><span>6-digit industry codes with at least one registered company</span></div>" +
+    '<div class="card kpi"><b>' + int(med(anyVals)) + "</b><span>registered companies in the middle code (half have fewer)</span></div>" +
+    '<div class="card kpi"><b>' + int(anyVals.filter(function (v) { return v < 10; }).length) + "</b><span>codes with fewer than 10 registered companies</span></div>";
+  $("md-controls").appendChild(seg("mdcol", "Count companies that", [[2, "list the code at all"], [1, "list it as their main code"]], col, function (v) { col = +v; drawH(); }));
+  function drawH() {
+    var counts = BK.map(function (b) { return C.filter(function (c) { return c[col] >= b[0] && c[col] <= b[1]; }).length; });
+    var zero = C.filter(function (c) { return c[col] === 0; }).length;
+    barChart($("md-chart"), { label: "Number of industry codes by registered companies", cats: BK.map(function (b, i) { return i; }), catFmt: function (i) { var b = BK[i], k = function (v) { return v >= 1000 ? Math.round(v / 1000) + "K" : String(v); }; return b[1] === Infinity ? k(b[0]) + "+" : k(b[0]) + "-" + k(b[1] + 1 === 1000 || b[1] + 1 === 5000 || b[1] + 1 === 10000 ? b[1] + 1 : b[1]); },
+      catTip: function (i) { return bl(BK[i]) + " registered companies"; }, labelW: 58, maxBar: 40, height: 220,
+      yFmt: function (v) { return String(v); }, yTip: function (v) { return int(v) + " codes"; }, series: [{ name: "Codes", vals: counts }] });
+    $("md-note").textContent = "Active SAM.gov registrations for all awards (contracts included), extract of " + niceDate(MD.extract_date) + ". " + (zero ? zero + " codes have no company that lists them as its main code. " : "") +
+      "The file has counts only: no company names or identifiers. Industry names are not in the file; look a code up at census.gov/naics. What this cannot show: how many companies can actually do the work, or in which places.";
+  }
+  onResize(drawH);
+  var q = "";
+  $("md-search").appendChild(searchBox("md-q", "Code or start of a code", "For example: 541330 or 5413", function (v) { q = v.replace(/\D/g, ""); apply(); }));
+  var tb = table($("md-table"), [
+    { label: "NAICS code", get: function (c) { return c[0]; }, fmt: function (c) { return String(c[0]); } },
+    { label: "Companies listing it", num: true, get: function (c) { return c[2]; }, fmt: function (c) { return "<b>" + int(c[2]) + "</b>"; } },
+    { label: "As main code", num: true, get: function (c) { return c[1]; }, fmt: function (c) { return int(c[1]); } },
+    { label: "Small business for it", num: true, get: function (c) { return c[3]; }, fmt: function (c) { return int(c[3]); } }
+  ], C, { stack: true, limit: 25, sortCol: 0, sortDir: 1 });
+  function apply() {
+    var r = q ? C.filter(function (c) { return String(c[0]).indexOf(q) === 0; }) : C;
+    tb.set(r); $("md-count").textContent = "Showing " + int(r.length) + " of " + int(C.length) + " codes.";
+  }
+  apply();
+})();
+
+/* ---------- all thresholds ---------- */
+(function () {
+  var TT = D.threshold_table;
+  if (!TT || !TT.rows || !TT.rows.length) { $("tt-card").innerHTML = empty("The threshold table (reference/thresholds.csv) is not available yet."); return; }
+  var FM = TT.families || {}, filt = { f: "", q: "" };
+  var fams = []; TT.rows.forEach(function (r) { if (fams.indexOf(r[0]) < 0) fams.push(r[0]); });
+  var APPLY = { all: "all agencies", civilian: "civilian agencies", DoD: "Defense" };
+  $("tt-controls").appendChild(selectBox("tt-f", "Threshold", [["", "All thresholds"]].concat(fams.map(function (f) { return [f, (FM[f] || [f])[0]]; })), function (v) { filt.f = v; apply(); }));
+  $("tt-controls").appendChild(searchBox("tt-q", "Search", "Value, rule or note", function (v) { filt.q = v.trim().toLowerCase(); apply(); }));
+  var tb = table($("tt-table"), [
+    { label: "Threshold", get: function (r) { return (FM[r[0]] || [r[0]])[0]; }, fmt: function (r) { return esc((FM[r[0]] || [r[0]])[0]); } },
+    { label: "Value", num: true, get: function (r) { return r[1]; }, fmt: function (r) { return isNum(r[1]) ? "<b>" + moneyFull(r[1]) + "</b>" : '<span class="muted">no dollar value</span>'; } },
+    { label: "From", get: function (r) { return r[2]; }, fmt: function (r) { return r[2] ? '<span style="white-space:nowrap">' + esc(niceDate(r[2])) + "</span>" : '<span class="muted">earlier</span>'; } },
+    { label: "Until", get: function (r) { return r[3] || "9999"; }, fmt: function (r) { return r[3] ? '<span style="white-space:nowrap">' + esc(niceDate(r[3])) + "</span>" : '<span class="muted">no end date</span>'; } },
+    { label: "Applies to", get: function (r) { return r[4]; }, fmt: function (r) { return esc(APPLY[r[4]] || r[4]); } },
+    { label: "Rule", get: function (r) { return r[5]; }, fmt: function (r) { return esc(r[5]); } },
+    { label: "Confidence", get: function (r) { return r[6]; }, fmt: function (r) { return esc(r[6]) + (/^https?:\/\//.test(r[7]) ? ' <a href="' + esc(r[7]) + '" rel="noopener">source</a>' : ""); } },
+    { label: "Notes", wide: true, get: function (r) { return r[8]; }, fmt: function (r) { return esc(r[8]); } }
+  ], TT.rows, { stack: true, limit: 30 });
+  function apply() {
+    var r = TT.rows.filter(function (x) {
+      if (filt.f && x[0] !== filt.f) return false;
+      if (!filt.q) return true;
+      var hay = [(FM[x[0]] || [x[0]])[0], x[1] != null ? String(x[1]) + " " + moneyFull(x[1]) : "", x[5], x[8], x[4]].join(" ").toLowerCase();
+      return hay.indexOf(filt.q.replace(/[$,]/g, "")) >= 0 || hay.indexOf(filt.q) >= 0;
+    });
+    tb.set(r); $("tt-count").textContent = "Showing " + r.length + " of " + TT.rows.length + " value periods.";
+    $("tt-note").textContent = filt.f && FM[filt.f] ? FM[filt.f][1] + (FM[filt.f][2] ? " Measured on: " + FM[filt.f][2] : "") : "Pick a threshold to read what it does. Confidence says how well each date and value is documented. Long notes are shortened; the full text is in reference/thresholds.csv.";
+  }
+  apply();
+})();
+
+/* ---------- get the data ---------- */
 (function () {
   var repo = D.repo || "https://github.com/e-burress/federal-contract-competition";
   var DESC = {
@@ -852,18 +1858,41 @@ $("builtline").innerHTML = "Data built " + esc(niceDate(D.built)) + (D.snapshot 
     "threshold_staggered.csv": "the 2018 switch, agency by agency",
     "threshold_quarterly_bunching.csv": "bunching ratio by fiscal quarter, FY2024 to FY2026",
     "threshold_sat_moved.csv": "before and after the October 2025 change",
+    "threshold_scan.csv": "every dollar limit: ratio for each value and placebo value by year",
+    "threshold_scan_changes.csv": "every dollar limit: the before and after test of each change",
+    "threshold_scan_summary.json": "every dollar limit: verdicts, placebo values and caveats",
+    "drivers_shares.csv": "single-offer share by factor and sector",
+    "drivers_model.csv": "the model's average marginal effects",
+    "drivers_blocks.csv": "how much each block of factors explains",
+    "drivers_summary.json": "why only one bid: summary and caveats",
+    "split_screen.csv": "split-like clusters at the real and fake lines",
+    "split_screen_summary.json": "split-like clusters: pooled ratios and natural experiments",
+    "outcomes_estimates.csv": "after award: differences by outcome, sector, size and check",
+    "outcomes_by_cohort.csv": "after award: the same by award year",
+    "outcomes_summary.json": "after award: headline numbers and caveats",
+    "model_v2_card.json": "forecast model version 2: description and headline numbers",
+    "model_v2_evaluation.csv": "forecast model version 2: test results by year and sector",
+    "model_v2_calibration.csv": "forecast model version 2: forecast chances against outcomes",
+    "daily_forecast_scores.json": "scoreboard of the daily sealed forecasts",
     "quality_flags.csv": "every data-quality flag",
     "quality_summary.json": "flag counts and the rules used",
     "sam_daily_counts.csv": "SAM.gov notices by day, department and type",
     "sam_daily_latest.json": "today's SAM.gov summary",
     "live_fy2027_by_agency.csv": "this fiscal year so far, by agency",
-    "live_fy2027_totals.json": "this fiscal year so far, totals"
+    "live_fy2027_totals.json": "this fiscal year so far, totals",
+    "reference/market_depth_naics.csv": "registered companies per industry code",
+    "reference/thresholds.csv": "every threshold and its value periods"
   };
   var files = (D.sources || []).slice();
   ["atlas_civilian_by_kind.csv", "atlas_civilian_by_setaside.csv"].forEach(function (f) { if (files.indexOf(f) < 0) files.push(f); });
-  $("data-links").innerHTML = files.sort().map(function (f) {
-    return '<li><a href="' + esc(repo) + "/blob/main/results/" + encodeURIComponent(f) + '"><code>' + esc(f) + "</code></a>" + (DESC[f] ? " <span>" + esc(DESC[f]) + "</span>" : "") + "</li>";
+  $("data-links").innerHTML = files.sort(function (a, b) { return (a.indexOf("/") >= 0) - (b.indexOf("/") >= 0) || (a < b ? -1 : 1); }).map(function (f) {
+    var path = f.indexOf("reference/") === 0 ? f : "results/" + f;
+    return '<li><a href="' + esc(repo) + "/blob/main/" + path.split("/").map(encodeURIComponent).join("/") + '"><code>' + esc(f) + "</code></a>" + (DESC[f] ? " <span>" + esc(DESC[f]) + "</span>" : "") + "</li>";
   }).join("") + '<li><a href="' + esc(repo) + '/blob/main/docs/data/explorer-data.js"><code>explorer-data.js</code></a> <span>everything on this page in one file</span></li>';
+  if (D.trimmed && D.trimmed.length) {
+    $("trimmed").hidden = false;
+    $("trimmed").textContent = "To keep this page quick to load, some detail is only in the files below: " + D.trimmed.join("; ") + ".";
+  }
   $("guide-links").innerHTML = [
     ["/blob/main/docs/data-dictionary.md", "Data dictionary", "what every column means"],
     ["/blob/main/docs/run-it-yourself.md", "Run it yourself", "rebuild every number on a laptop"],
