@@ -189,7 +189,7 @@ The scripts that created the sealed forecasts (10 and 10b) and the frozen foreca
 
 ## Limits
 
-- **No unit prices.** Federal award data records dollar values, not quantities or unit prices, so the price premium of single-offer awards can't be measured directly. <!-- auto:limit-premium -->A preliminary check found single-offer awards are 27% *smaller* within comparable categories, and found no detectable difference in post-award growth.<!-- /auto:limit-premium -->
+- **No unit prices.** Federal award data records dollar values, not quantities or unit prices, so the price premium of single-offer awards can't be measured directly. <!-- auto:limit-premium -->A preliminary check found single-offer awards are 27% *smaller* within comparable categories, and found only small differences, in both directions, in dollars obligated after award relative to the initial value.<!-- /auto:limit-premium -->
 - **Offer counts are entered by staff.** In the five departments, <!-- auto:limit-999 -->760 competed awards<!-- /auto:limit-999 --> carry a "999" placeholder and were excluded.
 - **FY2026 is unusual.** It saw a government shutdown, a reporting-system move and staffing changes. <!-- auto:limit-fy2026 -->HHS and VA competed-award counts fell 34–50% from FY2024 to FY2026.<!-- /auto:limit-fy2026 -->
 - **SAM.gov's public search endpoint is undocumented.** This project uses it politely, at about one request per second. The documented alternatives are SAM's API (key required) and its daily CSV extract.

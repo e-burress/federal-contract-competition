@@ -6,6 +6,8 @@ Source: USAspending.gov contract transactions (the Advanced Search download), ev
 
 Each table has **one row per award**, described by its **base action** (modification 0, the original award). Codes follow the Federal Procurement Data System (FPDS) data dictionary.
 
+**Values are changes, not running totals.** In USAspending's transaction data, `base_and_all_options_value`, `base_and_exercised_options_value` and `federal_action_obligation` on each row are the change made by that action. The base action carries the initial value; a modification carries its increase or decrease (often 0). An award's current total is the sum over its actions.
+
 ## base_awards_five.parquet
 
 The five departments of the in-depth analysis (Veterans Affairs, Health and Human Services, Homeland Security, Interior, Agriculture). Built by `scripts/02_build_awards.py`; used by `scripts/03_atlas.py`.
@@ -30,7 +32,8 @@ The five departments of the in-depth analysis (Veterans Affairs, Health and Huma
 | value0, obl0 | Base-and-all-options value and dollars obligated at the base action |
 | base_and_exercised_options_value | Value of the base plus exercised options at the base action |
 | n_tx, obligation_sum_window | Number of transactions on the award in the window, and their total obligations |
-| value_all_options_last, value_all_options_max | Latest and highest potential value reported in the window |
+| value_all_options_last, value_all_options_max | Per-action figures, not totals: the change in potential value made by the latest action in the window (often 0), and the largest single change (usually the base action's own value). Do not use them to measure growth. |
+| value_all_options_sum | Sum of the per-action changes over the award's actions in the window: the award's potential value at the end of the window. Only in tables built from the raw download by the current `02_build_awards.py`; the snapshot `data-2026-11-09` does not have it. |
 | last_action_date, months_at_risk | Last transaction date, and months from the base action to the end of the window |
 | type_of_contract_pricing_code, commercial_item_acquisition_procedures_code | Pricing type and commercial-item procedures |
 | fair_opportunity_limited_sources_code, other_than_full_and_open_competition_code | Reasons for limited competition, where given |
@@ -66,7 +69,8 @@ Built on GitHub by `.github/workflows/history.yml` (scripts `17_history_download
 
 | Column | Meaning |
 |---|---|
-| vendor_id | A short code derived from the company's public identifier, so the same company can be followed across awards: the first 16 hex digits of SHA-256("fcc-v1:" + UEI, or "duns:" + DUNS when there is no UEI). It is not anonymous: anyone with the identifier can compute the same code, contract numbers are kept, and the underlying records are public on USAspending.gov. Company names and raw identifiers are left out only to keep the tables small and focused. Known limit: a company whose records carry a UEI in some years and only a DUNS in others (the switch to UEI came in 2022) gets two codes. |
+| vendor_id | A short code derived from the company's public identifier, so the same company can be followed across awards: the first 16 hex digits of SHA-256("fcc-v1:" + UEI, or "duns:" + DUNS when there is no UEI). It is not anonymous: anyone with the identifier can compute the same code, contract numbers are kept, and the underlying records are public on USAspending.gov. Company names and raw identifiers are left out only to keep the tables small and focused. Known limit: a company whose records carry a UEI in some years and only a DUNS in others (the switch to UEI came in 2022) gets two codes; use the two columns below to link them. |
+| vendor_uei_code, vendor_duns_code | The same kind of code from one identifier alone: SHA-256("fcc-v1:" + UEI) and SHA-256("fcc-v1:duns:" + DUNS), first 16 hex digits, each empty when that identifier is blank. A row that carries both links a company's UEI years to its DUNS-only years. `vendor_id` equals `vendor_uei_code` when there is a UEI, and `vendor_duns_code` otherwise. Added in the second build of the tables. |
 | is_dod | Awarded by the Department of Defense |
 
 **award_year_FY<year>.parquet**: one row per award with any action in that fiscal year.
@@ -76,8 +80,9 @@ Built on GitHub by `.github/workflows/history.yml` (scripts `17_history_download
 | contract_award_unique_key, fy | Award and fiscal year |
 | n_tx | Number of actions (the award itself and its modifications) in the year |
 | obligation_sum | Dollars obligated by those actions |
-| value_max, value_last | Highest and latest base-and-all-options value reported in the year |
-| exercised_last | Latest base-and-exercised-options value in the year |
+| value_max, value_last | Per-action figures, not totals: the largest single change in base-and-all-options value in the year, and the change made by the year's last action |
+| exercised_last | The change in base-and-exercised-options value made by the year's last action |
+| value_sum, exercised_sum | Sums of the year's per-action changes in base-and-all-options value and in base-and-exercised-options value. Summed over the years up to t (from the base year), they give the award's potential and exercised value at the end of year t. Added in the second build of the tables; `history-v1` does not have them. |
 | last_action_date | Date of the last action in the year |
 | n_options, n_scope_changes, n_terminations | Actions that exercised an option (FPDS action type G), changed the scope (B, D, L) or terminated the contract (E, F, X) |
 

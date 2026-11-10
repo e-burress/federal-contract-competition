@@ -3,19 +3,30 @@
 
   base_actions_FY<fy>.parquet   one row per award whose base action (modification 0) is dated in the year: what was bought, how it was
                                 competed, offers received, set-aside, values at award, agency, buying-office code, a vendor_id (a short
-                                company code, see below), and whether it is a Department of Defense award.  Same rules as 02_build_awards.py
+                                company code, see below) with vendor_uei_code and vendor_duns_code, and whether it is a Department of
+                                Defense award.  Same rules as 02_build_awards.py
                                 (competed = A/D/E/F/CDO; usable offers = 1..998; eval set = both; single = exactly one offer).
-  award_year_FY<fy>.parquet     one row per award with any action in the year: number of actions, dollars obligated, highest and latest
-                                potential value, last action date, and how many actions were option exercises, scope changes
-                                (supplemental agreements, change orders) or terminations.  Joining the years gives each award's history
-                                after it was made (cost growth, extensions, terminations), even when that history spans many years.
+  award_year_FY<fy>.parquet     one row per award with any action in the year: number of actions, dollars obligated, the sum of the
+                                year's changes in potential value (value_sum) and in exercised value (exercised_sum), the largest and the
+                                latest single change (value_max, value_last, exercised_last), last action date, and how many actions
+                                were option exercises, scope changes (supplemental agreements, change orders) or terminations.  Joining
+                                the years gives each award's history after it was made (cost growth, extensions, terminations), even
+                                when that history spans many years.
+
+On each transaction row, base_and_all_options_value and base_and_exercised_options_value are the CHANGE made by that action, not a
+running total: the base action carries the initial value and a modification carries its increase or decrease (often 0).  So an award's
+potential value at the end of year t is the sum of value_sum over the years up to t; value_max and value_last are single changes, not
+totals.  (value_sum and exercised_sum were added in the second build of the tables; the first build, history-v1, does not have them.)
 
 What is left out, as in the public snapshot: buying-office NAMES (codes stay), company names and raw company identifiers.  They are left
 out only to keep the tables small and focused, not to hide anything.  vendor_id is a short code derived from the company's public
 identifier (the first 16 hex digits of SHA-256("fcc-v1:" + UEI, or "duns:" + DUNS when there is no UEI)), so the same company can be
 followed across awards.  It is not anonymous: anyone with the identifier can compute the same code, contract numbers are kept, and the
 underlying records are public on USAspending.gov.  Known limit: a company whose records carry a UEI in some years and only a DUNS in
-others (the switch from DUNS to UEI came in April 2022) gets two codes.
+others (the switch from DUNS to UEI came in April 2022) gets two vendor_ids.  To link them, each base action also has two separate
+codes made the same way: vendor_uei_code from the UEI alone (SHA-256("fcc-v1:" + UEI)) and vendor_duns_code from the DUNS alone
+(SHA-256("fcc-v1:duns:" + DUNS)), each empty when that identifier is blank.  A row that carries both links the two.  vendor_id equals
+vendor_uei_code when there is a UEI, and vendor_duns_code otherwise.
 
 Usage:  python -I scripts/18_history_build.py FY
 Input : data/history/FY<fy>/*.zip
@@ -52,6 +63,21 @@ def vendor_id(uei, duns):
     return hashlib.sha256(("fcc-v1:" + key).encode()).hexdigest()[:16] if key else ""
 
 
+def vendor_code(ident, prefix=""):
+    """A code from ONE identifier, with the vendor_id scheme: vendor_code(uei) for the UEI, vendor_code(duns, "duns:") for the DUNS.
+    Empty when the identifier is blank."""
+    return hashlib.sha256(("fcc-v1:" + prefix + ident).encode()).hexdigest()[:16] if isinstance(ident, str) and ident.strip() else ""
+
+
+def vendor_columns(b):
+    """vendor_id, vendor_uei_code and vendor_duns_code for each row of a frame of base actions."""
+    uei = b["recipient_uei"] if "recipient_uei" in b.columns else pd.Series(None, index=b.index, dtype=object)
+    duns = b["recipient_duns"] if "recipient_duns" in b.columns else pd.Series(None, index=b.index, dtype=object)
+    return pd.DataFrame({"vendor_id": [vendor_id(u, d) for u, d in zip(uei, duns)],
+                         "vendor_uei_code": [vendor_code(u) for u in uei],
+                         "vendor_duns_code": [vendor_code(d, "duns:") for d in duns]}, index=b.index)
+
+
 def read_zip(path):
     z = zipfile.ZipFile(path)
     frames = []
@@ -86,8 +112,7 @@ def main():
         b = tx[tx["modification_number"].isin(["0", "00", "000", ""])]
         b = b.sort_values("action_date").drop_duplicates("contract_award_unique_key")
         keep = [c for c in BASE_COLS if c in b.columns]
-        vend = b.apply(lambda r: vendor_id(r.get("recipient_uei"), r.get("recipient_duns")), axis=1) if len(b) else []
-        b = b[keep].assign(vendor_id=vend)
+        b = pd.concat([b[keep], vendor_columns(b)], axis=1)
         bases.append(b)
         # per-award totals of every action in this file
         tx = tx.sort_values(["contract_award_unique_key", "action_date"])
@@ -98,7 +123,9 @@ def main():
             "n_tx": g.size(), "obligation_sum": g["federal_action_obligation"].sum(),
             "value_max": g["base_and_all_options_value"].max(), "value_last": g["base_and_all_options_value"].last(),
             "exercised_last": g["base_and_exercised_options_value"].last(), "last_action_date": g["action_date"].max(),
-            "n_options": g["is_option"].sum(), "n_scope_changes": g["is_scope"].sum(), "n_terminations": g["is_term"].sum()}))
+            "n_options": g["is_option"].sum(), "n_scope_changes": g["is_scope"].sum(), "n_terminations": g["is_term"].sum(),
+            # each action's value is a change, so the sums are the year's net change (for the base year: the initial value too)
+            "value_sum": g["base_and_all_options_value"].sum(), "exercised_sum": g["base_and_exercised_options_value"].sum()}))
         print(f"  {os.path.basename(p)}: {len(tx):,} transactions", flush=True)
 
     base = pd.concat(bases, ignore_index=True).sort_values("action_date").drop_duplicates("contract_award_unique_key")
@@ -123,7 +150,8 @@ def main():
     ay = pd.DataFrame({
         "n_tx": g["n_tx"].sum(), "obligation_sum": g["obligation_sum"].sum(), "value_max": g["value_max"].max(),
         "value_last": g["value_last"].last(), "exercised_last": g["exercised_last"].last(), "last_action_date": g["last_action_date"].max(),
-        "n_options": g["n_options"].sum(), "n_scope_changes": g["n_scope_changes"].sum(), "n_terminations": g["n_terminations"].sum()})
+        "n_options": g["n_options"].sum(), "n_scope_changes": g["n_scope_changes"].sum(), "n_terminations": g["n_terminations"].sum(),
+        "value_sum": g["value_sum"].sum(), "exercised_sum": g["exercised_sum"].sum()})
     ay = ay.reset_index().assign(fy=fy)
 
     base.to_parquet(os.path.join(out_dir, f"base_actions_FY{fy}.parquet"), index=False, compression="zstd")
@@ -131,7 +159,8 @@ def main():
     counts = {"fiscal_year": fy, "transactions": int(n_rows), "base_actions": int(len(base)), "defense_base_actions": int(base.is_dod.sum()),
               "competed": int(base.competed.sum()), "eval_set": int(base.eval_set.sum()), "single": int((base.eval_set & base.single).sum()),
               "awards_with_actions": int(len(ay)), "files": [os.path.basename(z) for z in zips]}
-    json.dump(counts, open(os.path.join(out_dir, f"history_FY{fy}.json"), "w", encoding="utf-8"), indent=1)
+    with open(os.path.join(out_dir, f"history_FY{fy}.json"), "w", encoding="utf-8") as f:
+        json.dump(counts, f, indent=1)
     print(json.dumps({k: v for k, v in counts.items() if k != "files"}, indent=1))
 
 

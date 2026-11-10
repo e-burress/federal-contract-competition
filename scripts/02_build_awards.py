@@ -6,8 +6,17 @@ Background for a learner
     modification (P00001, P00002 ...).  USAspending gives us one row per transaction.
   * A "base award" is the transaction with modification_number 0.  Its fields (offers received, how competed,
     set-aside, value) describe the award AT THE TIME IT WAS MADE, which is what we want for a single-offer atlas.
-  * For each award we also add what happened later (sum of obligations, latest potential value) using all of the
-    award's transactions that fall inside our download window (Oct 2023 - Sep 2026).
+  * For each award we also add what happened later (sum of obligations, sum of the changes in potential value) using all of
+    the award's transactions that fall inside our download window (Oct 2023 - Sep 2026).
+  * On each transaction row, base_and_all_options_value (and federal_action_obligation) is the CHANGE made by that action,
+    not a running total: the base action carries the initial value, and a modification carries its increase or decrease
+    (often 0).  USAspending's award-level "current total value" is the sum of these changes.  So:
+        value_all_options_sum   sum of the per-action values over the award's actions in the window = the award's potential
+                                value at the end of the window (true cumulative potential value)
+        value_all_options_max   the largest single per-action value (usually the base action's own value)
+        value_all_options_last  the per-action value of the latest action (often 0)
+    max and last are per-action figures.  They are kept for reference, but they are NOT the award's total, and growth must
+    not be measured with them.  (An earlier version of 03_atlas.py did, and that measure was withdrawn.)
 
 Labels
   competed    = extent_competed_code in A (full and open), D (full and open after exclusion of sources, i.e. set-asides),
@@ -100,8 +109,9 @@ def build(src=SRC, usecols=None, window_end=WINDOW_END, agencies=None):
         "n_tx": g.size(),
         "obligation_sum_window": g["federal_action_obligation"].sum(),
         "last_action_date": g["action_date"].max(),
-        "value_all_options_last": g["base_and_all_options_value"].last(),
-        "value_all_options_max": g["base_and_all_options_value"].max(),   # highest potential value ever reported
+        "value_all_options_last": g["base_and_all_options_value"].last(),   # per-action change of the latest action
+        "value_all_options_max": g["base_and_all_options_value"].max(),     # largest per-action change (NOT the award's total)
+        "value_all_options_sum": g["base_and_all_options_value"].sum(),     # sum of the changes = cumulative potential value
     })
 
     # ---- base action = modification_number 0 (earliest if there are several) ------------------------
@@ -129,7 +139,8 @@ def build(src=SRC, usecols=None, window_end=WINDOW_END, agencies=None):
             "action_date", "fy", "solicitation_identifier", "has_sol_id", "product_or_service_code", "naics_code",
             "extent_competed_code", "solicitation_procedures_code", "type_of_set_aside_code", "offers",
             "competed", "offers_ok", "eval_set", "single", "value0", "obl0", "base_and_exercised_options_value",
-            "n_tx", "obligation_sum_window", "value_all_options_last", "value_all_options_max", "last_action_date", "months_at_risk",
+            "n_tx", "obligation_sum_window", "value_all_options_last", "value_all_options_max",
+            "value_all_options_sum", "last_action_date", "months_at_risk",
             "type_of_contract_pricing_code", "commercial_item_acquisition_procedures_code",
             "fair_opportunity_limited_sources_code", "other_than_full_and_open_competition_code",
             "recipient_uei", "recipient_parent_uei", "purchase_card_as_payment_method_code", "cost_or_pricing_data_code"]

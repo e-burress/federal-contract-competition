@@ -218,10 +218,18 @@ def first_release_sentence():
 
 
 def premium():
+    """The size row of premium_prelim.csv, and its obligation rows keyed by (kind, outcome): ("PO", "overrun25") ..."""
     p = rows("premium_prelim.csv")
     val = next(r for r in p if r["outcome"] == "log_value0")
-    po = next(r for r in p if r["outcome"] == "growth25" and r["spec"].startswith("PO"))
-    return val, po
+    obl = {(r["spec"].split(":")[0], r["outcome"]): r for r in p if r["outcome"] in ("overrun25", "oblig_ratio_w")}
+    return val, obl
+
+
+def obligation_pattern(obl):
+    """How the four obligation estimates read together: 'none' (every interval includes zero), 'more' or 'less' (the ones
+    that exclude zero all point one way: single-offer awards obligated more, or less, relative to their initial value), 'mixed'."""
+    signs = {1 if float(r["lo"]) > 0 else -1 for r in obl.values() if not float(r["lo"]) <= 0 <= float(r["hi"])}
+    return "none" if not signs else ("mixed" if len(signs) > 1 else ("more" if signs == {1} else "less"))
 
 
 def premium_pct(x):
@@ -395,12 +403,15 @@ def r_forecasts():
 
 
 def r_limit_premium():
-    val, po = premium()
-    same = float(po["lo"]) <= 0 <= float(po["hi"])
+    val, obl = premium()
     size = premium_pct(val["coef"])
     word = "*smaller*" if size < 0 else "*larger*"
-    growth = "found no detectable difference in post-award growth" if same else "found a difference in post-award growth"
-    return f"A preliminary check found single-offer awards are {num(abs(size), 0)}% {word} within comparable categories, and {growth}."
+    after = {"none": "found no detectable difference in dollars obligated after award, relative to the initial value",
+             "more": "found that they were obligated slightly more after award, relative to their initial value",
+             "less": "found that they were obligated slightly less after award, relative to their initial value",
+             "mixed": "found only small differences, in both directions, in dollars obligated after award relative to the initial value"}
+    return (f"A preliminary check found single-offer awards are {num(abs(size), 0)}% {word} within comparable categories, "
+            f"and {after[obligation_pattern(obl)]}.")
 
 
 def r_limit_999():
@@ -487,17 +498,34 @@ def m_other_cuts():
 
 
 def m_premium():
-    val, po = premium()
+    val, obl = premium()
     size = premium_pct(val["coef"])
     word = "smaller" if size < 0 else "larger"
     lo, hi = premium_pct(val["lo"]), premium_pct(val["hi"])
-    same = float(po["lo"]) <= 0 <= float(po["hi"])
+    po, de = obl[("PO", "overrun25")], obl[("DEF", "overrun25")]
+    rpo, rde = obl[("PO", "oblig_ratio_w")], obl[("DEF", "oblig_ratio_w")]
+    p = lambda r: f"{sgn(float(r['coef']) * 100)} percentage points ({sgn(float(r['lo']) * 100)} to {sgn(float(r['hi']) * 100)})"
+    reading = {"none": "None of these differences can be told apart from zero.",
+               "more": "Single-offer awards were obligated slightly more, relative to their initial value.",
+               "less": "Single-offer awards were obligated slightly less, relative to their initial value.",
+               "mixed": "The differences are small and do not all point the same way, so they show no clear pattern."}
     return (f"**Price premium (preliminary).** Federal award data has no unit prices, so a true price premium can't be measured. "
             f"Within agency × year × award type × 4-character product code cells ({n(val['n'])} awards, {n(val['n_cells'])} cells), "
             f"single-offer awards are {num(abs(size), 1)}% {word} in initial value (95% interval {num(lo, 1)}% to {num(hi, 1)}%). "
-            f"That is a size difference, not a price. Growth in potential value of 25% or more after award shows "
-            f"{'no detectable difference' if same else 'a difference'}: {sgn(float(po['coef']) * 100)} percentage points for "
-            f"purchase orders ({sgn(float(po['lo']) * 100)} to {sgn(float(po['hi']) * 100)}).")
+            f"That is a size difference, not a price. "
+            f"After award, we compare the dollars obligated by every action in the window with the award's initial potential value "
+            f"(base and all options), within agency × year × 2-character product code × value quintile cells, with standard errors "
+            f"clustered by buying office. "
+            f"Among multi-offer purchase orders in those cells, {pct(po['mean_multi_offer'])} were obligated at 125% or more of their initial value; "
+            f"single-offer ones differed by {p(po)}. "
+            f"For definitive contracts the base rate was {pct(de['mean_multi_offer'])} and the difference {p(de)}. "
+            f"Dollars obligated as a percentage of initial value (limited to 0% to 300%) averaged {pct(rpo['mean_multi_offer'])} for "
+            f"multi-offer purchase orders, and single-offer ones differed by {p(rpo)}; for definitive contracts, "
+            f"{pct(rde['mean_multi_offer'])} and {p(rde)}. {reading[obligation_pattern(obl)]} "
+            f"An earlier version reported growth in potential value of 25% or more, measured with the largest value on any single "
+            f"action. In this data each action records a change, not a running total, so that measure missed most growth; it was "
+            f"replaced by the obligation measures above. Growth of the potential value itself needs the sum of every action's change, "
+            f"which the public data snapshot does not hold.")
 
 
 def m_offices():
