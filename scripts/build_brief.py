@@ -375,19 +375,25 @@ def f_history(src):
     h = history_all(src)
     if not h:
         return None
-    parts = []
-    for sector, where in (("civilian except GSA", "in civilian agencies except GSA"), ("Department of Defense", "at Defense")):
+    parts, left, starts = [], [], []
+    for sector, where, short in (("civilian except GSA", "in civilian agencies except GSA", "civilian"),
+                                 ("Department of Defense", "at Defense", "Defense")):
         ys = h.get(sector) or {}
-        if len(ys) >= 2:
-            a, b = min(ys), max(ys)
+        ok = sorted(y for y, r in ys.items() if not (r.get("note") or "").strip())   # a note marks a year that is not comparable
+        if len(ok) >= 2:
+            a, b = ok[0], ok[-1]
             sa, sb = float(ys[a]["share"]), float(ys[b]["share"])
             verb = "fell" if sb < sa else "rose" if sb > sa else "was unchanged"
             parts.append(f"{verb} {where} from {pct(sa)} in FY{a} to {pct(sb)} in FY{b}")
+            starts.append(a)
+            left += [f"FY{y} ({short})" for y in sorted(ys) if y not in ok and not a < y < b]
     if not parts:
         return None
     text = "Among competed awards with a usable offer count, the single-offer share " + " and ".join(parts) + "."
     why = ("The data cannot tell a change in competition from a change in how offers were recorded. GSA's line says little about "
            "competition: its very small supply orders change in number and in how offers are recorded.")
+    if left:
+        why += " Left out as not comparable (reporting change or incomplete data): " + ", ".join(left) + "."
     shown = [(lab, cls, ys) for key, lab, cls in HIST if len(ys := h.get(key) or {}) >= 2]
     years = sorted({y for _, _, ys in shown for y in ys})
     top = _nice_max(max(float(r["share"]) for _, _, ys in shown for r in ys.values()), 0.1)
@@ -398,7 +404,7 @@ def f_history(src):
         top, [step * i for i in range(int(round(top / step)) + 1)], lambda v: f"{100 * v:.0f}%",
         "Line chart: share of competed awards with a single offer, by fiscal year, for civilian agencies except GSA, Defense and GSA")
     fell = all(p.startswith("fell") for p in parts)
-    return (f"Since FY{years[0]}, single-offer shares fell" if fell else f"Single-offer shares since FY{years[0]}", text, why,
+    return (f"Since FY{min(starts)}, single-offer shares fell" if fell else f"Single-offer shares since FY{years[0]}", text, why,
             _fig(chart, "Share with one offer, by year. Civilian: except GSA"))
 
 

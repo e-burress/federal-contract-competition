@@ -18,7 +18,8 @@
   2022,
   2023,
   2024,
-  2025
+  2025,
+  2026
  ],
  "complete_years": [
   2008,
@@ -40,7 +41,9 @@
   2024,
   2025
  ],
- "incomplete_years": [],
+ "incomplete_years": [
+  2026
+ ],
  "headline_series": "awards above $25,000 (initial potential value; dollars not adjusted for inflation)",
  "definitions": {
   "company": "one company id: vendor_id, with DUNS-based and UEI-based codes linked into one id wherever a record carries both",
@@ -52,12 +55,6 @@
  },
  "identifier_switch": {
   "years_with_link_columns": [
-   2022,
-   2023,
-   2024,
-   2025
-  ],
-  "years_without_link_columns": [
    2008,
    2009,
    2010,
@@ -71,123 +68,157 @@
    2018,
    2019,
    2020,
-   2021
+   2021,
+   2022,
+   2023,
+   2024,
+   2025,
+   2026
   ],
-  "duns_uei_links": 15397,
+  "years_without_link_columns": [],
+  "duns_uei_links": 434425,
   "linked_groups_with_more_than_two_codes": 0,
   "linked_groups_with_more_than_five_codes": 0,
   "by_year": {
    "2008": {
     "rows": 1497795,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 1,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.3464
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9659,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2009": {
     "rows": 754428,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 2,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.3641
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9328,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2010": {
     "rows": 746441,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.3754
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9172,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2011": {
     "rows": 725771,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 6,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.3973
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9241,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2012": {
     "rows": 635065,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.4248
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9189,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2013": {
     "rows": 571055,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.4662
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9159,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2014": {
     "rows": 576550,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.48
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9136,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2015": {
     "rows": 769556,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.5652
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9181,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2016": {
     "rows": 817358,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.6084
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9218,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2017": {
     "rows": 805305,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.6238
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9067,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2018": {
     "rows": 788082,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.6694
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.9097,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2019": {
     "rows": 751777,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.7335
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.903,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2020": {
     "rows": 667490,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.7553
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.8674,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2021": {
     "rows": 634148,
-    "has_link_columns": false,
+    "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
-    "share_id_matching_a_known_duns_code": 0.0,
-    "share_id_matching_a_known_uei_code": 0.7937
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.7989,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
    },
    "2022": {
     "rows": 622893,
@@ -224,6 +255,16 @@
     "has_link_columns": true,
     "rows_without_company_id": 0,
     "incomplete_defense": false,
+    "share_with_uei": 1.0,
+    "share_with_duns": 0.0,
+    "share_duns_only": 0.0,
+    "share_duns_only_unlinked": 0.0
+   },
+   "2026": {
+    "rows": 555750,
+    "has_link_columns": true,
+    "rows_without_company_id": 0,
+    "incomplete_defense": true,
     "share_with_uei": 1.0,
     "share_with_duns": 0.0,
     "share_duns_only": 0.0,
@@ -269,27 +310,30 @@
   2019,
   2020,
   2021,
+  2022,
+  2023,
+  2024,
   2025
  ],
  "companies_above_25k": {
   "first_year": 2008,
-  "first": 57371,
+  "first": 57373,
   "last_year": 2025,
   "last": 44466,
-  "change": -0.2249,
+  "change": -0.225,
   "peak_year": 2010,
-  "peak": 58410
+  "peak": 58414
  },
  "companies_all_awards": {
   "first_year": 2008,
-  "first": 150879,
+  "first": 150878,
   "last_year": 2025,
   "last": 57062,
   "change": -0.6218,
   "note_first_year": "FY2008 reporting change: Department of Veterans Affairs reported 806,913 purchase orders, 741,240 of them at or under $3,000 (FY2009: 82,164 and 4,360); counts of all awards are not comparable with later years; use the above-$25,000 series"
  },
  "awards_above_25k": {
-  "first": 183650,
+  "first": 183648,
   "last": 162999,
   "change": -0.1124
  },
@@ -303,7 +347,7 @@
    "2025": 4480
   },
   "Department of Defense": {
-   "2008": 33267,
+   "2008": 33268,
    "2025": 21892
   }
  },
@@ -320,15 +364,18 @@
    2019,
    2020,
    2021,
+   2022,
+   2023,
+   2024,
    2025
   ],
-  "share_of_companies_first": 0.358,
+  "share_of_companies_first": 0.3581,
   "first_year": 2011,
   "share_of_companies_last": 0.3304,
   "last_year": 2025,
-  "share_of_companies_mean": 0.3447,
-  "share_of_awards_mean": 0.1288,
-  "share_of_dollars_mean": 0.141,
+  "share_of_companies_mean": 0.3431,
+  "share_of_awards_mean": 0.1279,
+  "share_of_dollars_mean": 0.149,
   "share_of_companies_never_seen_last": 0.2201,
   "largest_gap_linked_vs_unlinked_points": 0.0,
   "largest_gap_year": 2011
@@ -348,109 +395,105 @@
    2018,
    2019,
    2020,
+   2021,
    2022,
    2023,
    2024
   ],
-  "next_year_mean": 0.4823,
+  "next_year_mean": 0.4825,
   "next_year_last": 0.4919,
   "next_year_last_year": 2024,
-  "within_3_years_mean": 0.6347,
+  "within_3_years_mean": 0.6384,
   "within_3_years_last": 0.6662,
   "within_3_years_last_year": 2022
  },
  "concentration_above_25k": {
   "first_year": 2008,
   "last_year": 2025,
-  "top1pct_first": 0.7853,
+  "top1pct_first": 0.7876,
   "top1pct_last": 0.6511,
-  "top10pct_first": 0.9442,
+  "top10pct_first": 0.945,
   "top10pct_last": 0.9074,
-  "hhi_median_first": 651.0,
+  "hhi_median_first": 652.0,
   "hhi_median_last": 410.0,
-  "share_awards_hhi_above_2500_first": 0.0825,
+  "share_awards_hhi_above_2500_first": 0.0709,
   "share_awards_hhi_above_2500_last": 0.0827
  },
  "competition_above_25k_pooled": {
-  "period": "FY2011-FY2021 and FY2025 pooled",
+  "period": "FY2011-FY2025 pooled",
   "single_offer_share_new": {
-   "share": 0.2101,
-   "ci_lo": 0.2081,
-   "ci_hi": 0.2122,
-   "n": 155199
+   "share": 0.2096,
+   "ci_lo": 0.2078,
+   "ci_hi": 0.2114,
+   "n": 189084
   },
   "single_offer_share_established": {
-   "share": 0.2651,
-   "ci_lo": 0.2643,
-   "ci_hi": 0.2659,
-   "n": 1124172
+   "share": 0.2689,
+   "ci_lo": 0.2682,
+   "ci_hi": 0.2696,
+   "n": 1402949
   },
   "new_share_one_offer": {
-   "share": 0.0986,
-   "ci_lo": 0.0976,
-   "ci_hi": 0.0997,
-   "n": 330619
+   "share": 0.0951,
+   "ci_lo": 0.0942,
+   "ci_hi": 0.096,
+   "n": 416895
   },
   "new_share_several_offers": {
-   "share": 0.1292,
-   "ci_lo": 0.1285,
-   "ci_hi": 0.1299,
-   "n": 948752
+   "share": 0.1272,
+   "ci_lo": 0.1266,
+   "ci_hi": 0.1278,
+   "n": 1175138
   },
   "new_share_by_setaside": {
-   "8(a)": {
-    "share": 0.0854,
-    "ci_lo": 0.0836,
-    "ci_hi": 0.0872,
-    "n": 90940
-   },
    "SDVOSB": {
-    "share": 0.0908,
-    "ci_lo": 0.0884,
-    "ci_hi": 0.0932,
-    "n": 56007
+    "share": 0.0861,
+    "ci_lo": 0.0841,
+    "ci_hi": 0.0882,
+    "n": 73225
+   },
+   "8(a)": {
+    "share": 0.0865,
+    "ci_lo": 0.0848,
+    "ci_hi": 0.0882,
+    "n": 107923
    },
    "no set-aside": {
-    "share": 0.1099,
-    "ci_lo": 0.1093,
-    "ci_hi": 0.1104,
-    "n": 1262151
+    "share": 0.1105,
+    "ci_lo": 0.11,
+    "ci_hi": 0.111,
+    "n": 1531930
    },
    "HUBZone": {
-    "share": 0.1137,
-    "ci_lo": 0.1068,
-    "ci_hi": 0.1209,
-    "n": 7787
+    "share": 0.1117,
+    "ci_lo": 0.1055,
+    "ci_hi": 0.1182,
+    "n": 9509
    },
    "VOSB": {
-    "share": 0.1522,
-    "ci_lo": 0.1346,
-    "ci_hi": 0.1716,
-    "n": 1452
+    "share": 0.1505,
+    "ci_lo": 0.1339,
+    "ci_hi": 0.1686,
+    "n": 1635
    },
    "small business": {
-    "share": 0.1626,
-    "ci_lo": 0.1615,
-    "ci_hi": 0.1637,
-    "n": 460482
+    "share": 0.1551,
+    "ci_lo": 0.1542,
+    "ci_hi": 0.156,
+    "n": 601712
    },
    "WOSB/EDWOSB": {
-    "share": 0.231,
-    "ci_lo": 0.2206,
-    "ci_hi": 0.2417,
-    "n": 6083
+    "share": 0.2102,
+    "ci_lo": 0.2018,
+    "ci_hi": 0.2189,
+    "n": 8725
    }
   }
  },
  "notes_in_tables": [
   "FY2008 reporting change: Department of Veterans Affairs reported 806,913 purchase orders, 741,240 of them at or under $3,000 (FY2009: 82,164 and 4,360); counts of all awards are not comparable with later years; use the above-$25,000 series",
-  "new-company measures not comparable: company identifiers changed from DUNS to UEI in April 2022, and the tables of FY2019, FY2020, FY2021 cannot link the two yet",
-  "new-company measures not comparable: company identifiers changed from DUNS to UEI in April 2022, and the tables of FY2020, FY2021 cannot link the two yet",
-  "new-company measures not comparable: company identifiers changed from DUNS to UEI in April 2022, and the tables of FY2021 cannot link the two yet",
-  "new-company measures: the look-back includes the FY2008 reporting change of Department of Veterans Affairs; use the above-$25,000 series",
-  "next-year staying not comparable: company identifiers changed from DUNS to UEI in April 2022, and the tables of FY2021 cannot link the two yet; three-year staying not comparable: company identifiers changed from DUNS to UEI in April 2022, and the tables of FY2021 cannot link the two yet",
-  "three-year staying not comparable: company identifiers changed from DUNS to UEI in April 2022, and the tables of FY2019, FY2020, FY2021 cannot link the two yet",
-  "three-year staying not comparable: company identifiers changed from DUNS to UEI in April 2022, and the tables of FY2020, FY2021 cannot link the two yet"
+  "incomplete year: Defense data for the last months are not published yet",
+  "new-company measures: the look-back includes the FY2008 reporting change of Department of Veterans Affairs; use the above-$25,000 series"
  ],
  "caveats": [
   "A company is one identifier. A company can hold several identifiers (one per registered entity), and parents and subsidiaries count as different companies, so the counts are counts of registered entities, not of corporate families.",
@@ -463,8 +506,8 @@
   "These are patterns in public data, not accusations and not proof of causes."
  ],
  "privacy": "No company or buying office is named or coded in any output; no statistic describes a single company; cells resting on fewer than 10 companies are blank.",
- "runtime_seconds": 161.8,
- "peak_memory_mb": 657,
+ "runtime_seconds": 271.4,
+ "peak_memory_mb": 667,
  "known_reporting_changes": [
   {
    "agency": "Department of Veterans Affairs",

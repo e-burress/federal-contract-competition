@@ -919,16 +919,21 @@ def history_years():
 
 def r_history():
     h = history_all()
-    parts = []
+    parts, left = [], []
     for sector, where in (("civilian except GSA", "in civilian agencies except GSA"), ("Department of Defense", "at Defense")):
         rs = h.get(sector, [])
-        if len(rs) >= 2:
-            a, b = rs[0], rs[-1]
+        ok = [r for r in rs if not (r.get("note") or "").strip()]       # a note marks a year that is not comparable
+        if len(ok) >= 2:
+            a, b = ok[0], ok[-1]
             verb = "fell" if float(b["share"]) < float(a["share"]) else "rose" if float(b["share"]) > float(a["share"]) else "was unchanged"
             parts.append(f"{verb} {where} from {share_ci(a, not parts)} in FY{a['fy']} to {share_ci(b)} in FY{b['fy']}")
+            left += [(where, r) for r in rs if (r.get("note") or "").strip() and not int(a["fy"]) < int(r["fy"]) < int(b["fy"])]
     if not parts:
-        return not_yet("the single-offer history (`results/history_by_fy.csv`) has not been built, or has fewer than two years.")
+        return not_yet("the single-offer history (`results/history_by_fy.csv`) has not been built, or has fewer than two comparable years.")
     s = "Among competed awards with a usable offer count, the single-offer share " + " and ".join(parts) + "."
+    if left:
+        s += " Left out of that comparison, as not comparable: " + " ".join(
+            f"FY{r['fy']} {where} ({pct(r['share'])} as recorded). {r['note'].strip()}" for where, r in left)
     g = h.get("GSA", [])
     if len(g) >= 2:
         lo, hi = min(g, key=lambda r: float(r["share"])), max(g, key=lambda r: float(r["share"]))

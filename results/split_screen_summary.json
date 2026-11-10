@@ -14,15 +14,14 @@
   2018,
   2019,
   2020,
-  2021
- ],
- "years_not_present": [
+  2021,
   2022,
   2023,
   2024,
   2025,
   2026
  ],
+ "years_not_present": [],
  "universe": [
   {
    "sector": "civilian_ex_gsa",
@@ -41,9 +40,9 @@
   {
    "sector": "defense",
    "fy": 2008,
-   "awards": 332227,
+   "awards": 332223,
    "clusters": 246803,
-   "multi_award_clusters": 31699
+   "multi_award_clusters": 31695
   },
   {
    "sector": "civilian_ex_gsa",
@@ -62,9 +61,9 @@
   {
    "sector": "defense",
    "fy": 2009,
-   "awards": 351660,
-   "clusters": 246629,
-   "multi_award_clusters": 33273
+   "awards": 351680,
+   "clusters": 246652,
+   "multi_award_clusters": 33271
   },
   {
    "sector": "civilian_ex_gsa",
@@ -83,9 +82,9 @@
   {
    "sector": "defense",
    "fy": 2010,
-   "awards": 328954,
-   "clusters": 230299,
-   "multi_award_clusters": 31615
+   "awards": 328957,
+   "clusters": 230300,
+   "multi_award_clusters": 31616
   },
   {
    "sector": "civilian_ex_gsa",
@@ -104,9 +103,9 @@
   {
    "sector": "defense",
    "fy": 2011,
-   "awards": 321767,
-   "clusters": 222484,
-   "multi_award_clusters": 30520
+   "awards": 321777,
+   "clusters": 222492,
+   "multi_award_clusters": 30523
   },
   {
    "sector": "civilian_ex_gsa",
@@ -125,9 +124,9 @@
   {
    "sector": "defense",
    "fy": 2012,
-   "awards": 305364,
-   "clusters": 201482,
-   "multi_award_clusters": 27827
+   "awards": 305367,
+   "clusters": 201483,
+   "multi_award_clusters": 27826
   },
   {
    "sector": "civilian_ex_gsa",
@@ -148,7 +147,7 @@
    "fy": 2013,
    "awards": 284985,
    "clusters": 186886,
-   "multi_award_clusters": 26912
+   "multi_award_clusters": 26913
   },
   {
    "sector": "civilian_ex_gsa",
@@ -189,8 +188,8 @@
    "sector": "defense",
    "fy": 2015,
    "awards": 408673,
-   "clusters": 255973,
-   "multi_award_clusters": 47948
+   "clusters": 255975,
+   "multi_award_clusters": 47946
   },
   {
    "sector": "civilian_ex_gsa",
@@ -251,9 +250,9 @@
   {
    "sector": "defense",
    "fy": 2018,
-   "awards": 466112,
+   "awards": 466113,
    "clusters": 246658,
-   "multi_award_clusters": 52851
+   "multi_award_clusters": 52852
   },
   {
    "sector": "civilian_ex_gsa",
@@ -300,23 +299,128 @@
   {
    "sector": "civilian_ex_gsa",
    "fy": 2021,
-   "awards": 125604,
-   "clusters": 91539,
-   "multi_award_clusters": 8979
+   "awards": 112650,
+   "clusters": 91221,
+   "multi_award_clusters": 8813
   },
   {
    "sector": "gsa",
    "fy": 2021,
-   "awards": 240212,
-   "clusters": 5580,
-   "multi_award_clusters": 1492
+   "awards": 34995,
+   "clusters": 5369,
+   "multi_award_clusters": 1322
   },
   {
    "sector": "defense",
    "fy": 2021,
-   "awards": 628057,
-   "clusters": 180803,
-   "multi_award_clusters": 40012
+   "awards": 399428,
+   "clusters": 177338,
+   "multi_award_clusters": 37621
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2022,
+   "awards": 109442,
+   "clusters": 87407,
+   "multi_award_clusters": 8863
+  },
+  {
+   "sector": "gsa",
+   "fy": 2022,
+   "awards": 80548,
+   "clusters": 4411,
+   "multi_award_clusters": 1269
+  },
+  {
+   "sector": "defense",
+   "fy": 2022,
+   "awards": 323603,
+   "clusters": 167660,
+   "multi_award_clusters": 35523
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2023,
+   "awards": 115176,
+   "clusters": 90610,
+   "multi_award_clusters": 9094
+  },
+  {
+   "sector": "gsa",
+   "fy": 2023,
+   "awards": 81473,
+   "clusters": 2279,
+   "multi_award_clusters": 518
+  },
+  {
+   "sector": "defense",
+   "fy": 2023,
+   "awards": 340451,
+   "clusters": 161219,
+   "multi_award_clusters": 33355
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2024,
+   "awards": 107771,
+   "clusters": 84192,
+   "multi_award_clusters": 8443
+  },
+  {
+   "sector": "gsa",
+   "fy": 2024,
+   "awards": 211459,
+   "clusters": 2262,
+   "multi_award_clusters": 547
+  },
+  {
+   "sector": "defense",
+   "fy": 2024,
+   "awards": 324312,
+   "clusters": 165070,
+   "multi_award_clusters": 33983
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2025,
+   "awards": 107597,
+   "clusters": 70528,
+   "multi_award_clusters": 7593
+  },
+  {
+   "sector": "gsa",
+   "fy": 2025,
+   "awards": 72486,
+   "clusters": 1924,
+   "multi_award_clusters": 445
+  },
+  {
+   "sector": "defense",
+   "fy": 2025,
+   "awards": 331099,
+   "clusters": 169061,
+   "multi_award_clusters": 34692
+  },
+  {
+   "sector": "civilian_ex_gsa",
+   "fy": 2026,
+   "awards": 77149,
+   "clusters": 59564,
+   "multi_award_clusters": 5465
+  },
+  {
+   "sector": "gsa",
+   "fy": 2026,
+   "awards": 489422,
+   "clusters": 1322,
+   "multi_award_clusters": 466
+  },
+  {
+   "sector": "defense",
+   "fy": 2026,
+   "awards": 613179,
+   "clusters": 121183,
+   "multi_award_clusters": 27213
   }
  ],
  "design": {
@@ -434,100 +538,100 @@
  },
  "excess_ratio_pooled": {
   "civilian_ex_gsa|SAT|all": {
-   "ratio": 1.068,
-   "ci_lo": 1.046,
-   "ci_hi": 1.106,
-   "years": 14,
-   "actual_awards": 357094,
-   "expected_awards": 334363.1
+   "ratio": 1.058,
+   "ci_lo": 1.048,
+   "ci_hi": 1.072,
+   "years": 19,
+   "actual_awards": 387171,
+   "expected_awards": 365805.0
   },
   "civilian_ex_gsa|SAT|donut": {
-   "ratio": 1.044,
-   "ci_lo": 1.021,
-   "ci_hi": 1.089,
-   "years": 14,
-   "actual_awards": 337764,
-   "expected_awards": 323613.9
+   "ratio": 1.032,
+   "ci_lo": 1.018,
+   "ci_hi": 1.047,
+   "years": 19,
+   "actual_awards": 364383,
+   "expected_awards": 353193.9
   },
   "civilian_ex_gsa|MPT|all": {
-   "ratio": 1.245,
-   "ci_lo": 1.225,
-   "ci_hi": 1.27,
-   "years": 14,
-   "actual_awards": 276868,
-   "expected_awards": 222304.1
+   "ratio": 1.241,
+   "ci_lo": 1.22,
+   "ci_hi": 1.264,
+   "years": 19,
+   "actual_awards": 283415,
+   "expected_awards": 228448.1
   },
   "civilian_ex_gsa|MPT|donut": {
-   "ratio": 1.076,
+   "ratio": 1.075,
    "ci_lo": 1.059,
    "ci_hi": 1.1,
-   "years": 14,
-   "actual_awards": 216327,
-   "expected_awards": 201036.9
+   "years": 19,
+   "actual_awards": 221300,
+   "expected_awards": 205808.0
   },
   "gsa|SAT|all": {
-   "ratio": 1.078,
-   "ci_lo": 1.036,
-   "ci_hi": 1.135,
-   "years": 14,
-   "actual_awards": 368992,
-   "expected_awards": 342392.7
+   "ratio": 1.061,
+   "ci_lo": 1.012,
+   "ci_hi": 1.173,
+   "years": 19,
+   "actual_awards": 979121,
+   "expected_awards": 923060.1
   },
   "gsa|SAT|donut": {
-   "ratio": 1.081,
-   "ci_lo": 1.04,
-   "ci_hi": 1.143,
-   "years": 14,
-   "actual_awards": 362322,
-   "expected_awards": 335029.0
+   "ratio": 1.073,
+   "ci_lo": 1.021,
+   "ci_hi": 1.182,
+   "years": 19,
+   "actual_awards": 971370,
+   "expected_awards": 905384.6
   },
   "gsa|MPT|all": {
-   "ratio": 1.06,
-   "ci_lo": 0.945,
-   "ci_hi": 1.153,
-   "years": 12,
-   "actual_awards": 75925,
-   "expected_awards": 71624.9
+   "ratio": 1.387,
+   "ci_lo": 1.239,
+   "ci_hi": 1.582,
+   "years": 17,
+   "actual_awards": 225225,
+   "expected_awards": 162414.8
   },
   "gsa|MPT|donut": {
-   "ratio": 1.0,
-   "ci_lo": 0.909,
-   "ci_hi": 1.088,
-   "years": 11,
-   "actual_awards": 65185,
-   "expected_awards": 65214.4
+   "ratio": 1.048,
+   "ci_lo": 0.932,
+   "ci_hi": 1.18,
+   "years": 16,
+   "actual_awards": 152265,
+   "expected_awards": 145284.6
   },
   "defense|SAT|all": {
-   "ratio": 1.126,
-   "ci_lo": 1.104,
-   "ci_hi": 1.147,
-   "years": 14,
-   "actual_awards": 870151,
-   "expected_awards": 772462.3
+   "ratio": 1.107,
+   "ci_lo": 1.085,
+   "ci_hi": 1.127,
+   "years": 19,
+   "actual_awards": 1168080,
+   "expected_awards": 1055544.4
   },
   "defense|SAT|donut": {
-   "ratio": 1.039,
-   "ci_lo": 1.021,
-   "ci_hi": 1.062,
-   "years": 14,
-   "actual_awards": 759494,
-   "expected_awards": 730720.7
+   "ratio": 1.032,
+   "ci_lo": 1.014,
+   "ci_hi": 1.05,
+   "years": 19,
+   "actual_awards": 1032724,
+   "expected_awards": 1000869.9
   },
   "defense|MPT|all": {
-   "ratio": 1.058,
-   "ci_lo": 1.045,
-   "ci_hi": 1.07,
-   "years": 14,
-   "actual_awards": 230781,
-   "expected_awards": 218026.8
+   "ratio": 1.055,
+   "ci_lo": 1.044,
+   "ci_hi": 1.069,
+   "years": 19,
+   "actual_awards": 357991,
+   "expected_awards": 339243.0
   },
   "defense|MPT|donut": {
-   "ratio": 1.015,
-   "ci_lo": 1.002,
-   "ci_hi": 1.03,
-   "years": 14,
-   "actual_awards": 187796,
-   "expected_awards": 184949.0
+   "ratio": 1.025,
+   "ci_lo": 1.013,
+   "ci_hi": 1.043,
+   "years": 19,
+   "actual_awards": 295358,
+   "expected_awards": 288286.1
   }
  },
  "natural_experiment": [
@@ -697,22 +801,22 @@
    "before": {
     "ratio": 1.091,
     "ci_lo": 1.055,
-    "ci_hi": 1.124,
+    "ci_hi": 1.129,
     "years": 3,
-    "actual_awards": 27098,
-    "expected_awards": 24839.1
+    "actual_awards": 27094,
+    "expected_awards": 24842.8
    },
    "after": {
     "ratio": 1.023,
-    "ci_lo": 0.988,
-    "ci_hi": 1.066,
+    "ci_lo": 0.984,
+    "ci_hi": 1.057,
     "years": 3,
-    "actual_awards": 24984,
-    "expected_awards": 24423.2
+    "actual_awards": 24990,
+    "expected_awards": 24426.4
    },
    "after_minus_before": {
     "change": -0.068,
-    "ci_lo": -0.122,
+    "ci_lo": -0.12,
     "ci_hi": -0.015
    }
   },
@@ -732,25 +836,25 @@
     2013
    ],
    "before": {
-    "ratio": 1.031,
-    "ci_lo": 0.995,
-    "ci_hi": 1.066,
+    "ratio": 1.03,
+    "ci_lo": 0.994,
+    "ci_hi": 1.07,
     "years": 3,
-    "actual_awards": 24117,
-    "expected_awards": 23398.3
+    "actual_awards": 24113,
+    "expected_awards": 23399.4
    },
    "after": {
     "ratio": 0.997,
-    "ci_lo": 0.961,
-    "ci_hi": 1.043,
+    "ci_lo": 0.957,
+    "ci_hi": 1.034,
     "years": 3,
-    "actual_awards": 22944,
-    "expected_awards": 23007.3
+    "actual_awards": 22952,
+    "expected_awards": 23011.0
    },
    "after_minus_before": {
-    "change": -0.034,
-    "ci_lo": -0.091,
-    "ci_hi": 0.02
+    "change": -0.033,
+    "ci_lo": -0.083,
+    "ci_hi": 0.019
    }
   },
   {
@@ -777,17 +881,17 @@
     "expected_awards": 19502.6
    },
    "after": {
-    "ratio": 0.973,
-    "ci_lo": 0.871,
-    "ci_hi": 1.103,
-    "years": 1,
-    "actual_awards": 2800,
-    "expected_awards": 2878.3
+    "ratio": 0.925,
+    "ci_lo": 0.881,
+    "ci_hi": 0.974,
+    "years": 3,
+    "actual_awards": 7854,
+    "expected_awards": 8495.3
    },
    "after_minus_before": {
-    "change": -0.076,
-    "ci_lo": -0.191,
-    "ci_hi": 0.052
+    "change": -0.124,
+    "ci_lo": -0.187,
+    "ci_hi": -0.058
    }
   },
   {
@@ -814,17 +918,17 @@
     "expected_awards": 18913.5
    },
    "after": {
-    "ratio": 0.95,
-    "ci_lo": 0.847,
-    "ci_hi": 1.095,
-    "years": 1,
-    "actual_awards": 2576,
-    "expected_awards": 2710.4
+    "ratio": 0.905,
+    "ci_lo": 0.854,
+    "ci_hi": 0.955,
+    "years": 3,
+    "actual_awards": 7219,
+    "expected_awards": 7975.3
    },
    "after_minus_before": {
-    "change": -0.082,
-    "ci_lo": -0.199,
-    "ci_hi": 0.054
+    "change": -0.127,
+    "ci_lo": -0.191,
+    "ci_hi": -0.058
    }
   },
   {
@@ -851,17 +955,17 @@
     "expected_awards": 368.8
    },
    "after": {
-    "ratio": 0.639,
-    "ci_lo": 0.321,
-    "ci_hi": 1.026,
-    "years": 1,
-    "actual_awards": 6508,
-    "expected_awards": 10179.0
+    "ratio": 1.022,
+    "ci_lo": 0.572,
+    "ci_hi": 1.777,
+    "years": 3,
+    "actual_awards": 10348,
+    "expected_awards": 10123.2
    },
    "after_minus_before": {
-    "change": -0.565,
-    "ci_lo": -1.139,
-    "ci_hi": -0.033
+    "change": -0.182,
+    "ci_lo": -0.708,
+    "ci_hi": 0.665
    }
   },
   {
@@ -888,17 +992,17 @@
     "expected_awards": 334.5
    },
    "after": {
-    "ratio": 0.638,
-    "ci_lo": 0.319,
-    "ci_hi": 1.024,
-    "years": 1,
-    "actual_awards": 6493,
-    "expected_awards": 10174.3
+    "ratio": 1.021,
+    "ci_lo": 0.57,
+    "ci_hi": 1.777,
+    "years": 3,
+    "actual_awards": 10329,
+    "expected_awards": 10114.9
    },
    "after_minus_before": {
-    "change": -0.615,
-    "ci_lo": -1.201,
-    "ci_hi": -0.092
+    "change": -0.232,
+    "ci_lo": -0.775,
+    "ci_hi": 0.631
    }
   },
   {
@@ -922,20 +1026,20 @@
     "ci_hi": 1.125,
     "years": 3,
     "actual_awards": 47967,
-    "expected_awards": 45602.6
+    "expected_awards": 45603.1
    },
    "after": {
-    "ratio": 1.031,
-    "ci_lo": 0.851,
-    "ci_hi": 1.228,
-    "years": 1,
-    "actual_awards": 23421,
-    "expected_awards": 22707.2
+    "ratio": 0.986,
+    "ci_lo": 0.895,
+    "ci_hi": 1.098,
+    "years": 3,
+    "actual_awards": 38702,
+    "expected_awards": 39265.4
    },
    "after_minus_before": {
-    "change": -0.021,
-    "ci_lo": -0.208,
-    "ci_hi": 0.189
+    "change": -0.066,
+    "ci_lo": -0.185,
+    "ci_hi": 0.054
    }
   },
   {
@@ -959,53 +1063,57 @@
     "ci_hi": 1.085,
     "years": 3,
     "actual_awards": 44878,
-    "expected_awards": 44300.7
+    "expected_awards": 44301.7
    },
    "after": {
-    "ratio": 1.034,
-    "ci_lo": 0.85,
-    "ci_hi": 1.233,
+    "ratio": 0.989,
+    "ci_lo": 0.893,
+    "ci_hi": 1.105,
+    "years": 3,
+    "actual_awards": 37527,
+    "expected_awards": 37953.5
+   },
+   "after_minus_before": {
+    "change": -0.024,
+    "ci_lo": -0.145,
+    "ci_hi": 0.105
+   }
+  },
+  {
+   "threshold_type": "SAT",
+   "old_line": 250000,
+   "new_line": 350000,
+   "change_label": "FY2026",
+   "sector": "civilian_ex_gsa",
+   "variant": "all",
+   "before_years": [
+    2023,
+    2025
+   ],
+   "after_years": [
+    2026,
+    2026
+   ],
+   "before": {
+    "ratio": 1.031,
+    "ci_lo": 0.935,
+    "ci_hi": 1.129,
+    "years": 3,
+    "actual_awards": 5596,
+    "expected_awards": 5430.2
+   },
+   "after": {
+    "ratio": 1.053,
+    "ci_lo": 0.893,
+    "ci_hi": 1.27,
     "years": 1,
-    "actual_awards": 23009,
-    "expected_awards": 22248.5
+    "actual_awards": 1251,
+    "expected_awards": 1188.6
    },
    "after_minus_before": {
-    "change": 0.021,
-    "ci_lo": -0.172,
-    "ci_hi": 0.237
-   }
-  },
-  {
-   "threshold_type": "SAT",
-   "old_line": 250000,
-   "new_line": 350000,
-   "change_label": "FY2026",
-   "sector": "civilian_ex_gsa",
-   "variant": "all",
-   "before_years": [
-    2023,
-    2025
-   ],
-   "after_years": [
-    2026,
-    2026
-   ],
-   "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
-   },
-   "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
-   },
-   "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": 0.022,
+    "ci_lo": -0.189,
+    "ci_hi": 0.269
    }
   },
   {
@@ -1024,21 +1132,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.996,
+    "ci_lo": 0.903,
+    "ci_hi": 1.092,
+    "years": 3,
+    "actual_awards": 5178,
+    "expected_awards": 5197.8
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 1.015,
+    "ci_lo": 0.854,
+    "ci_hi": 1.235,
+    "years": 1,
+    "actual_awards": 1152,
+    "expected_awards": 1134.5
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": 0.019,
+    "ci_lo": -0.187,
+    "ci_hi": 0.266
    }
   },
   {
@@ -1057,21 +1169,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.387,
+    "ci_lo": 0.15,
+    "ci_hi": 0.817,
+    "years": 3,
+    "actual_awards": 5604,
+    "expected_awards": 14496.8
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.604,
+    "ci_lo": 0.239,
+    "ci_hi": 1.33,
+    "years": 1,
+    "actual_awards": 6250,
+    "expected_awards": 10355.7
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": 0.217,
+    "ci_lo": -0.264,
+    "ci_hi": 0.857
    }
   },
   {
@@ -1090,21 +1206,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.386,
+    "ci_lo": 0.149,
+    "ci_hi": 0.817,
+    "years": 3,
+    "actual_awards": 5592,
+    "expected_awards": 14491.2
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.603,
+    "ci_lo": 0.239,
+    "ci_hi": 1.33,
+    "years": 1,
+    "actual_awards": 6248,
+    "expected_awards": 10354.7
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": 0.217,
+    "ci_lo": -0.273,
+    "ci_hi": 0.857
    }
   },
   {
@@ -1123,21 +1243,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 1.039,
+    "ci_lo": 0.93,
+    "ci_hi": 1.182,
+    "years": 3,
+    "actual_awards": 27335,
+    "expected_awards": 26307.0
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.983,
+    "ci_lo": 0.738,
+    "ci_hi": 1.29,
+    "years": 1,
+    "actual_awards": 11316,
+    "expected_awards": 11508.9
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": -0.056,
+    "ci_lo": -0.346,
+    "ci_hi": 0.244
    }
   },
   {
@@ -1156,21 +1280,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 1.023,
+    "ci_lo": 0.913,
+    "ci_hi": 1.169,
+    "years": 3,
+    "actual_awards": 26183,
+    "expected_awards": 25583.8
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.983,
+    "ci_lo": 0.733,
+    "ci_hi": 1.296,
+    "years": 1,
+    "actual_awards": 11078,
+    "expected_awards": 11274.8
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": -0.04,
+    "ci_lo": -0.337,
+    "ci_hi": 0.269
    }
   },
   {
@@ -1334,7 +1462,7 @@
     "ci_hi": 1.256,
     "years": 3,
     "actual_awards": 3630,
-    "expected_awards": 3131.5
+    "expected_awards": 3131.6
    },
    "after": {
     "ratio": 1.037,
@@ -1371,7 +1499,7 @@
     "ci_hi": 1.261,
     "years": 3,
     "actual_awards": 3311,
-    "expected_awards": 2856.5
+    "expected_awards": 2856.6
    },
    "after": {
     "ratio": 1.012,
@@ -1383,7 +1511,7 @@
    },
    "after_minus_before": {
     "change": -0.147,
-    "ci_lo": -0.267,
+    "ci_lo": -0.266,
     "ci_hi": -0.04
    }
   },
@@ -1411,17 +1539,17 @@
     "expected_awards": 4409.4
    },
    "after": {
-    "ratio": 0.859,
-    "ci_lo": 0.706,
-    "ci_hi": 1.077,
-    "years": 1,
-    "actual_awards": 312,
-    "expected_awards": 363.0
+    "ratio": 0.93,
+    "ci_lo": 0.837,
+    "ci_hi": 1.051,
+    "years": 3,
+    "actual_awards": 931,
+    "expected_awards": 1001.2
    },
    "after_minus_before": {
-    "change": -0.196,
-    "ci_lo": -0.373,
-    "ci_hi": 0.047
+    "change": -0.125,
+    "ci_lo": -0.251,
+    "ci_hi": 0.026
    }
   },
   {
@@ -1448,17 +1576,17 @@
     "expected_awards": 3728.0
    },
    "after": {
-    "ratio": 0.869,
-    "ci_lo": 0.698,
-    "ci_hi": 1.134,
-    "years": 1,
-    "actual_awards": 268,
-    "expected_awards": 308.3
+    "ratio": 0.955,
+    "ci_lo": 0.833,
+    "ci_hi": 1.098,
+    "years": 3,
+    "actual_awards": 794,
+    "expected_awards": 831.7
    },
    "after_minus_before": {
-    "change": -0.169,
-    "ci_lo": -0.366,
-    "ci_hi": 0.116
+    "change": -0.083,
+    "ci_lo": -0.226,
+    "ci_hi": 0.091
    }
   },
   {
@@ -1485,17 +1613,17 @@
     "expected_awards": 153.9
    },
    "after": {
-    "ratio": 0.982,
-    "ci_lo": 0.764,
-    "ci_hi": 1.285,
-    "years": 1,
-    "actual_awards": 2110,
-    "expected_awards": 2148.0
+    "ratio": 0.978,
+    "ci_lo": 0.818,
+    "ci_hi": 1.184,
+    "years": 3,
+    "actual_awards": 3555,
+    "expected_awards": 3635.5
    },
    "after_minus_before": {
-    "change": -0.051,
-    "ci_lo": -0.499,
-    "ci_hi": 0.588
+    "change": -0.055,
+    "ci_lo": -0.546,
+    "ci_hi": 0.451
    }
   },
   {
@@ -1522,17 +1650,17 @@
     "expected_awards": 130.4
    },
    "after": {
-    "ratio": 0.966,
-    "ci_lo": 0.741,
-    "ci_hi": 1.236,
-    "years": 1,
-    "actual_awards": 1965,
-    "expected_awards": 2033.2
+    "ratio": 0.98,
+    "ci_lo": 0.821,
+    "ci_hi": 1.201,
+    "years": 3,
+    "actual_awards": 3376,
+    "expected_awards": 3444.4
    },
    "after_minus_before": {
-    "change": 0.398,
-    "ci_lo": -0.023,
-    "ci_hi": 0.833
+    "change": 0.412,
+    "ci_lo": 0.028,
+    "ci_hi": 0.791
    }
   },
   {
@@ -1556,20 +1684,20 @@
     "ci_hi": 1.074,
     "years": 2,
     "actual_awards": 41456,
-    "expected_awards": 39575.7
+    "expected_awards": 39575.6
    },
    "after": {
-    "ratio": 0.999,
-    "ci_lo": 0.964,
-    "ci_hi": 1.034,
-    "years": 1,
-    "actual_awards": 16545,
-    "expected_awards": 16558.6
+    "ratio": 0.994,
+    "ci_lo": 0.968,
+    "ci_hi": 1.019,
+    "years": 3,
+    "actual_awards": 37331,
+    "expected_awards": 37563.1
    },
    "after_minus_before": {
-    "change": -0.049,
-    "ci_lo": -0.09,
-    "ci_hi": -0.007
+    "change": -0.054,
+    "ci_lo": -0.087,
+    "ci_hi": -0.018
    }
   },
   {
@@ -1596,16 +1724,16 @@
     "expected_awards": 34471.3
    },
    "after": {
-    "ratio": 0.986,
-    "ci_lo": 0.95,
-    "ci_hi": 1.027,
-    "years": 1,
-    "actual_awards": 14255,
-    "expected_awards": 14464.7
+    "ratio": 0.993,
+    "ci_lo": 0.963,
+    "ci_hi": 1.022,
+    "years": 3,
+    "actual_awards": 31895,
+    "expected_awards": 32131.7
    },
    "after_minus_before": {
-    "change": -0.033,
-    "ci_lo": -0.08,
+    "change": -0.026,
+    "ci_lo": -0.062,
     "ci_hi": 0.013
    }
   },
@@ -1625,21 +1753,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.924,
+    "ci_lo": 0.823,
+    "ci_hi": 1.029,
+    "years": 3,
+    "actual_awards": 1072,
+    "expected_awards": 1160.6
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.864,
+    "ci_lo": 0.656,
+    "ci_hi": 1.148,
+    "years": 1,
+    "actual_awards": 178,
+    "expected_awards": 206.1
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": -0.06,
+    "ci_lo": -0.254,
+    "ci_hi": 0.204
    }
   },
   {
@@ -1658,21 +1790,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.919,
+    "ci_lo": 0.821,
+    "ci_hi": 1.03,
+    "years": 3,
+    "actual_awards": 967,
+    "expected_awards": 1052.2
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.821,
+    "ci_lo": 0.597,
+    "ci_hi": 1.094,
+    "years": 1,
+    "actual_awards": 155,
+    "expected_awards": 188.8
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": -0.098,
+    "ci_lo": -0.318,
+    "ci_hi": 0.169
    }
   },
   {
@@ -1691,21 +1827,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 1.013,
+    "ci_lo": 0.67,
+    "ci_hi": 1.621,
+    "years": 3,
+    "actual_awards": 1484,
+    "expected_awards": 1465.6
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 1.675,
+    "ci_lo": 0.842,
+    "ci_hi": 3.475,
+    "years": 1,
+    "actual_awards": 581,
+    "expected_awards": 346.8
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": 0.662,
+    "ci_lo": -0.373,
+    "ci_hi": 2.292
    }
   },
   {
@@ -1724,21 +1864,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 1.018,
+    "ci_lo": 0.67,
+    "ci_hi": 1.632,
+    "years": 3,
+    "actual_awards": 1476,
+    "expected_awards": 1450.0
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 1.664,
+    "ci_lo": 0.803,
+    "ci_hi": 3.494,
+    "years": 1,
+    "actual_awards": 570,
+    "expected_awards": 342.6
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": 0.646,
+    "ci_lo": -0.407,
+    "ci_hi": 2.327
    }
   },
   {
@@ -1757,21 +1901,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 1.057,
+    "ci_lo": 1.024,
+    "ci_hi": 1.095,
+    "years": 3,
+    "actual_awards": 25500,
+    "expected_awards": 24128.6
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.953,
+    "ci_lo": 0.882,
+    "ci_hi": 1.015,
+    "years": 1,
+    "actual_awards": 6063,
+    "expected_awards": 6362.0
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": -0.104,
+    "ci_lo": -0.185,
+    "ci_hi": -0.034
    }
   },
   {
@@ -1790,21 +1938,25 @@
     2026
    ],
    "before": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 1.039,
+    "ci_lo": 1.003,
+    "ci_hi": 1.081,
+    "years": 3,
+    "actual_awards": 22725,
+    "expected_awards": 21876.4
    },
    "after": {
-    "ratio": null,
-    "ci_lo": null,
-    "ci_hi": null,
-    "years": 0
+    "ratio": 0.936,
+    "ci_lo": 0.856,
+    "ci_hi": 1.007,
+    "years": 1,
+    "actual_awards": 5450,
+    "expected_awards": 5819.9
    },
    "after_minus_before": {
-    "change": null,
-    "ci_lo": null,
-    "ci_hi": null
+    "change": -0.103,
+    "ci_lo": -0.196,
+    "ci_hi": -0.022
    }
   }
  ]

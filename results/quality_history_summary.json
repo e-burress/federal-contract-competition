@@ -1,14 +1,14 @@
 {
-  "n_flags": 529,
-  "n_share_flags": 372,
-  "n_volume_flags": 157,
+  "n_flags": 681,
+  "n_share_flags": 475,
+  "n_volume_flags": 206,
   "by_metric": {
-    "competed": 166,
-    "volume": 157,
-    "offers_1": 68,
-    "offers_unusable": 61,
-    "offers_3": 41,
-    "offers_2": 36
+    "competed": 216,
+    "volume": 206,
+    "offers_1": 96,
+    "offers_unusable": 73,
+    "offers_3": 50,
+    "offers_2": 40
   },
   "units": {
     "share": "percentage points (change_points = after minus before, shares in percent)",
@@ -26,6 +26,19 @@
       "z": 13.94835819554207,
       "n_before": 219,
       "n_after": 250,
+      "unit": "points"
+    },
+    {
+      "agency": "General Services Administration",
+      "award_kind": "DEF",
+      "quarter": "FY2025Q4",
+      "metric": "competed",
+      "before": 78.51637764932563,
+      "after": 15.639810426540285,
+      "change_points": -62.87656722278534,
+      "z": -19.53612332866576,
+      "n_before": 2076,
+      "n_after": 211,
       "unit": "points"
     },
     {
@@ -94,6 +107,19 @@
       "unit": "points"
     },
     {
+      "agency": "Department of Agriculture",
+      "award_kind": "IDV",
+      "quarter": "FY2023Q1",
+      "metric": "competed",
+      "before": 80.21188043889521,
+      "after": 31.896551724137932,
+      "change_points": -48.315328714757264,
+      "z": -16.596043694068392,
+      "n_before": 2643,
+      "n_after": 232,
+      "unit": "points"
+    },
+    {
       "agency": "Department of Health and Human Services",
       "award_kind": "IDV",
       "quarter": "FY2021Q3",
@@ -133,6 +159,19 @@
       "unit": "points"
     },
     {
+      "agency": "General Services Administration",
+      "award_kind": "IDV",
+      "quarter": "FY2024Q4",
+      "metric": "offers_unusable",
+      "before": 78.29293993677555,
+      "after": 34.68531468531468,
+      "change_points": -43.60762525146087,
+      "z": -25.37440477132005,
+      "n_before": 1898,
+      "n_after": 1430,
+      "unit": "points"
+    },
+    {
       "agency": "Department of State",
       "award_kind": "IDV",
       "quarter": "FY2011Q1",
@@ -146,6 +185,19 @@
       "unit": "points"
     },
     {
+      "agency": "General Services Administration",
+      "award_kind": "DEF",
+      "quarter": "FY2023Q1",
+      "metric": "offers_1",
+      "before": 51.220295439948615,
+      "after": 93.34719334719335,
+      "change_points": 42.12689790724473,
+      "z": 17.361787055597805,
+      "n_before": 3114,
+      "n_after": 481,
+      "unit": "points"
+    },
+    {
       "agency": "Department of Health and Human Services",
       "award_kind": "IDV",
       "quarter": "FY2008Q4",
@@ -156,58 +208,6 @@
       "z": -11.292610711494248,
       "n_before": 563,
       "n_after": 251,
-      "unit": "points"
-    },
-    {
-      "agency": "Department of Defense",
-      "award_kind": "IDV",
-      "quarter": "FY2017Q3",
-      "metric": "offers_2",
-      "before": 16.74456970030245,
-      "after": 58.118899733806565,
-      "change_points": 41.374330033504116,
-      "z": 43.429035486260474,
-      "n_before": 7274,
-      "n_after": 3381,
-      "unit": "points"
-    },
-    {
-      "agency": "Department of Transportation",
-      "award_kind": "PO",
-      "quarter": "FY2017Q2",
-      "metric": "offers_3",
-      "before": 55.27847049044057,
-      "after": 15.79961464354528,
-      "change_points": -39.478855846895286,
-      "z": -15.168233832725967,
-      "n_before": 1203,
-      "n_after": 519,
-      "unit": "points"
-    },
-    {
-      "agency": "Office of Personnel Management",
-      "award_kind": "PO",
-      "quarter": "FY2011Q2",
-      "metric": "competed",
-      "before": 35.59055118110236,
-      "after": 74.34292866082603,
-      "change_points": 38.75237747972367,
-      "z": 18.420758568756693,
-      "n_before": 1905,
-      "n_after": 799,
-      "unit": "points"
-    },
-    {
-      "agency": "General Services Administration",
-      "award_kind": "PO",
-      "quarter": "FY2017Q1",
-      "metric": "competed",
-      "before": 46.55172413793103,
-      "after": 83.8973162193699,
-      "change_points": 37.345592081438866,
-      "z": 25.21029717898935,
-      "n_before": 3016,
-      "n_after": 1714,
       "unit": "points"
     }
   ],
@@ -266,6 +266,19 @@
     },
     {
       "agency": "General Services Administration",
+      "award_kind": "IDV",
+      "quarter": "FY2025Q1",
+      "metric": "volume",
+      "before": 401.0,
+      "after": 2805.0,
+      "change_points": 599.501246882793,
+      "z": null,
+      "n_before": 401,
+      "n_after": 2805,
+      "unit": "percent"
+    },
+    {
+      "agency": "General Services Administration",
       "award_kind": "DEF",
       "quarter": "FY2019Q2",
       "metric": "volume",
@@ -314,6 +327,19 @@
       "z": null,
       "n_before": 444,
       "n_after": 2295,
+      "unit": "percent"
+    },
+    {
+      "agency": "Department of Agriculture",
+      "award_kind": "IDV",
+      "quarter": "FY2026Q4",
+      "metric": "volume",
+      "before": 427.0,
+      "after": 2199.0,
+      "change_points": 414.9882903981265,
+      "z": null,
+      "n_before": 427,
+      "n_after": 2199,
       "unit": "percent"
     },
     {
@@ -380,32 +406,6 @@
       "n_before": 545,
       "n_after": 1880,
       "unit": "percent"
-    },
-    {
-      "agency": "General Services Administration",
-      "award_kind": "PO",
-      "quarter": "FY2017Q3",
-      "metric": "volume",
-      "before": 788.0,
-      "after": 2210.0,
-      "change_points": 180.45685279187816,
-      "z": null,
-      "n_before": 788,
-      "n_after": 2210,
-      "unit": "percent"
-    },
-    {
-      "agency": "Department of Justice",
-      "award_kind": "DEF",
-      "quarter": "FY2009Q4",
-      "metric": "volume",
-      "before": 240.0,
-      "after": 617.0,
-      "change_points": 157.08333333333334,
-      "z": null,
-      "n_before": 240,
-      "n_after": 617,
-      "unit": "percent"
     }
   ],
   "top_15": [
@@ -420,6 +420,19 @@
       "z": 13.94835819554207,
       "n_before": 219,
       "n_after": 250,
+      "unit": "points"
+    },
+    {
+      "agency": "General Services Administration",
+      "award_kind": "DEF",
+      "quarter": "FY2025Q4",
+      "metric": "competed",
+      "before": 78.51637764932563,
+      "after": 15.639810426540285,
+      "change_points": -62.87656722278534,
+      "z": -19.53612332866576,
+      "n_before": 2076,
+      "n_after": 211,
       "unit": "points"
     },
     {
@@ -488,6 +501,19 @@
       "unit": "points"
     },
     {
+      "agency": "Department of Agriculture",
+      "award_kind": "IDV",
+      "quarter": "FY2023Q1",
+      "metric": "competed",
+      "before": 80.21188043889521,
+      "after": 31.896551724137932,
+      "change_points": -48.315328714757264,
+      "z": -16.596043694068392,
+      "n_before": 2643,
+      "n_after": 232,
+      "unit": "points"
+    },
+    {
       "agency": "Department of Health and Human Services",
       "award_kind": "IDV",
       "quarter": "FY2021Q3",
@@ -527,6 +553,19 @@
       "unit": "points"
     },
     {
+      "agency": "General Services Administration",
+      "award_kind": "IDV",
+      "quarter": "FY2024Q4",
+      "metric": "offers_unusable",
+      "before": 78.29293993677555,
+      "after": 34.68531468531468,
+      "change_points": -43.60762525146087,
+      "z": -25.37440477132005,
+      "n_before": 1898,
+      "n_after": 1430,
+      "unit": "points"
+    },
+    {
       "agency": "Department of State",
       "award_kind": "IDV",
       "quarter": "FY2011Q1",
@@ -540,6 +579,19 @@
       "unit": "points"
     },
     {
+      "agency": "General Services Administration",
+      "award_kind": "DEF",
+      "quarter": "FY2023Q1",
+      "metric": "offers_1",
+      "before": 51.220295439948615,
+      "after": 93.34719334719335,
+      "change_points": 42.12689790724473,
+      "z": 17.361787055597805,
+      "n_before": 3114,
+      "n_after": 481,
+      "unit": "points"
+    },
+    {
       "agency": "Department of Health and Human Services",
       "award_kind": "IDV",
       "quarter": "FY2008Q4",
@@ -550,58 +602,6 @@
       "z": -11.292610711494248,
       "n_before": 563,
       "n_after": 251,
-      "unit": "points"
-    },
-    {
-      "agency": "Department of Defense",
-      "award_kind": "IDV",
-      "quarter": "FY2017Q3",
-      "metric": "offers_2",
-      "before": 16.74456970030245,
-      "after": 58.118899733806565,
-      "change_points": 41.374330033504116,
-      "z": 43.429035486260474,
-      "n_before": 7274,
-      "n_after": 3381,
-      "unit": "points"
-    },
-    {
-      "agency": "Department of Transportation",
-      "award_kind": "PO",
-      "quarter": "FY2017Q2",
-      "metric": "offers_3",
-      "before": 55.27847049044057,
-      "after": 15.79961464354528,
-      "change_points": -39.478855846895286,
-      "z": -15.168233832725967,
-      "n_before": 1203,
-      "n_after": 519,
-      "unit": "points"
-    },
-    {
-      "agency": "Office of Personnel Management",
-      "award_kind": "PO",
-      "quarter": "FY2011Q2",
-      "metric": "competed",
-      "before": 35.59055118110236,
-      "after": 74.34292866082603,
-      "change_points": 38.75237747972367,
-      "z": 18.420758568756693,
-      "n_before": 1905,
-      "n_after": 799,
-      "unit": "points"
-    },
-    {
-      "agency": "General Services Administration",
-      "award_kind": "PO",
-      "quarter": "FY2017Q1",
-      "metric": "competed",
-      "before": 46.55172413793103,
-      "after": 83.8973162193699,
-      "change_points": 37.345592081438866,
-      "z": 25.21029717898935,
-      "n_before": 3016,
-      "n_after": 1714,
       "unit": "points"
     }
   ],
@@ -628,7 +628,12 @@
     "base_actions_FY2018.parquet",
     "base_actions_FY2019.parquet",
     "base_actions_FY2020.parquet",
-    "base_actions_FY2021.parquet"
+    "base_actions_FY2021.parquet",
+    "base_actions_FY2022.parquet",
+    "base_actions_FY2023.parquet",
+    "base_actions_FY2024.parquet",
+    "base_actions_FY2025.parquet",
+    "base_actions_FY2026.parquet"
   ],
-  "data_end": "2021-09-30"
+  "data_end": "2026-09-30"
 }

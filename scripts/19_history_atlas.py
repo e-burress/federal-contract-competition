@@ -90,12 +90,42 @@ def issue_notes(b):
     return sec_notes, ag_notes, cautions
 
 
+DEFENSE = "Department of Defense"
+THIN_SEPTEMBER = 0.25   # the newest year is incomplete when its September has under this share of a typical month's Defense awards
+
+
+def defense_incomplete(path):
+    """(fiscal year, note) when the Defense awards of the table at `path` thin out before the fiscal year ends, else None.
+    Defense data are published about 90 days late, so the newest year lacks its last months until they are released.
+    The test uses monthly counts, not the latest date: a few stray records can carry a late date.  A typical month is the
+    median of the year's first nine months (October to June)."""
+    b = pd.read_parquet(path, columns=["action_date", "is_dod", "fy"])
+    d = b[b.is_dod.to_numpy(dtype=bool)]
+    if not len(d):
+        return None
+    fy = int(d.fy.iloc[0])
+    months = pd.period_range(f"{fy - 1}-10", f"{fy}-09", freq="M")
+    counts = pd.to_datetime(d.action_date).dt.to_period("M").value_counts().reindex(months, fill_value=0)
+    typical = float(counts.iloc[:9].median())
+    if typical <= 0 or counts.iloc[-1] >= THIN_SEPTEMBER * typical:
+        return None
+    full = [m for m, c in counts.items() if c >= 0.5 * typical]
+    through = f"{full[-1].strftime('%B %Y')}" if full else "the start of the year"
+    return fy, (f"FY{fy} is incomplete for the {DEFENSE}: few Defense awards dated after {through} are in these tables yet "
+                "(Defense data are published about 90 days late). Not comparable with complete years.")
+
+
 def main():
     files = sorted(glob.glob(os.path.join(DATA, "history", "processed", "base_actions_FY*.parquet")))
     if not files:
         sys.exit("no history tables: run `python run.py get-history` (or the history workflow) first")
     b = load(files)
     sec_notes, ag_notes, cautions = issue_notes(b)
+    late = defense_incomplete(files[-1])
+    if late:
+        for kind in ("all", "PO", "DEF", "IDV"):
+            sec_notes[(DEFENSE, late[0], kind)] = late[1]
+        ag_notes[(DEFENSE, late[0])] = late[1]
     by_fy = pd.concat([share_table(b, ["sector", "fy"]).assign(award_kind="all"),
                        share_table(b, ["sector", "fy", "award_kind"])], ignore_index=True)
     by_fy["sector"], by_fy["award_kind"] = by_fy.sector.astype(str), by_fy.award_kind.astype(str)
@@ -110,6 +140,8 @@ def main():
     print(by_fy[by_fy.award_kind == "all"].pivot(index="fy", columns="sector", values="share").round(3).to_string())
     for c in cautions:
         print(f"\nCAUTION ({c['sector']}, FY{c['fy']}): {c['text']}")
+    if late:
+        print(f"\nCAUTION ({DEFENSE}, FY{late[0]}): {late[1]}")
     plot(by_fy[by_fy.award_kind == "all"], cautions)
 
 
