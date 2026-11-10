@@ -86,6 +86,7 @@ STEPS = {
     "outcomes":            ("scripts/24_outcomes.py", [], False, "after award: single-offer versus multi-offer awards, from the history tables"),
     "threshold-scan":      ("scripts/27_threshold_scan.py", [], False, "pile-ups under every FAR dollar threshold since FY2008, with placebo values and before/after tests"),
     "supplier-base":       ("scripts/33_supplier_base.py", [], False, "who wins the awards: companies, new companies, staying, concentration, from the history tables"),
+    "market-lookup":       ("scripts/34_market_lookup.py", [], False, "market lookup for buyers: offers and single offers by industry and product group, recent years"),
     "model-build":         ("scripts/30_model_v2.py", ["--build-training"], False, "forecast model v2: the labeled training table (needs the history and SAM archive tables)"),
     "model-evaluate":      ("scripts/30_model_v2.py", ["--evaluate"], False, "forecast model v2: out-of-time evaluation against baselines"),
     "model-train":         ("scripts/30_model_v2.py", ["--train"], False, "forecast model v2: final fit, private model file and public model card"),
@@ -101,7 +102,7 @@ PIPELINES = {
               "threshold-quarterly", "sql-check", "figures", "report", "dashboard", "brief", "explorer"],
     "daily": ["sam-snapshot", "live", "track-f2", "dashboard", "brief", "explorer"],
     "model": ["model-build", "model-evaluate", "model-train"],
-    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "split-screen", "outcomes", "supplier-base", "reconcile", "report", "dashboard", "brief", "explorer"],
+    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "split-screen", "outcomes", "supplier-base", "market-lookup", "reconcile", "report", "dashboard", "brief", "explorer"],
 }
 # results that change every day, are not rebuilt by quick/all, or are never published (office level); `verify` skips them.
 # daily_forecast_ (32_score_daily.py) and reconciliation (28_reconcile.py) depend on the day they were made and on USAspending's live totals.

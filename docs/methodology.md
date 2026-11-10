@@ -565,6 +565,31 @@ It fell clearly in 5, rose clearly in 0 and was unclear in 12 of 17 tests.<!-- /
 
 **Limits.** Only prime awards: subcontractors are not counted. Only new awards: orders under existing contract vehicles (delivery and task orders) are not in these tables, so a company that wins only such orders is missing, and a falling count can partly reflect a shift of buying toward orders under vehicles. These are patterns, not accusations and not proof of causes: fewer companies is not by itself less competition. GAO also reports fewer businesses, small and larger, receiving Defense contract obligations over FY2011 to FY2020 ([GAO-22-104621](https://www.gao.gov/products/gao-22-104621)); its counts use a different base (all obligations, Defense only) and are not compared number for number here.
 
+## 15c. Market lookup for buyers
+
+**Script:** `34_market_lookup.py`. **Data:** the yearly tables, one fiscal year read at a time with explicit columns (no office, company or solicitation columns are read). **Population:** competed awards with a usable offer count (the eval set of section 9).
+
+**Groups.** Industry group: the first 4 digits of the NAICS code, with the official 2022 titles from the Census Bureau's code file (`reference/naics4_titles.csv`); a code that the awards still carry from an earlier list gets its official title from the 2017 list, labeled for example "Software Publishers (2017 code)", and `older_code` is true; a code found in none of the 2022, 2017, 2012 or 2007 lists is labeled "industry <code> (older code)". Codes are not merged, so when the list changed the same industry can appear under two codes, each holding only the awards recorded under it; groups with an older code are left out of the lists of thinnest and deepest markets. Product or service group: the first 2 characters of the product or service code, as in section 3 (for services, the title is that of the first letter). Scopes: all sectors, civilian except GSA, GSA and Defense.
+
+**Window.** The last five complete fiscal years, the same years for every scope. A year is complete when it has ended and its Defense data are not cut off by the 90-day publication delay (`defense_incomplete` in `19_history_atlas.py`); when the newest year is incomplete for Defense it is left out for every scope. The earlier window is the five years before. A change between the windows is given only when every year of both is present.
+
+**Measures.** Single-offer share with a 95% Wilson interval; the 25th, 50th and 75th percentiles of the number of offers (linear interpolation); the share with one or two offers; the single-offer share under a small-business set-aside (every small-business type together: small business, 8(a), HUBZone, SDVOSB, WOSB/EDWOSB, VOSB) and with no set-aside; the share in each size band of section 13; the change from the earlier window in percentage points, with a 95% interval (normal approximation).
+
+**Cells.** A share, percentile or change is published only when it rests on at least 100 competed awards; fewer means blank, not zero. An "all sectors" row where GSA holds more than half of the awards says so in its `note`, because GSA's very small supply orders and their changing offer coding can set the whole group's share; such groups are left out of the lists of thinnest and deepest markets. A change is marked "compare with care" (`change_note`) when the group's awards grew or shrank more than three times between the windows, for product groups whose IT codes were redefined in FY2021, and for GSA. The earlier window holds the 2018 rise of the micro-purchase and simplified-acquisition limits, so the mix of small purchases differs between the windows.
+
+**Registered companies** (industry groups only), from `reference/market_depth_naics.csv`. `registered_primary` counts companies whose main NAICS code is in the group; each company has one main code, so this is a count of distinct companies. A company that lists several codes of the group would be counted once per code if the 6-digit `n_any` counts were added up, so the file gives a range instead: at least `registered_any_largest` distinct companies (the largest single code) and at most `registered_any_listings` (the sum) list a code of the group. The SAM.gov extract is not kept on disk, so distinct companies were not recounted.
+
+<!-- auto:m-market-lookup -->**Results.** Recent window FY2021–FY2025, earlier window FY2016–FY2020; left out as incomplete: FY2026. Cell minimum: 100 competed awards.
+
+| Scope | Competed awards | Single-offer share (95% interval) | Offers: 25th, 50th, 75th percentile | One or two offers |
+|---|---|---|---|---|
+| All sectors | 2,451,883 | 30.4% (30.3–30.4%) | 1, 2, 4 | 50.3% |
+| Civilian except GSA | 324,723 | 29.1% (29.0–29.3%) | 1, 3, 5 | 44.0% |
+| GSA | 449,149 | 47.8% (47.7–47.9%) | 1, 2, 3 | 72.9% |
+| Department of Defense | 1,678,011 | 25.9% (25.8–26.0%) | 1, 3, 5 | 45.5% |
+
+Groups with at least 100 competed awards (all sectors): 247 of 330 industry groups and 149 of 164 product or service groups. Check: the yearly totals of competed awards with a usable offer count equal those of `results/history_by_fy.csv` for every sector in FY2016–FY2025. Registered companies: SAM.gov extract of November 1, 2026.<!-- /auto:m-market-lookup -->
+
 ## 16. Reference data
 
 <!-- auto:m-reference -->**Reference data.** [`reference/thresholds.csv`](../reference/thresholds.csv) lists 108 value periods of 28 FAR dollar thresholds, each with its source and the words that show the value ([notes](../reference/thresholds.md)). [`reference/threshold_adoption_2018.csv`](../reference/threshold_adoption_2018.csv) gives the date each agency adopted the 2018 limits: 24 of its 33 rows (agencies and the FAR itself) have a date, from February 27, 2018 to August 31, 2020, 7 of them of medium confidence ([notes](../reference/README.md)). [`reference/market_depth_naics.csv`](../reference/market_depth_naics.csv) counts the companies registered in SAM.gov to compete for federal contracts in each industry code: 1,085 codes, a median of 842 companies per code, on November 1, 2026. A registration is not a capable bidder ([notes](../reference/market_depth.md)).<!-- /auto:m-reference -->

@@ -801,8 +801,11 @@ def calc_labels(rd, logit, ref=None):
     for lv in logit["cat"].get("pscg", {}):
         key = ("P" if lv[:1].isdigit() else "S") + lv
         pscg[lv] = psc.get(key) or (f"product group {lv}" if lv[:1].isdigit() else f"service {lv}")
-    titles = {r.get("naics3", "").strip(): r.get("title", "").strip() for r in ((ref.csv("naics3_titles.csv") if ref else None) or [])}
-    titles = {k: v for k, v in titles.items() if k and v}
+    titles = {}
+    for r in (ref.csv("naics3_titles.csv") if ref else None) or []:
+        k, t, v = r.get("naics3", "").strip(), r.get("title", "").strip(), (r.get("vintage") or "2022").split()[0]
+        if k and t:
+            titles[k] = t if v == "2022" else f"{t} ({v} code)"     # a code of an earlier NAICS list carries its vintage
 
     def industry(lv):
         if lv == "unknown":
@@ -1031,6 +1034,71 @@ def build_market_depth(ref):
     return {"extract_date": rows[0].get("extract_date"), "codes": codes} if codes else None
 
 
+
+LOOKUP_SCOPES = ["all sectors", "civilian except GSA", "Department of Defense"]   # GSA's own rows stay in the CSV files
+LOOKUP_MIN = 100
+
+
+def _lookup_cell(r):
+    """one group and scope: [n, share, lo, hi, p25, median, p75, one or two, n set-aside, share set-aside, n none, share none,
+    change, change lo, change hi, change note] (note filled in by the caller), or 0 when it rests on fewer than LOOKUP_MIN awards"""
+    n_ = integer(r.get("n_eval"))
+    if n_ < LOOKUP_MIN or num(r.get("share")) is None:
+        return 0
+    return [n_, num(r.get("share"), 3), num(r.get("ci_lo"), 3), num(r.get("ci_hi"), 3), num(r.get("offers_p25"), 1),
+            num(r.get("offers_median"), 1), num(r.get("offers_p75"), 1), num(r.get("share_one_or_two"), 3),
+            integer(r.get("n_setaside")), num(r.get("share_setaside"), 3), integer(r.get("n_no_setaside")), num(r.get("share_no_setaside"), 3),
+            num(r.get("change_points"), 1), num(r.get("change_lo"), 1), num(r.get("change_hi"), 1), (r.get("change_note") or "").strip()]
+
+
+def build_lookup(rd):
+    """Market lookup for buyers (results/market_lookup_*.csv and market_lookup_summary.json, from 34_market_lookup.py): for each industry
+    group (4-digit NAICS) and product or service group, the cells of three scopes.  Groups with fewer than LOOKUP_MIN competed awards
+    (all sectors) are left out, and GSA's own rows stay in the CSV files, to keep the page small.  None when the files are missing."""
+    summ = rd.json("market_lookup_summary.json")
+    if not isinstance(summ, dict) or not summ.get("window") or not summ.get("all_markets"):
+        return None
+    notes, groups, dropped = [], [], 0
+
+    def note_id(t):
+        if not t:
+            return -1
+        if t not in notes:
+            notes.append(t)
+        return notes.index(t)
+    for k, (fname, key) in enumerate((("market_lookup_naics4.csv", "naics4"), ("market_lookup_psc2.csv", "psc2"))):
+        by = {}
+        for r in rd.csv(fname) or []:
+            by.setdefault((r.get(key) or "").strip(), {})[r.get("scope")] = r
+        for code in sorted(by):
+            rs = by[code]
+            a = rs.get("all sectors")
+            if not code or not a or integer(a.get("n_eval")) < LOOKUP_MIN:
+                dropped += 1
+                continue
+            cells = []
+            for sc in LOOKUP_SCOPES:
+                c = _lookup_cell(rs[sc]) if sc in rs else 0
+                if c:
+                    c[-1] = note_id(c[-1])
+                cells.append(c)
+            reg = [num(a.get(c), 0) for c in ("registered_primary", "registered_any_largest", "registered_any_listings")] if k == 0 else []
+            groups.append([k, code, cap_text(a.get("title"), 90), reg, note_id((a.get("note") or "").strip()), cells])
+    if not groups:
+        return None
+    w = summ["window"]
+    allm = {}
+    for sc in LOOKUP_SCOPES:
+        x = summ["all_markets"].get(sc)
+        if x:
+            allm[sc] = [integer(x.get("n_eval")), num(x.get("share"), 3), num(x.get("ci_lo"), 3), num(x.get("ci_hi"), 3),
+                        num(x.get("offers_p25"), 1), num(x.get("offers_median"), 1), num(x.get("offers_p75"), 1), num(x.get("share_one_or_two"), 3)]
+    years, earlier = w.get("recent_present") or [], w.get("earlier_present") or []
+    return {"years": [min(years), max(years)] if years else None, "earlier": [min(earlier), max(earlier)] if earlier else None,
+            "change": bool(w.get("change_available")), "left_out": w.get("left_out_incomplete") or [], "min_cell": summ.get("min_cell", LOOKUP_MIN),
+            "extract_date": summ.get("registered_extract_date") or "", "scopes": LOOKUP_SCOPES, "all": allm, "notes": notes,
+            "groups": groups, "dropped": dropped}
+
 NOTE_CAP = 160
 
 
@@ -1186,12 +1254,15 @@ def build(results_dir=DEFAULT_RESULTS, out_path=DEFAULT_OUT, repo=None, today=No
         "model2": build_model2(rd, ref),
         "scoreboard": build_scoreboard(rd, daily),
         "market_depth": build_market_depth(ref),
+        "lookup": build_lookup(rd),
         "threshold_table": build_threshold_table(ref),
     }
     data["sources"] = sorted(set(rd.used))
     data["snapshot"] = (data["gsa"] or {}).get("snapshot")
-    # the what-if calculator (about 25 KB) is not counted against the cap, so adding it trims nothing else
+    # the what-if calculator (about 25 KB) and the market lookup (about 100 KB) are not counted against the cap, so adding them trims
+    # nothing else
     calc_size = len(dump(data["model2"]["calc"])) if data["model2"] and data["model2"].get("calc") else 0
+    calc_size += len(dump(data["lookup"])) if data["lookup"] else 0
     text = fit_to_cap(data, cap + calc_size)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w", encoding="utf-8", newline="\n") as f:
@@ -1223,7 +1294,11 @@ def main(argv=None):
     calc = (d.get("model2") or {}).get("calc")
     if calc:
         print(f"the what-if calculator adds {len(dump(calc)) / 1024:.1f} KB (not counted against the {SIZE_CAP // 1024} KB aim)")
-    if size - (len(dump(calc)) if calc else 0) > SIZE_CAP:
+    lk = d.get("lookup")
+    if lk:
+        print(f"the market lookup adds {len(dump(lk)) / 1024:.1f} KB for {len(lk['groups'])} groups ({lk['dropped']} groups with fewer than "
+              f"{LOOKUP_MIN} competed awards left out; not counted against the {SIZE_CAP // 1024} KB aim)")
+    if size - (len(dump(calc)) if calc else 0) - (len(dump(lk)) if lk else 0) > SIZE_CAP:
         print(f"warning: the data file is over the {SIZE_CAP // 1024} KB aim even after trimming")
 
 

@@ -143,6 +143,20 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
 .cbars .bar.up { left:50%; background:var(--s2); } .cbars .bar.down { right:50%; background:var(--s1); }
 .cbars .fixed .lab { color:var(--muted); }
 .calc-reset { border:1px solid var(--line); background:var(--card); color:var(--accent); border-radius:999px; padding:4px 12px; cursor:pointer; font:inherit; font-size:.85rem; }
+/* market lookup */
+.lkpick { all:unset; cursor:pointer; color:var(--accent); font-weight:600; text-decoration:underline; text-underline-offset:2px; white-space:nowrap; }
+.lkpick:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:3px; }
+tr.sel td { background:var(--soft); }
+.lkcard h3 { margin-top:0; }
+.lkcard p { margin:8px 0 0; }
+.lkbar { position:relative; height:26px; margin:12px 0 2px; background:var(--nabg); border-radius:6px; }
+.lkbar .ci { position:absolute; top:5px; bottom:5px; background:var(--s1); opacity:.35; border-radius:3px; }
+.lkbar .pt { position:absolute; top:2px; bottom:2px; width:4px; margin-left:-2px; background:var(--s1); border-radius:2px; }
+.lkbar .ref { position:absolute; top:-3px; bottom:-3px; border-left:2px dashed var(--ink); opacity:.7; }
+.lkaxis { display:flex; justify-content:space-between; font-size:.8rem; color:var(--muted); }
+.lkkey { font-size:.88rem; color:var(--muted); margin-top:4px; }
+.lkkey i { display:inline-block; width:12px; height:10px; background:var(--s1); opacity:.6; border-radius:2px; margin-right:5px; vertical-align:middle; }
+.lkkey i.dash { background:none; opacity:1; width:0; height:12px; border-left:2px dashed var(--ink); margin:0 6px 0 10px; }
 @media (max-width:640px) {
   .cbars li { grid-template-columns:minmax(0,1fr) 4.2em; } .cbars .track { grid-column:1 / -1; grid-row:2; }
 }
@@ -180,7 +194,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <li data-opt="model"><a href="#model">Forecast model</a></li><li data-opt="score"><a href="#score">Forecast scoreboard</a></li>
   <li><a href="#quality">Data quality</a></li><li><a href="#open">Open today</a></li>
   <li class="sep" aria-hidden="true"></li>
-  <li><a href="#depth">Market depth</a></li><li><a href="#allthresholds">All thresholds</a></li><li><a href="#data">Get the data</a></li>
+  <li><a href="#depth">Market depth</a></li><li><a href="#lookup">Look up a market</a></li><li><a href="#allthresholds">All thresholds</a></li><li><a href="#data">Get the data</a></li>
 </ul></nav>
 <noscript><p class="card warn">This explorer needs JavaScript. The <a href="index.html">dashboard</a> and the <a href="https://github.com/e-burress/federal-contract-competition/tree/main/results">result files</a> work without it.</p></noscript>
 
@@ -428,6 +442,15 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <div class="tablewrap" id="md-table"></div>
   <p class="note" id="md-note"></p>
 </div>
+
+<h2 id="lookup">Look up a market</h2>
+<div class="card" id="lk-card">
+  <p class="sub" style="margin-bottom:8px">Market research for a purchase: in an industry or product group, how many offers do competed awards usually get, how often only one, does a small-business set-aside change that, and how many companies are registered? Search by code or by words in the title, then pick a group.</p>
+  <div class="controls" id="lk-controls"></div>
+  <p class="count" id="lk-count" aria-live="polite"></p>
+  <div class="tablewrap" id="lk-table"></div>
+</div>
+<div class="card lkcard" id="lk-detail" aria-live="polite"></div>
 
 <h2 id="allthresholds">All thresholds and when they applied</h2>
 <div class="card" id="tt-card">
@@ -2137,6 +2160,106 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
   apply();
 })();
 
+/* ---------- look up a market ---------- */
+(function () {
+  var LK = D.lookup;
+  if (!LK || !LK.groups || !LK.groups.length) {
+    $("lk-card").innerHTML = empty("The market lookup (results/market_lookup_summary.json) is not available yet. Run: python run.py market-lookup");
+    $("lk-detail").hidden = true; return;
+  }
+  var G = LK.groups, S = LK.scopes, sc = 0, kind = "", q = "", sel = null;
+  var yrs = LK.years ? "FY" + LK.years[0] + " to FY" + LK.years[1] : "the recent years";
+  var early = LK.earlier ? "FY" + LK.earlier[0] + " to FY" + LK.earlier[1] : "the earlier years";
+  var SCN = { "all sectors": "All sectors", "civilian except GSA": "Civilian except GSA", "Department of Defense": "Defense" };
+  function off(x) { return isNum(x) ? (x === Math.round(x) ? String(x) : x.toFixed(1)) : "n/a"; }
+  function p0(x) { return isNum(x) ? Math.round(100 * x) + "%" : "n/a"; }
+  function cap1(t) { t = String(t || ""); return t.charAt(0).toUpperCase() + t.slice(1); }
+  function cell(g) { return g[5][sc] || null; }
+  function label(g) { return (g[0] === 0 ? "NAICS " : "PSC ") + g[1]; }
+  $("lk-controls").appendChild(searchBox("lk-q", "Code or words in the title", "For example: 5413, R4, security", function (v) { q = v.trim().toLowerCase(); apply(); }));
+  $("lk-controls").appendChild(seg("lkkind", "Groups", [["", "All"], ["0", "Industries (NAICS)"], ["1", "Products and services (PSC)"]], kind, function (v) { kind = v; apply(); }));
+  $("lk-controls").appendChild(seg("lksc", "Buyers", S.map(function (x, i) { return [i, SCN[x] || x]; }), sc, function (v) { sc = +v; apply(); draw(); }));
+  function matches(g) {
+    if (kind !== "" && String(g[0]) !== kind) return false;
+    if (!q) return true;
+    var code = g[1].toLowerCase(), qc = q.replace(/\s+/g, "");
+    // a code: the group's code starts with it, or a longer code (6-digit NAICS, 4-character PSC) starts with the group's code
+    if (code.indexOf(qc) === 0 || (qc.length === (g[0] === 0 ? 6 : 4) && qc.indexOf(code) === 0 && /^[0-9a-z]+$/.test(qc))) return true;
+    var t = String(g[2]).toLowerCase();
+    return q.split(/\s+/).every(function (w) { return t.indexOf(w) >= 0; });
+  }
+  var tb = table($("lk-table"), [
+    { label: "Group", get: function (g) { return g[1]; }, fmt: function (g) { return '<button type="button" class="lkpick" data-code="' + esc(g[0] + ":" + g[1]) + '" aria-pressed="' + (g === sel) + '">' + esc(label(g)) + "</button>"; } },
+    { label: "Title", get: function (g) { return g[2]; }, fmt: function (g) { return esc(g[2]); } },
+    { label: "Competed awards", num: true, get: function (g) { var c = cell(g); return c ? c[0] : null; }, fmt: function (g) { var c = cell(g); return c ? int(c[0]) : '<span class="muted">under ' + LK.min_cell + "</span>"; } },
+    { label: "One offer", num: true, get: function (g) { var c = cell(g); return c ? c[1] : null; }, fmt: function (g) { var c = cell(g); return c ? "<b>" + pct(c[1]) + "</b>" : ""; } },
+    { label: "Median offers", num: true, get: function (g) { var c = cell(g); return c ? c[5] : null; }, fmt: function (g) { var c = cell(g); return c ? off(c[5]) : ""; } }
+  ], G, { stack: true, limit: 10, sortCol: 2, sortDir: -1, rowClass: function (g) { return g === sel ? "sel" : ""; }, emptyText: "No group matches. Try a shorter code or one word." });
+  $("lk-table").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button.lkpick") : null;
+    if (!b) return;
+    var key = b.getAttribute("data-code");
+    sel = G.filter(function (g) { return g[0] + ":" + g[1] === key; })[0] || null;
+    apply(); draw();
+    var again = $("lk-table").querySelector('button.lkpick[data-code="' + key + '"]');
+    if (again) again.focus();
+  });
+  function apply() {
+    var shown = G.filter(matches);
+    if (shown.length === 1 && sel !== shown[0]) { sel = shown[0]; draw(); }
+    tb.set(shown);
+    $("lk-count").textContent = "Showing " + int(shown.length) + " of " + int(G.length) + " groups" + (shown.length > 15 ? " (the 10 largest first; any column sorts)" : "") + ".";
+  }
+  function bar(c, A) {
+    var lo = Math.max(0, c[2]), hi = Math.min(1, c[3]);
+    var txt = "Single-offer share " + pct(c[1]) + ", 95% interval " + pct(c[2]) + " to " + pct(c[3]) + (A ? "; all markets " + pct(A[1]) : "");
+    return '<div class="lkbar" role="img" aria-label="' + esc(txt) + '"><span class="ci" style="left:' + (100 * lo).toFixed(2) + "%;width:" + Math.max(0.6, 100 * (hi - lo)).toFixed(2) + '%"></span>' +
+      '<span class="pt" style="left:' + (100 * c[1]).toFixed(2) + '%"></span>' + (A ? '<span class="ref" style="left:' + (100 * A[1]).toFixed(2) + '%"></span>' : "") + "</div>" +
+      '<div class="lkaxis" aria-hidden="true"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>' +
+      '<p class="lkkey" aria-hidden="true"><i></i>this group: ' + pct(c[1]) + " (shaded: 95% interval)" + (A ? '<i class="dash"></i>all markets, same buyers: ' + pct(A[1]) : "") + "</p>";
+  }
+  function draw() {
+    var box = $("lk-detail");
+    if (!sel) { box.innerHTML = '<p class="empty">Pick a group in the table above to see its card.</p>'; return; }
+    var g = sel, c = cell(g), A = LK.all[S[sc]], who = SCN[S[sc]] || S[sc], what = g[0] === 0 ? "In this industry" : "In this product or service group";
+    var h = "<h3>" + esc(label(g)) + ": " + esc(g[2]) + '</h3><p class="sub">' + esc(who) + ", " + yrs + ". Competed awards with a usable offer count.</p>";
+    if (!c) {
+      h += "<p>Fewer than " + LK.min_cell + " competed awards for these buyers in " + yrs + ", so no figures are shown. Try All sectors.</p>";
+    } else {
+      h += bar(c, A);
+      h += "<p>" + what + ", <b>" + pct(c[1]) + "</b> of " + int(c[0]) + " competed awards got one offer in " + yrs + " (95% interval " + pct(c[2]) + " to " + pct(c[3]) + ")" +
+        (A ? ", against " + pct(A[1]) + " across all markets" : "") + ". The median award got <b>" + off(c[5]) + "</b> offers; the middle half got " + off(c[4]) + " to " + off(c[6]) + ". " + p0(c[7]) + " got one or two offers.</p>";
+      if (isNum(c[9]) && isNum(c[11])) {
+        var d = c[9] - c[11];
+        h += "<p>Under a small-business set-aside, " + p0(c[9]) + " got one offer (" + int(c[8]) + " awards); with no set-aside, " + p0(c[11]) + " (" + int(c[10]) + " awards)" +
+          (Math.abs(d) < 0.02 ? ": about the same." : ": " + (d < 0 ? "lower" : "higher") + " under a set-aside. Set-aside and open awards often buy different things, so this is a pattern, not the effect of the set-aside.") + "</p>";
+      } else {
+        h += "<p>Set-aside or not: too few awards on one side to compare (fewer than " + LK.min_cell + ").</p>";
+      }
+      if (isNum(c[12])) {
+        var clear = c[13] > 0 || c[14] < 0;
+        h += "<p>Compared with " + early + ", the share " + (clear ? (c[12] > 0 ? "rose" : "fell") + " by " + Math.abs(c[12]).toFixed(1) + " percentage points" : "did not change clearly (" + signed(c[12], 1) + " points)") +
+          " (95% interval " + signed(c[13], 1) + " to " + signed(c[14], 1) + ")." + (c[15] >= 0 ? " " + esc(cap1(LK.notes[c[15]])) + "." : "") + "</p>";
+      } else {
+        h += "<p>Change from " + early + ": not available (fewer than " + LK.min_cell + " awards in one of the two periods" + (LK.change ? "" : ", or a year is missing") + ").</p>";
+      }
+    }
+    if (g[0] === 0) {
+      var R = g[3] || [];
+      h += isNum(R[0]) ? "<p>Registered in SAM.gov" + (LK.extract_date ? " (" + esc(niceDate(LK.extract_date)) + ")" : "") + ": <b>" + int(R[0]) + "</b> companies have their main industry code in this group, and at least " + int(R[1]) +
+        " list one of its codes (a company can list several codes). A registration is not a capable bidder.</p>" : "<p>Registered companies: none found for this group's codes in the SAM.gov extract (older codes are not in it).</p>";
+    }
+    if (g[4] >= 0) h += '<p class="note">' + esc(cap1(LK.notes[g[4]])) + ".</p>";
+    h += '<p class="note">Limits: a single offer is not proof of a problem; a narrow need or a short deadline can explain it. The groups are broad, and offer counts are as recorded by agencies. Only new awards are counted, not orders under existing contract vehicles.</p>';
+    box.innerHTML = h;
+  }
+  sel = G.slice().sort(function (a, b) { return ((b[5][0] || [0])[0]) - ((a[5][0] || [0])[0]); })[0];
+  apply(); draw();
+  var extra = LK.dropped ? " " + int(LK.dropped) + " groups with fewer than " + LK.min_cell + " competed awards are left out of this page; they are in the CSV files, with GSA's own rows." : " GSA's own rows are in the CSV files.";
+  $("lk-card").insertAdjacentHTML("beforeend", '<p class="note">Window: ' + yrs + ", the last five complete fiscal years" + (LK.left_out && LK.left_out.length ? " (FY" + LK.left_out.join(", FY") + " is left out: its Defense data are not complete yet)" : "") +
+    ". A figure resting on fewer than " + LK.min_cell + " awards is blank." + extra + "</p>");
+})();
+
 /* ---------- all thresholds ---------- */
 (function () {
   var TT = D.threshold_table;
@@ -2209,6 +2332,9 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
     "live_fy2027_by_agency.csv": "this fiscal year so far, by agency",
     "live_fy2027_totals.json": "this fiscal year so far, totals",
     "reference/market_depth_naics.csv": "registered companies per industry code",
+    "market_lookup_naics4.csv": "market lookup: offers and single offers by industry group",
+    "market_lookup_psc2.csv": "market lookup: the same by product or service group",
+    "market_lookup_summary.json": "market lookup: window, every-market figures and caveats",
     "reference/thresholds.csv": "every threshold and its value periods"
   };
   var files = (D.sources || []).slice();

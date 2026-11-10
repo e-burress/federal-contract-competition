@@ -130,6 +130,36 @@ Built by `scripts/33_supplier_base.py` from the history tables (`python run.py s
 
 **supplier_base_summary.json**: the headline numbers the pages quote, the definitions, the identifier-switch checks by year (`identifier_switch.by_year`: share of awards with a UEI, with a DUNS, with only an unlinked DUNS; for tables without the linking columns, the share of company ids that match a DUNS code seen in the newer tables), the known reporting changes, the caveats and the run's time and memory.
 
+## Result files: market lookup for buyers
+
+Built by `scripts/34_market_lookup.py` from the history tables (`python run.py market-lookup`). Competed awards with a usable offer count (the eval set) in the recent window: the last five complete fiscal years, the same for every scope (`market_lookup_summary.json` gives the years). Industry and product level only: no file names or codes a buying office, a company or a solicitation. A value resting on fewer than 100 competed awards is blank, not zero.
+
+**market_lookup_naics4.csv**: one row per industry group (first 4 digits of the NAICS code) and scope (`all sectors`, `civilian except GSA`, `GSA`, `Department of Defense`). **market_lookup_psc2.csv**: the same per product or service group (first 2 characters of the product or service code). Groups with a blank code are left out of both files but counted in the summary's totals.
+
+| Column | Meaning |
+|---|---|
+| naics4 / psc2, title | The group code and its title: for industries the official 2022 NAICS title (`reference/naics4_titles.csv`), "<title> (2017 code)" for a code of the earlier 2017 list, or "industry <code> (older code)" for a code found in no list; for products the federal supply group name; for services the name of the first letter's category |
+| older_code | (Industries only.) True when the code is not in the 2022 NAICS list. The same industry can then appear under two codes; neither holds the whole market |
+| scope | Sector, or all sectors together |
+| n_eval, k_single | Competed awards with a usable offer count in the recent window, and those with exactly one offer |
+| share, ci_lo, ci_hi | Single-offer share and its 95% Wilson interval |
+| offers_p25, offers_median, offers_p75 | 25th, 50th and 75th percentiles of the number of offers (linear interpolation, so a value can fall between whole numbers) |
+| share_one_or_two | Share of awards with one or two offers |
+| n_setaside, share_setaside, ci_lo_setaside, ci_hi_setaside | Awards under a small-business set-aside of any type (small business, 8(a), HUBZone, SDVOSB, WOSB/EDWOSB, VOSB), their single-offer share and its interval |
+| n_no_setaside, share_no_setaside, ci_lo_no_setaside, ci_hi_no_setaside | The same for awards with no set-aside (other set-asides and blanks are in neither) |
+| n_<band>, share_<band> | Awards and single-offer share in each size band of initial value (base and all options): <25K, 25-100K, 100-250K, 250K-1M, 1-10M, >10M |
+| n_eval_earlier, share_earlier | The same population in the earlier window (the five years before) |
+| change_points, change_lo, change_hi | Recent minus earlier single-offer share, in percentage points, with a 95% interval; blank unless both windows have at least 100 awards and every year of both windows is present |
+| change_note | "Compare with care" when the group's awards changed more than three times between the windows, for IT product and service groups redefined in FY2021, and for GSA |
+| note | On `all sectors` rows: GSA holds more than half of the awards |
+| registered_primary | (Industries only.) SAM.gov registrations whose main NAICS code is in the group: distinct companies |
+| registered_any_largest, registered_any_listings | Registrations that list a code of the group: at least the first (the largest single 6-digit code) and at most the second (the sum over the group's codes, which counts a company once per code) |
+| registered_codes | 6-digit codes of the group in `reference/market_depth_naics.csv` |
+
+**market_lookup_summary.json**: the window and the rule that chose it (`window`), the cell minimum, the number of groups, every-market figures per scope (`all_markets`), the thinnest and deepest industry and product groups with at least 2,000 competed awards (`markets_naics4`, `markets_psc2`; groups where GSA holds more than half of the awards are left out), the yearly totals by sector (`eval_by_year`) and their check against `history_by_fy.csv` (`totals_check`), the SAM.gov extract date and the caveats.
+
+**reference/naics4_titles.csv**: official NAICS titles of the 4-digit industry groups, from the Census Bureau's code files (`source_url`), with the same columns as `reference/naics3_titles.csv`: the 2022 list, plus the codes of the 2017 list that the awards still carry (`vintage` 2017 NAICS). `reference/naics3_titles.csv` has the 2017 rows for its older 3-digit codes in the same way.
+
 ## Result files: completeness check
 
 Built by `scripts/28_reconcile.py` (`python run.py reconcile`) from the history tables and USAspending's public search API. These files depend on the day they were made, so `python run.py verify` does not compare them.

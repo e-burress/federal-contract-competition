@@ -1,0 +1,393 @@
+{
+ "built_utc": "2026-11-10T21:38:41Z",
+ "window": {
+  "recent": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "earlier": [
+   2016,
+   2017,
+   2018,
+   2019,
+   2020
+  ],
+  "recent_present": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "earlier_present": [
+   2016,
+   2017,
+   2018,
+   2019,
+   2020
+  ],
+  "missing_years": [],
+  "left_out_incomplete": [
+   2026
+  ],
+  "change_available": true,
+  "rule": "the last 5 complete fiscal years; a year is complete when it has ended and its Defense data are not cut off by the 90-day publication delay (19_history_atlas.py defense_incomplete); one window for every scope"
+ },
+ "min_cell": 100,
+ "scopes": [
+  "all sectors",
+  "civilian except GSA",
+  "GSA",
+  "Department of Defense"
+ ],
+ "groups": {
+  "naics4": {
+   "rows": 1141,
+   "groups": 330,
+   "groups_published_all_sectors": 247
+  },
+  "psc2": {
+   "rows": 610,
+   "groups": 164,
+   "groups_published_all_sectors": 149
+  }
+ },
+ "all_markets": {
+  "all sectors": {
+   "n_eval": 2451883,
+   "k_single": 744148,
+   "share": 0.30350061564927855,
+   "ci_lo": 0.30292543309207326,
+   "ci_hi": 0.30407641393171264,
+   "offers_p25": 1.0,
+   "offers_median": 2.0,
+   "offers_p75": 4.0,
+   "share_one_or_two": 0.5029811781394137
+  },
+  "civilian except GSA": {
+   "n_eval": 324723,
+   "k_single": 94582,
+   "share": 0.2912697899440446,
+   "ci_lo": 0.28970955155284867,
+   "ci_hi": 0.29283496681524407,
+   "offers_p25": 1.0,
+   "offers_median": 3.0,
+   "offers_p75": 5.0,
+   "share_one_or_two": 0.44011049417503534
+  },
+  "GSA": {
+   "n_eval": 449149,
+   "k_single": 214689,
+   "share": 0.47799060000133586,
+   "ci_lo": 0.4765299576365016,
+   "ci_hi": 0.4794516188447135,
+   "offers_p25": 1.0,
+   "offers_median": 2.0,
+   "offers_p75": 3.0,
+   "share_one_or_two": 0.7293014122262322
+  },
+  "Department of Defense": {
+   "n_eval": 1678011,
+   "k_single": 434877,
+   "share": 0.2591621866602781,
+   "ci_lo": 0.2584997621237985,
+   "ci_hi": 0.25982571389086934,
+   "offers_p25": 1.0,
+   "offers_median": 3.0,
+   "offers_p75": 5.0,
+   "share_one_or_two": 0.45456912976136626
+  }
+ },
+ "markets_naics4": {
+  "min_awards": 2000,
+  "n_large": 105,
+  "n_ranked": 90,
+  "left_out_gsa_majority": 14,
+  "left_out_older_code": 1,
+  "thinnest": [
+   {
+    "naics4": "5616",
+    "title": "Investigation and Security Services",
+    "share": 0.6658697904215475,
+    "ci_lo": 0.6575674371530191,
+    "ci_hi": 0.6740706237319705,
+    "n_eval": 12549,
+    "offers_median": 1.0,
+    "registered_primary": 6620
+   },
+   {
+    "naics4": "8112",
+    "title": "Electronic and Precision Equipment Repair and Maintenance",
+    "share": 0.5377317809400604,
+    "ci_lo": 0.5259985072844628,
+    "ci_hi": 0.5494234087447734,
+    "n_eval": 6957,
+    "offers_median": 1.0,
+    "registered_primary": 1338
+   },
+   {
+    "naics4": "3313",
+    "title": "Alumina and Aluminum Production and Processing",
+    "share": 0.5147547391049443,
+    "ci_lo": 0.5050681009347505,
+    "ci_hi": 0.5244303046827542,
+    "n_eval": 10234,
+    "offers_median": 1.0,
+    "registered_primary": 108
+   },
+   {
+    "naics4": "5132",
+    "title": "Software Publishers",
+    "share": 0.5062316715542522,
+    "ci_lo": 0.48747483450172807,
+    "ci_hi": 0.524970982912097,
+    "n_eval": 2728,
+    "offers_median": 1.0,
+    "registered_primary": 5865
+   },
+   {
+    "naics4": "3259",
+    "title": "Other Chemical Product and Preparation Manufacturing",
+    "share": 0.48960084033613444,
+    "ci_lo": 0.47956539571789164,
+    "ci_hi": 0.4996446739944073,
+    "n_eval": 9520,
+    "offers_median": 2.0,
+    "registered_primary": 735
+   }
+  ],
+  "deepest": [
+   {
+    "naics4": "3114",
+    "title": "Fruit and Vegetable Preserving and Specialty Food Manufacturing",
+    "share": 0.0355569540591567,
+    "ci_lo": 0.029658873627618765,
+    "ci_hi": 0.04257648498320332,
+    "n_eval": 3178,
+    "offers_median": 7.0,
+    "registered_primary": 327
+   },
+   {
+    "naics4": "3116",
+    "title": "Animal Slaughtering and Processing",
+    "share": 0.03650231544538273,
+    "ci_lo": 0.030904127033050195,
+    "ci_hi": 0.043069529209505575,
+    "n_eval": 3671,
+    "offers_median": 6.0,
+    "registered_primary": 448
+   },
+   {
+    "naics4": "3311",
+    "title": "Iron and Steel Mills and Ferroalloy Manufacturing",
+    "share": 0.03767615760713258,
+    "ci_lo": 0.03184026130310548,
+    "ci_hi": 0.044532495676972816,
+    "n_eval": 3477,
+    "offers_median": 5.0,
+    "registered_primary": 96
+   },
+   {
+    "naics4": "4831",
+    "title": "Deep Sea, Coastal, and Great Lakes Water Transportation",
+    "share": 0.03789636504253674,
+    "ci_lo": 0.03233020105240644,
+    "ci_hi": 0.04437688626481698,
+    "n_eval": 3879,
+    "offers_median": 3.0,
+    "registered_primary": 346
+   },
+   {
+    "naics4": "1153",
+    "title": "Support Activities for Forestry",
+    "share": 0.08906124632254614,
+    "ci_lo": 0.08392988722564237,
+    "ci_hi": 0.09447397545856373,
+    "n_eval": 11217,
+    "offers_median": 10.0,
+    "registered_primary": 4066
+   }
+  ]
+ },
+ "markets_psc2": {
+  "min_awards": 2000,
+  "n_large": 92,
+  "n_ranked": 80,
+  "left_out_gsa_majority": 12,
+  "left_out_older_code": 0,
+  "thinnest": [
+   {
+    "psc2": "56",
+    "title": "Products: construction materials",
+    "share": 0.5160994964138562,
+    "ci_lo": 0.5075402875652337,
+    "ci_hi": 0.5246492702814833,
+    "n_eval": 13106,
+    "offers_median": 1.0
+   },
+   {
+    "psc2": "7A",
+    "title": "Products: IT and telecom (codes from FY2021)",
+    "share": 0.4715127701375246,
+    "ci_lo": 0.457825754871222,
+    "ci_hi": 0.485242752002343,
+    "n_eval": 5090,
+    "offers_median": 2.0
+   },
+   {
+    "psc2": "62",
+    "title": "Products: lighting fixtures",
+    "share": 0.4456807734981772,
+    "ci_lo": 0.44020274130441117,
+    "ci_hi": 0.4511720337575158,
+    "n_eval": 31545,
+    "offers_median": 2.0
+   },
+   {
+    "psc2": "20",
+    "title": "Products: ship and marine equipment",
+    "share": 0.42377315796916987,
+    "ci_lo": 0.415650593245603,
+    "ci_hi": 0.43193712316729266,
+    "n_eval": 14142,
+    "offers_median": 2.0
+   },
+   {
+    "psc2": "16",
+    "title": "Products: aircraft components",
+    "share": 0.42140000776487946,
+    "ci_lo": 0.4153818944053769,
+    "ci_hi": 0.4274415627991395,
+    "n_eval": 25757,
+    "offers_median": 2.0
+   }
+  ],
+  "deepest": [
+   {
+    "psc2": "95",
+    "title": "Products: metal bars, sheets, shapes",
+    "share": 0.052330945999384856,
+    "ci_lo": 0.04951254791561878,
+    "ci_hi": 0.0553004414089706,
+    "n_eval": 22759,
+    "offers_median": 5.0
+   },
+   {
+    "psc2": "89",
+    "title": "Products: food (subsistence)",
+    "share": 0.07081071913161466,
+    "ci_lo": 0.06818408074962208,
+    "ci_hi": 0.07353055821099634,
+    "n_eval": 35376,
+    "offers_median": 7.0
+   },
+   {
+    "psc2": "F0",
+    "title": "Services: natural resources management (codes starting F0)",
+    "share": 0.0962208706348664,
+    "ci_lo": 0.0915482832510541,
+    "ci_hi": 0.10110540277499458,
+    "n_eval": 14633,
+    "offers_median": 10.0
+   },
+   {
+    "psc2": "Y1",
+    "title": "Services: construction of structures and facilities (codes starting Y1)",
+    "share": 0.10009946649787503,
+    "ci_lo": 0.09464382238189212,
+    "ci_hi": 0.10583283337388127,
+    "n_eval": 11059,
+    "offers_median": 4.0
+   },
+   {
+    "psc2": "V1",
+    "title": "Services: transportation, travel, relocation (codes starting V1)",
+    "share": 0.10779265362169585,
+    "ci_lo": 0.10008627141180851,
+    "ci_hi": 0.11601591039187037,
+    "n_eval": 5826,
+    "offers_median": 3.0
+   }
+  ]
+ },
+ "eval_by_year": {
+  "2016": {
+   "civilian except GSA": 133228,
+   "GSA": 2935,
+   "Department of Defense": 486383
+  },
+  "2017": {
+   "civilian except GSA": 132429,
+   "GSA": 8464,
+   "Department of Defense": 478867
+  },
+  "2018": {
+   "civilian except GSA": 109368,
+   "GSA": 7160,
+   "Department of Defense": 510256
+  },
+  "2019": {
+   "civilian except GSA": 78078,
+   "GSA": 73859,
+   "Department of Defense": 451059
+  },
+  "2020": {
+   "civilian except GSA": 71212,
+   "GSA": 73338,
+   "Department of Defense": 379697
+  },
+  "2021": {
+   "civilian except GSA": 68141,
+   "GSA": 77127,
+   "Department of Defense": 352917
+  },
+  "2022": {
+   "civilian except GSA": 66530,
+   "GSA": 79084,
+   "Department of Defense": 341560
+  },
+  "2023": {
+   "civilian except GSA": 70129,
+   "GSA": 102024,
+   "Department of Defense": 320003
+  },
+  "2024": {
+   "civilian except GSA": 65609,
+   "GSA": 96643,
+   "Department of Defense": 323223
+  },
+  "2025": {
+   "civilian except GSA": 54314,
+   "GSA": 94271,
+   "Department of Defense": 340308
+  }
+ },
+ "totals_check": {
+  "years": [
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "match": true,
+  "differences": []
+ },
+ "registered_extract_date": "2026-11-01",
+ "caveats": [
+  "A single offer is a risk indicator about a market, not proof of a problem: a narrow requirement, a short deadline or a specialized need can all lead to one offer.",
+  "Categories are broad: a 4-digit industry group or a 2-character product group mixes very different purchases.",
+  "Offer counts are as recorded by agencies; coding differs between agencies and over time (see the quality monitor).",
+  "Only new awards (base actions) are counted; orders under existing contract vehicles are not in the yearly tables.",
+  "The earlier window holds the 2018 rise of the micro-purchase limit ($3,500 to $10,000) and of the simplified-acquisition limit ($150,000 to $250,000), on different dates by agency, so the mix of small purchases differs between the windows.",
+  "Registered companies are SAM.gov registrations on the extract date; a registration is not a capable bidder."
+ ]
+}

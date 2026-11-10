@@ -327,12 +327,12 @@ def history_status():
     """One sentence on the long history: which fiscal years its results use now, and which are still to come."""
     years = history_years()
     if not years:
-        return ("**Long history (FY2008 onward), in progress:** its yearly tables have not been built yet, so findings 4 to 10 "
+        return ("**Long history (FY2008 onward), in progress:** its yearly tables have not been built yet, so findings 4 to 11 "
                 "say \"not yet available\".")
     want = range(HISTORY_FIRST_FY, CONFIG["analysis"]["fiscal_years"][-1] + 1)
     missing = [y for y in want if y not in years]
     tail = f" {fy_text(missing)} {'is' if len(missing) == 1 else 'are'} still to come." if missing else ""
-    return (f"**Long history, in progress:** findings 4 to 10 add civilian agencies and Defense from FY{HISTORY_FIRST_FY} on. "
+    return (f"**Long history, in progress:** findings 4 to 11 add civilian agencies and Defense from FY{HISTORY_FIRST_FY} on. "
             f"The single-offer history now uses {fy_text(years)}.{tail} Each finding names the fiscal years it uses, which can differ "
             f"while the history is being built.")
 
@@ -1996,6 +1996,88 @@ def m_supplier():
     return "\n".join(out)
 
 
+
+# -- market lookup for buyers (34_market_lookup.py)
+def lookup():
+    s = opt_json("market_lookup_summary.json") or {}
+    return s if isinstance(s, dict) and s.get("all_markets") and s.get("window") else {}
+
+
+def offers_text(x):
+    """2, 2.5, 10 (a number of offers; percentiles can fall between two whole numbers)"""
+    if x is None:
+        return ""
+    v = float(x)
+    return str(int(v)) if v == int(v) else num(v, 1)
+
+
+def market_list(rs):
+    return series([f"{r['title']} ({pct(r['share'], 0)})" for r in rs])
+
+
+def r_market_lookup():
+    s = lookup()
+    a = (s.get("all_markets") or {}).get("all sectors")
+    if not a:
+        return not_yet("the market lookup (`results/market_lookup_summary.json`) has not been built.")
+    w, g = s["window"], s.get("groups") or {}
+    recent, earlier = fy_text(w["recent_present"]), fy_text(w["earlier"])
+    txt = (f"For buyers doing market research, [`results/market_lookup_naics4.csv`](results/market_lookup_naics4.csv) and "
+           f"[`results/market_lookup_psc2.csv`](results/market_lookup_psc2.csv) give, for each industry group (4-digit NAICS code) and "
+           f"each product or service group, how many offers competed awards got in {recent}, how often only one, with and without a "
+           f"small-business set-aside, the change from {earlier}, and, for industries, how many companies are registered in SAM.gov. "
+           f"Across all {n(a['n_eval'])} competed awards with a usable offer count in {recent}, {share_ci(a, True)} got one offer, "
+           f"and the median award got {offers_text(a['offers_median'])} offers. "
+           f"{n((g.get('naics4') or {}).get('groups_published_all_sectors', 0))} industry groups and "
+           f"{n((g.get('psc2') or {}).get('groups_published_all_sectors', 0))} product or service groups have at least "
+           f"{n(s['min_cell'])} competed awards; smaller cells are left blank.")
+    m = s.get("markets_naics4") or {}
+    if m.get("thinnest") and m.get("deepest"):
+        txt += (f" Among the {n(m['n_large'])} industry groups with at least {n(m['min_awards'])} competed awards (all sectors), the "
+                f"single-offer share was highest in {market_list(m['thinnest'])}, and lowest in {market_list(m['deepest'])}.")
+        out = [f"{n(m['left_out_gsa_majority'])} group{'s' if m['left_out_gsa_majority'] != 1 else ''} where GSA's very small supply orders are the majority of awards"
+               if m.get("left_out_gsa_majority") else "",
+               f"{n(m['left_out_older_code'])} group{'s' if m['left_out_older_code'] != 1 else ''} recorded under an older industry code (only part of a market)"
+               if m.get("left_out_older_code") else ""]
+        if any(out):
+            txt += f" Left out of that ranking: {series(out)}."
+    txt += " The [explorer](docs/explorer.html#lookup) has a search box for every group."
+    return paras(txt, cannot("whether a single offer was a problem: a narrow need or a short deadline can explain one. The groups are "
+                             "broad, offer counts are as recorded by agencies, and orders under existing contract vehicles are not "
+                             "counted. These are patterns, not proof of causes."))
+
+
+def m_market_lookup():
+    s = lookup()
+    if not s:
+        return not_yet("`results/market_lookup_summary.json` has not been built.")
+    w = s["window"]
+    out = [f"**Results.** Recent window {fy_text(w['recent_present'])}, earlier window {fy_text(w['earlier_present'])}"
+           + (f"; left out as incomplete: {fy_text(w['left_out_incomplete'])}" if w.get("left_out_incomplete") else "")
+           + (f"; missing: {fy_text(w['missing_years'])}" if w.get("missing_years") else "")
+           + (". Changes between the windows are not given, because a year is missing" if not w.get("change_available") else "")
+           + f". Cell minimum: {n(s['min_cell'])} competed awards.", "",
+           "| Scope | Competed awards | Single-offer share (95% interval) | Offers: 25th, 50th, 75th percentile | One or two offers |",
+           "|---|---|---|---|---|"]
+    for sc, a in (s.get("all_markets") or {}).items():
+        if a.get("share") is None:
+            continue
+        out.append(f"| {cap(sc)} | {n(a['n_eval'])} | {share_ci(a)} | {offers_text(a['offers_p25'])}, {offers_text(a['offers_median'])}, "
+                   f"{offers_text(a['offers_p75'])} | {pct(a['share_one_or_two'])} |")
+    g = s.get("groups") or {}
+    out += ["", f"Groups with at least {n(s['min_cell'])} competed awards (all sectors): "
+            f"{n((g.get('naics4') or {}).get('groups_published_all_sectors', 0))} of {n((g.get('naics4') or {}).get('groups', 0))} industry "
+            f"groups and {n((g.get('psc2') or {}).get('groups_published_all_sectors', 0))} of {n((g.get('psc2') or {}).get('groups', 0))} "
+            "product or service groups."]
+    c = s.get("totals_check")
+    if c:
+        out[-1] += (f" Check: the yearly totals of competed awards with a usable offer count equal those of "
+                    f"`results/history_by_fy.csv` for every sector in {fy_text(c['years'])}." if c.get("match") else
+                    f" Check: the yearly totals differ from `results/history_by_fy.csv` in {len(c.get('differences') or [])} year and sector cells.")
+    if s.get("registered_extract_date"):
+        out[-1] += f" Registered companies: SAM.gov extract of {long_date(s['registered_extract_date'])}."
+    return "\n".join(out)
+
 BLOCKS = {
     # README.md
     "status": r_status, "threshold-table": r_threshold_table, "threshold-quarters": r_threshold_quarters,
@@ -2019,6 +2101,8 @@ BLOCKS = {
     "m-model-v2": m_model_v2,
     # the supplier base (optional files)
     "supplier-base": r_supplier, "m-supplier-base": m_supplier,
+    # the market lookup for buyers (optional files)
+    "market-lookup": r_market_lookup, "m-market-lookup": m_market_lookup,
     # the completeness check and the daily sealed forecasts (optional files)
     "reconcile": r_reconcile, "m-reconcile": m_reconcile, "daily-forecasts": r_daily, "m-daily-forecasts": m_daily,
 }
@@ -2026,7 +2110,7 @@ BLOCKS = {
 OPTIONAL_BLOCKS = ["history", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "outcomes", "split-screen",
                    "quality", "reference", "limit-history", "model-v2", "m-quality", "m-history", "m-threshold-history", "m-staggered",
                    "m-scan", "m-drivers", "m-outcomes", "m-split", "m-reference", "m-model-v2", "supplier-base", "m-supplier-base",
-                   "reconcile", "m-reconcile", "daily-forecasts", "m-daily-forecasts"]
+                   "market-lookup", "m-market-lookup", "reconcile", "m-reconcile", "daily-forecasts", "m-daily-forecasts"]
 
 
 def fill(doc_text, changed, seen, label):

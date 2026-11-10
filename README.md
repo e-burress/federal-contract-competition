@@ -10,7 +10,7 @@ Everything here is built from free public data (USAspending.gov and SAM.gov), ru
 >
 > The in-depth analysis and the forecasts cover five civilian departments (VA, HHS, DHS, Interior and USDA) for FY2024–FY2026. Single-offer shares cover every civilian agency, and the threshold test is civilian-wide. These FY2024–FY2026 tables leave out Defense because of DoD's 90-day reporting delay.
 >
-> **Long history, in progress:** findings 4 to 10 add civilian agencies and Defense from FY2008 on. The single-offer history now uses FY2008–FY2026. Each finding names the fiscal years it uses, which can differ while the history is being built.<!-- /auto:status -->
+> **Long history, in progress:** findings 4 to 11 add civilian agencies and Defense from FY2008 on. The single-offer history now uses FY2008–FY2026. Each finding names the fiscal years it uses, which can differ while the history is being built.<!-- /auto:status -->
 
 ---
 
@@ -168,6 +168,14 @@ How many different companies win new federal awards each year, how many are new,
 
 *What it cannot show:* why companies enter or leave, or whether fewer companies means less competition. A company here is one registered identifier: parents and subsidiaries count separately. Only prime awards are counted, and orders under existing contract vehicles are not in these tables. These are patterns, not proof of causes.<!-- /auto:supplier-base -->
 
+### 11. Look up a market
+
+Market research is the first step of a federal purchase. A buyer asks: in this industry, how many offers do competed awards usually get, how often only one, does a set-aside change that, and how many companies are registered?
+
+<!-- auto:market-lookup -->For buyers doing market research, [`results/market_lookup_naics4.csv`](results/market_lookup_naics4.csv) and [`results/market_lookup_psc2.csv`](results/market_lookup_psc2.csv) give, for each industry group (4-digit NAICS code) and each product or service group, how many offers competed awards got in FY2021–FY2025, how often only one, with and without a small-business set-aside, the change from FY2016–FY2020, and, for industries, how many companies are registered in SAM.gov. Across all 2,451,883 competed awards with a usable offer count in FY2021–FY2025, 30.4% (95% interval 30.3–30.4%) got one offer, and the median award got 2 offers. 247 industry groups and 149 product or service groups have at least 100 competed awards; smaller cells are left blank. Among the 105 industry groups with at least 2,000 competed awards (all sectors), the single-offer share was highest in Investigation and Security Services (67%), Electronic and Precision Equipment Repair and Maintenance (54%), Alumina and Aluminum Production and Processing (51%), Software Publishers (51%) and Other Chemical Product and Preparation Manufacturing (49%), and lowest in Fruit and Vegetable Preserving and Specialty Food Manufacturing (4%), Animal Slaughtering and Processing (4%), Iron and Steel Mills and Ferroalloy Manufacturing (4%), Deep Sea, Coastal, and Great Lakes Water Transportation (4%) and Support Activities for Forestry (9%). Left out of that ranking: 14 groups where GSA's very small supply orders are the majority of awards and 1 group recorded under an older industry code (only part of a market). The [explorer](docs/explorer.html#lookup) has a search box for every group.
+
+*What it cannot show:* whether a single offer was a problem: a narrow need or a short deadline can explain one. The groups are broad, offer counts are as recorded by agencies, and orders under existing contract vehicles are not counted. These are patterns, not proof of causes.<!-- /auto:market-lookup -->
+
 ### Data quality and reference files
 
 <!-- auto:quality -->**Data quality.** `16_quality_monitor.py` looks for quarters in which an agency changed how it records its data. It compares each civilian agency, award type and quarter of the FY2024–FY2026 table with the quarters before it and flags only large, clear breaks. It flagged 85: 28 on the share of awards marked competed, 27 on award counts, 14 on the share with one offer, 6 on the share with three offers, 5 on the share with no usable offer count and 5 on the share with two offers. The largest change in offer coding: Department of Justice purchase orders in FY2024 Q4, where the one-offer share went from 28.6% to 57.4%. A flag means "check before you trust numbers from this agency and quarter". It cannot say whether the change is in coding, in late reporting or in competition itself. Full list: [`results/quality_flags.csv`](results/quality_flags.csv).<!-- /auto:quality -->
@@ -203,7 +211,7 @@ sha256sum forecasts/PIO-F2-threshold-fy2027q1-20261024.json
 
 ## How it works
 
-One download serves every FY2024–FY2026 analysis, and the long history (findings 4 to 10) has its own yearly tables. All scripts are in `scripts/`; `run.py` runs them in the right order.
+One download serves every FY2024–FY2026 analysis, and the long history (findings 4 to 11) has its own yearly tables. All scripts are in `scripts/`; `run.py` runs them in the right order.
 
 | Step | Script | What it does |
 |---|---|---|
@@ -239,7 +247,7 @@ One download serves every FY2024–FY2026 analysis, and the long history (findin
 | tool | `build_dashboard.py`, `build_explorer.py`, `build_brief.py` | The [public dashboard](https://e-burress.github.io/federal-contract-competition/) (`docs/index.html`), the data behind the explorer (`docs/explorer.html`) and the [one-page brief](https://e-burress.github.io/federal-contract-competition/brief.html) (`docs/brief.html`) |
 | tool | `run.py` (in the repository root) | Runs the steps above in order. See below |
 
-**Data behind the long history.** The yearly tables (`base_actions_FY<year>.parquet` and `award_year_FY<year>.parquet`) are published as a public release of this repository; `python run.py history` downloads them and rebuilds findings 4 to 10. The SAM.gov archive tables (from `22_sam_archive.py`) hold solicitation numbers, dates, codes and two keyword flags, never titles, descriptions, names or contacts. The reference files (`reference/`) are described under *Data quality and reference files* above.
+**Data behind the long history.** The yearly tables (`base_actions_FY<year>.parquet` and `award_year_FY<year>.parquet`) are published as a public release of this repository; `python run.py history` downloads them and rebuilds findings 4 to 11. The SAM.gov archive tables (from `22_sam_archive.py`) hold solicitation numbers, dates, codes and two keyword flags, never titles, descriptions, names or contacts. The reference files (`reference/`) are described under *Data quality and reference files* above.
 
 **Scoring the sealed forecasts.** [`docs/scoring-forecasts.md`](docs/scoring-forecasts.md) explains, for a person and not a programmer, how PIO-F1 is scored with `python run.py score-f1` and how the daily job scores PIO-F2. No AI is needed or used.
 
@@ -266,7 +274,7 @@ With [uv](https://docs.astral.sh/uv/), one line installs the right Python and pa
 | `python run.py verify` | Compares your results with the published ones |
 | `python run.py test` | Runs the offline tests |
 | `python run.py daily` | The morning refresh: SAM.gov snapshot, this fiscal year so far, forecast tracking, dashboard |
-| `python run.py history` | Downloads the yearly tables of the long history (FY2008 onward) and rebuilds findings 4 to 10. Then `python run.py report` writes their numbers into this README |
+| `python run.py history` | Downloads the yearly tables of the long history (FY2008 onward) and rebuilds findings 4 to 11. Then `python run.py report` writes their numbers into this README |
 | `python run.py score-f1` | Scores the sealed single-offer forecast (PIO-F1) once its private file is posted. See [`docs/scoring-forecasts.md`](docs/scoring-forecasts.md) |
 | `python run.py reconcile` | Compares our yearly totals with USAspending's own totals (needs the history tables and the internet) |
 | `python run.py brief` | Rebuilds the one-page brief (`docs/brief.html`) |
@@ -285,10 +293,10 @@ The scripts that created the sealed forecasts (10 and 10b) and the frozen foreca
 - **Offer counts are entered by staff.** In the five departments, <!-- auto:limit-999 -->760 competed awards<!-- /auto:limit-999 --> carry a "999" placeholder and were excluded.
 - **FY2026 is unusual.** It saw a government shutdown, a reporting-system move and staffing changes. <!-- auto:limit-fy2026 -->HHS and VA competed-award counts fell 34–50% from FY2024 to FY2026.<!-- /auto:limit-fy2026 -->
 - **SAM.gov's public search endpoint is undocumented.** This project uses it politely, at about one request per second. The documented alternatives are SAM's API (key required) and its daily CSV extract.
-- **Coverage:** every civilian agency for single-offer shares; five departments for the deeper analysis and the forecasts. DoD is left out of the FY2024–FY2026 tables and included in the long history (findings 4 to 10).
+- **Coverage:** every civilian agency for single-offer shares; five departments for the deeper analysis and the forecasts. DoD is left out of the FY2024–FY2026 tables and included in the long history (findings 4 to 11).
 - **GSA's supply orders** dominate civilian award counts and changed how they record offers, so civilian-wide figures are also given without GSA.
 - **Defense data arrive 90 days late.** The newest Defense year is incomplete until its last quarter is published. Scripts that need a full year leave an incomplete Defense year out and say so.
-- **The history tables are still being filled in.** <!-- auto:limit-history -->The single-offer history uses FY2008–FY2026 so far.<!-- /auto:limit-history --> Each of findings 4 to 10 names the years it uses. Agencies change how they record offers and competition (see *Data quality*), so a change over time can be a change in recording.
+- **The history tables are still being filled in.** <!-- auto:limit-history -->The single-offer history uses FY2008–FY2026 so far.<!-- /auto:limit-history --> Each of findings 4 to 11 names the years it uses. Agencies change how they record offers and competition (see *Data quality*), so a change over time can be a change in recording.
 - **Company codes are not anonymous.** The history tables carry a short company code made from each company's public identifier (UEI or DUNS), so the same company can be followed across awards. Anyone with the identifier can compute the same code, contract numbers are kept, and the underlying records are public on USAspending.gov. A company that switched from DUNS to UEI in 2022 can have two codes. Published results are at agency level or coarser.
 - **After award, not prices.** The after-award comparison (finding 8) measures obligations, scope changes, terminations and options, not prices. Extra obligations and scope changes are often legitimate.
 <!-- auto:model-v2 -->- **Forecast model, version 2 (built November 10, 2026).** It is the model of the daily forecasts (see *Pre-registered forecasts*). Trained on 930,423 solicitations from SAM.gov's archive that were matched to a competed award (award years FY2008–FY2026; its award history ends September 30, 2026). Tested out of time on FY2009–FY2026, the shipped L2 logistic regression ranks solicitations with an AUC of 0.714 (0.590 for the best simple baseline, the buying office's past rate, and 0.701 for version 1's features refitted), with a Brier score of 0.159 against 0.181 for that baseline and a calibration slope of 0.98 (1.00 is ideal). How it was chosen: by a rule written down before fitting (lowest out-of-time log loss over the last five test years; among candidates within 0.5% of the best, the one closest to the earlier model). The rule picked "logistic v2, half-life 3 years"; "logistic v2, half-life 3 years, correction by sector" is shipped instead, because the simpler pick left forecasts miscalibrated by sector. That choice was made after the results were known; the card records it with the numbers (`selection.amendment`). Version 1 (finding 3) is the earlier model, frozen since the October 24, 2026 build. Both are risk indicators about markets, not statements about anyone's conduct. Details: [`results/model_v2_card.json`](results/model_v2_card.json).<!-- /auto:model-v2 -->

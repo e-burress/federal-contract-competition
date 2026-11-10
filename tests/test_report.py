@@ -145,6 +145,18 @@ def synthetic(root):
     write_csv(os.path.join(res, "supplier_base_by_fy.csv"), [
         {"fy": 2013, "sector": "all sectors", "award_scope": "above_25k", "award_kind": "all", "n_awards": 900, "n_companies": 800,
          "new_share_companies": 0.35, "new_measures_comparable": "True", "stay_share_next_year": "", "note": ""}])
+    write_json(os.path.join(res, "market_lookup_summary.json"), {      # the market lookup (34_market_lookup.py)
+        "window": {"recent": [2021, 2022, 2023, 2024, 2025], "earlier": [2016, 2017, 2018, 2019, 2020],
+                   "recent_present": [2021, 2022, 2023, 2024, 2025], "earlier_present": [2016, 2017, 2018, 2019, 2020],
+                   "missing_years": [], "left_out_incomplete": [2026], "change_available": True},
+        "min_cell": 100, "groups": {"naics4": {"groups": 3, "groups_published_all_sectors": 2},
+                                    "psc2": {"groups": 2, "groups_published_all_sectors": 2}},
+        "all_markets": {"all sectors": {"n_eval": 1000, "k_single": 300, "share": 0.3, "ci_lo": 0.27, "ci_hi": 0.33, "offers_p25": 1,
+                                        "offers_median": 2, "offers_p75": 4, "share_one_or_two": 0.5}},
+        "markets_naics4": {"min_awards": 2000, "n_large": 2, "left_out_gsa_majority": 0,
+                           "thinnest": [{"naics4": "5616", "title": "Investigation and Security Services", "share": 0.67}],
+                           "deepest": [{"naics4": "3114", "title": "Fruit Preserving", "share": 0.04}]},
+        "totals_check": {"years": [2016, 2025], "match": True, "differences": []}, "registered_extract_date": "2026-11-01"})
     for name in ("single_offer_history.png", "threshold_history.png"):
         open(os.path.join(fig, name), "wb").close()
     return res, ref, fig
