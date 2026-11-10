@@ -56,12 +56,11 @@ def calc_features(calc, st):
     """features() of the page: the feature row for the chosen circumstances, history inputs from the typical values."""
     T = calc["typ"]
     s = sector_of(st["agency"])
-    x = {"sector": s, "agency": st["agency"], "subagency": T["comp"][st["agency"]]["subagency"], "setaside": st["setaside"], "notice_type": st["notice_type"],
+    x = {"sector": s, "agency": st["agency"], "component": T["comp"][st["agency"]]["effect"], "setaside": st["setaside"], "notice_type": st["notice_type"],
          "sol_letter": st["sol_letter"], "pscg": st["pscg"], "naics3": st["naics3"], "month": st["month"]}
     x.update(T["overall"])
     x.update(T["office"][s])
     x.update(T["agency"][st["agency"]])
-    x["lo_subagency"], x["mo_subagency"] = T["comp"][st["agency"]]["lo_subagency"], T["comp"][st["agency"]]["mo_subagency"]
     x.update(T["pscg"][st["pscg"]])
     x.update(T["naics3"][st["naics3"]])
     w = float("nan") if st["window"] == "none" else float(st["window"])
@@ -90,6 +89,7 @@ def calc_predict(calc, x):
         lp += b * (x[f] - mean) / sd
     for f, b in calc["bin"].items():
         lp += b * x[f]
+    lp += x["component"]
     g = calc["cal"]["groups"].get(x["sector"])
     a, b = calc["cal"]["by"][g] if g in calc["cal"]["by"] else (calc["cal"]["a"], calc["cal"]["b"])
     return expit(a + b * logit(expit(lp)))
@@ -119,6 +119,17 @@ def cases(calc, n):
 
 
 # ---- the real functions ----------------------------------------------------------------------------------------------
+TYPICAL = " | typical component"
+
+
+def with_typical_components(logit, comp):
+    """the coefficients plus one sub-agency level per agency, "<agency> | typical component", whose coefficient is the card's
+    typical component effect.  A row of that level with lo_subagency and mo_subagency at their means (lib_frame) gets
+    exactly that effect from forecast_lib: the row built the same way as the page's."""
+    cat = {**{c: t for c, t in logit["cat"].items() if c != "subagency"}, "subagency": {a + TYPICAL: v["effect"] for a, v in comp.items()}}
+    return {**logit, "cat": cat}
+
+
 def model_from_card(card):
     """A forecast_lib model built from the public card only: the card's full-precision coefficients and its correction."""
     c = card["shipped"]["calibration"]
@@ -126,7 +137,15 @@ def model_from_card(card):
     if c.get("by_sector_group"):
         cal["groups"] = {s: g["group"] for g in c["by_sector_group"] for s in g["sectors"]}
         cal["by_group"] = {g["group"]: {"a": g["a"], "b": g["b"]} for g in c["by_sector_group"]}
-    return {"kind": "logit", "logit": card["calculator"]["logit"], "calibration": cal}
+    calc = card["calculator"]
+    return {"kind": "logit", "logit": with_typical_components(calc["logit"], calc["typical"]["component_by_agency"]), "calibration": cal}
+
+
+def lib_frame(logit, rows):
+    """the page's rows as forecast_lib features: the agency's typical component level, its two rates at their means"""
+    rows = [{**{k: v for k, v in x.items() if k != "component"}, "subagency": x["agency"] + TYPICAL,
+             "lo_subagency": logit["cont"]["lo_subagency"][1], "mo_subagency": logit["cont"]["mo_subagency"][1]} for x in rows]
+    return feature_frame(rows)
 
 
 def feature_frame(rows):
@@ -151,12 +170,6 @@ def strings_in(obj):
         yield obj
 
 
-def names_no_component(level):
-    """True when a sub-agency level names no component (the public labels of scripts/30_model_v2.py)"""
-    ag, _, sub = str(level).partition(" | ")
-    return level == "unknown" or sub == ag or sub.endswith("(name withheld)") or sub == m30.POOLED_COMPONENT
-
-
 def read_levels(path):
     with open(path, encoding="utf-8", newline="") as f:
         return bx.calc_levels(list(csv.DictReader(f)))
@@ -175,9 +188,13 @@ def check_no_office_content(tc, calc, published_levels):
         tc.assertTrue(set(table) <= set(published_levels.get(f, {})), f"levels of {f} that the coefficient table does not publish")
     agencies = set(calc["cat"]["agency"])
     tc.assertTrue(set(calc["typ"]["comp"]) <= agencies)
-    for lv in list(calc["cat"].get("subagency", {})) + [c["subagency"] for c in calc["typ"]["comp"].values()]:
-        tc.assertTrue(names_no_component(lv), f"a component is named: {lv!r}")
+    tc.assertNotIn("subagency", calc["cat"])                       # no component row, named or unnamed
+    tc.assertFalse(set(bx.CALC_COMPONENT) & set(calc["cont"]))
+    for c in calc["typ"]["comp"].values():
+        tc.assertEqual(set(c), {"effect"})                         # one number per agency
     text = json.dumps(calc)
+    tc.assertNotIn("withheld", text)
+    tc.assertNotIn("component 1", text)
     for bad in ("office_key", "office_source", "sol_norm", "aac_code", "p_office_history", "n_recent", "uei", "duns"):
         tc.assertNotIn(bad, text.lower() if bad in ("uei", "duns") else text)
     # nothing that looks like an office code or a solicitation number (6+ characters, at least 2 letters and 2 digits)
@@ -225,7 +242,7 @@ def synthetic_card(seed=7):
         F[c] = rng.normal(cont[c][1], cont[c][2], n)
     for c in fl.BIN_FEATURES:
         F[c] = rng.integers(0, 2, n).astype(float)
-    calc = m30.calculator_card(F, logit, 2026)
+    calc = json.loads(json.dumps(m30.calculator_card(F, logit, 2026)))     # as written to the card
     cal = {"probability": "expit(a + b * logit(raw probability))", "a_pooled": 0.18, "b_pooled": 1.32,
            "by_sector_group": [{"group": "Defense", "sectors": [DOD], "a": 0.33, "b": 1.45, "n": 100},
                                {"group": "civilian", "sectors": ["GSA", "civilian except GSA"], "a": -0.59, "b": 0.87, "n": 100}]}
@@ -233,12 +250,12 @@ def synthetic_card(seed=7):
             "evaluation": {"last_five_years_by_sector": [{"test_fy": 2025, "sector": "all", "model": "logistic v2", "auc": 0.79},
                                                          {"test_fy": 2026, "sector": "all", "model": "logistic v2", "auc": 0.81}]},
             "baselines": {"global": 0.23, "sector": {DOD: 0.24, "GSA": 0.15, "civilian except GSA": 0.21}, "agency": {"Department of Tests": 0.3}},
-            "calculator": calc, "_private_logit": logit}
+            "calculator": calc, "_private_logit": logit, "_F": F}
 
 
 def write_v2(folder, card, coefficients=True):
     with open(os.path.join(folder, "model_v2_card.json"), "w", encoding="utf-8") as f:
-        json.dump({k: v for k, v in card.items() if k != "_private_logit"}, f)
+        json.dump({k: v for k, v in card.items() if not k.startswith("_")}, f)
     tx.write_csv(folder, "model_v2_evaluation.csv", [dict(test_fy="pooled", sector="all", model="logistic v2", n=100, single_share=0.2,
                                                           mean_forecast=0.2, auc=0.7, brier=0.15, logloss=0.48, cal_slope=1.0)])
     if coefficients:
@@ -289,7 +306,7 @@ class SyntheticCalculator(unittest.TestCase):
         calc = self.build()["model2"]["calc"]
         sts = cases(calc, 40)
         rows = [calc_features(calc, s) for s in sts]
-        p_real = fl.predict(model_from_card(self.card), feature_frame(rows))
+        p_real = fl.predict(model_from_card(self.card), lib_frame(self.card["calculator"]["logit"], rows))
         p_page = np.array([calc_predict(calc, x) for x in rows])
         self.assertLess(np.abs(p_real - p_page).max(), 1e-6)
         self.assertGreater(np.std(p_page), 0.01)                   # the cases really differ
@@ -301,7 +318,7 @@ class SyntheticCalculator(unittest.TestCase):
         self.assertIsNone(m["calc"])
         self.assertIsNotNone(m["card"])
         self.assertTrue(m["eval"])
-        card = dict(self.card)
+        card = {k: v for k, v in self.card.items() if not k.startswith("_")}
         card.pop("calculator")                                     # a card without the calculator block
         with open(os.path.join(self.res, "model_v2_card.json"), "w", encoding="utf-8") as f:
             json.dump(card, f)
@@ -318,22 +335,36 @@ class SyntheticCalculator(unittest.TestCase):
         self.assertIsNone(self.build()["model2"]["calc"])
 
     def test_card_that_names_a_component_gives_no_calculator(self):
-        card = json.loads(json.dumps({k: v for k, v in self.card.items() if k != "_private_logit"}))
-        card["calculator"]["logit"] = self.card["_private_logit"]      # the names the writer must not publish
+        card = json.loads(json.dumps({k: v for k, v in self.card.items() if not k.startswith("_")}))
+        card["calculator"]["logit"] = self.card["_private_logit"]      # the component rows the writer must not publish
         write_v2(self.res, card)
         self.assertIsNone(self.build()["model2"]["calc"])
 
-    def test_writer_withholds_component_names(self):
-        table = m30.coefficient_table(m30.public_logit(self.card["_private_logit"]))
+    def test_writer_publishes_no_component_row(self):
+        table = m30.coefficient_table(self.card["_private_logit"])           # even when given the private coefficients
         text = table.to_csv(index=False) + json.dumps(self.card["calculator"])
-        for name in ("Defense Logistics Agency", "Department of the Army", "Bureau of Checks", "Office of Small Things", "Public Buildings Service"):
+        for name in ("Defense Logistics Agency", "Department of the Army", "Bureau of Checks", "Office of Small Things", "Public Buildings Service",
+                     "withheld", "component 1"):
             self.assertNotIn(name, text)
-        sub = table[table.feature == "subagency"]
-        self.assertTrue(all(names_no_component(v) for v in sub.level))
-        self.assertTrue((sub[sub.level != "unknown"].note == m30.WITHHELD_NOTE).all())
-        # the coefficients are unchanged, only relabelled
-        self.assertEqual(sorted(m30.public_logit(self.card["_private_logit"])["cat"]["subagency"].values()),
-                         sorted(self.card["_private_logit"]["cat"]["subagency"].values()))
+        self.assertFalse((table.feature == "subagency").any())
+        self.assertNotIn("subagency", self.card["calculator"]["logit"]["cat"])
+        self.assertTrue(self.card["calculator"]["component_note"].startswith(m30.COMPONENT_NOTE))
+
+    def test_typical_component_effect(self):
+        """each agency's one published number is the median component effect of its recent rows (sub-agency coefficient
+        plus the two rate terms), and the count of its component levels in the model"""
+        F, logit = self.card["_F"], self.card["_private_logit"]
+        (b_lo, m_lo, s_lo), (b_mo, m_mo, s_mo) = logit["cont"]["lo_subagency"], logit["cont"]["mo_subagency"]
+        comp = self.card["calculator"]["typical"]["component_by_agency"]
+        self.assertEqual(set(comp), {DOD, GSA_FULL, "Department of Tests"})
+        for ag, c in comp.items():
+            rows = F[(F.agency == ag) & (F.posted_fy >= 2024)]
+            eff = sorted(logit["cat"]["subagency"].get(v, 0.0) + b_lo * (lo - m_lo) / s_lo + b_mo * (mo - m_mo) / s_mo
+                         for v, lo, mo in zip(rows.subagency, rows.lo_subagency, rows.mo_subagency))
+            self.assertAlmostEqual(c["effect"], eff[(len(eff) - 1) // 2], places=12)
+            self.assertEqual(c["component_levels"], sum(v.startswith(ag + " | ") for v in logit["cat"]["subagency"]))
+            self.assertEqual(set(c), {"effect", "component_levels"})
+        self.assertEqual(comp["Department of Tests"]["component_levels"], 1)            # its second component has no coefficient
 
     def test_calculator_is_not_counted_against_the_cap(self):
         write_v2(self.res, self.card, coefficients=False)
@@ -383,11 +414,18 @@ class PublishedCalculator(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp, ignore_errors=True)
 
-    def test_published_files_name_no_component(self):
+    def test_published_files_have_no_component_row(self):
         with open(os.path.join(REPO, "results", "model_v2_coefficients.csv"), encoding="utf-8", newline="") as f:
-            levels = [r["level"] for r in csv.DictReader(f) if r["feature"] == "subagency"]
-        self.assertTrue(levels and all(names_no_component(v) for v in levels))
-        self.assertTrue(all(names_no_component(v) for v in self.card["calculator"]["logit"]["cat"]["subagency"]))
+            rows = list(csv.DictReader(f))
+        self.assertTrue(rows)
+        self.assertFalse([r for r in rows if r["feature"] == "subagency"])
+        self.assertNotIn("subagency", self.card["calculator"]["logit"]["cat"])
+        for c in self.card["calculator"]["typical"]["component_by_agency"].values():
+            self.assertEqual(set(c), {"effect", "component_levels"})
+        text = json.dumps(self.card)
+        self.assertNotIn("withheld", text)
+        self.assertNotIn("component 1", text)
+        self.assertEqual(self.card["components"], m30.COMPONENT_NOTE)
         self.assertNotIn("subtier", self.card.get("crosswalk_sam_to_usaspending") or {})
 
     def test_present_small_and_private(self):
@@ -400,11 +438,13 @@ class PublishedCalculator(unittest.TestCase):
         sts = cases(self.calc, 60)
         rows = [calc_features(self.calc, s) for s in sts]
         p_page = np.array([calc_predict(self.calc, x) for x in rows])
-        p_real = fl.predict(model_from_card(self.card), feature_frame(rows))
+        p_real = fl.predict(model_from_card(self.card), lib_frame(self.card["calculator"]["logit"], rows))
         self.assertLess(np.abs(p_real - p_page).max(), 1e-6)
 
     def test_exact_math_against_the_private_model_file(self):
-        """Only where the private model file exists (the maintainer's machine)."""
+        """Only where the private model file exists (the maintainer's machine).  Every other coefficient and the correction
+        of the private file against the page; the component part is the published typical effect (how the writer computes
+        it is checked by SyntheticCalculator.test_typical_component_effect)."""
         try:
             from common import DATA
         except Exception:                                          # pragma: no cover
@@ -413,11 +453,12 @@ class PublishedCalculator(unittest.TestCase):
         if not os.path.exists(path):
             self.skipTest("the private model file is not on this machine")
         model = fl.load_model(path)
-        model["logit"] = m30.public_logit(model["logit"])          # the same coefficients, components relabelled as published
+        self.assertGreater(len(model["logit"]["cat"]["subagency"]), 1)    # the private file keeps every component
+        model["logit"] = with_typical_components(model["logit"], self.card["calculator"]["typical"]["component_by_agency"])
         sts = cases(self.calc, 60)
         rows = [calc_features(self.calc, s) for s in sts]
         p_page = np.array([calc_predict(self.calc, x) for x in rows])
-        self.assertLess(np.abs(fl.predict(model, feature_frame(rows)) - p_page).max(), 1e-6)
+        self.assertLess(np.abs(fl.predict(model, lib_frame(model["logit"], rows)) - p_page).max(), 1e-6)
 
 
 if __name__ == "__main__":

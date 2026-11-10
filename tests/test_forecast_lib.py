@@ -574,6 +574,41 @@ class TestTrainingHelpers(unittest.TestCase):
         self.assertEqual(len(a), self.m30.MAX_FIT_ROWS)
         self.assertTrue(np.array_equal(self.m30.capped(rows[:10], 7), rows[:10]))
 
+    def test_nested_calibration_uses_only_earlier_information(self):
+        """the correction for test year t (one for all sectors, and by sector) must not move when anything that was unknown
+        at the start of fiscal year t changes: outcomes of year t and later, and earlier rows whose award came later."""
+        m = self.m30
+        rng = np.random.default_rng(9)
+        years = list(range(2018, 2025))
+        n = 3000
+        fy = np.repeat(years, n)
+        sector = rng.choice([fl.DOD, "civilian except GSA", "GSA", "unknown"], len(fy), p=[0.6, 0.33, 0.02, 0.05])
+        x = rng.normal(-1.0, 1.0, len(fy))
+        slope = np.where(sector == fl.DOD, 1.3, 0.8)
+        oot = pd.DataFrame({"test_fy": fy, "sector_known": sector, "p": 1 / (1 + np.exp(-x)),
+                            "y": (rng.random(len(fy)) < 1 / (1 + np.exp(-(0.2 + slope * x)))).astype(float),
+                            "award_date": pd.to_datetime([f"{f - 1}-10-01" for f in fy]) + pd.to_timedelta(rng.integers(0, 700, len(fy)), "D")})
+        t = 2023
+        late = (oot.test_fy >= t) | (oot.award_date >= m.fy_start(t))
+        self.assertTrue((late & (oot.test_fy < t)).any())                   # some earlier rows were awarded after FY t began
+        changed = oot.copy()
+        changed.loc[late, "y"] = 1.0 - changed.loc[late, "y"]
+        for by_sector in (False, True):
+            a = m.nested_calibration(oot, "p", years, by_sector=by_sector)
+            b = m.nested_calibration(changed, "p", years, by_sector=by_sector)
+            now = (oot.test_fy <= t).to_numpy()
+            np.testing.assert_array_equal(a[now], b[now])
+            self.assertFalse(np.array_equal(a[~now], b[~now]))              # later years do see the changed outcomes
+        # the correction by sector really is by sector: Defense gets a steeper slope than civilian rows
+        cal = m.fit_calibration(oot.p, oot.y, oot.sector_known)
+        self.assertGreater(cal["by_group"]["Defense"]["b"], cal["by_group"]["civilian"]["b"] + 0.3)
+
+    def test_decay_weights_do_not_depend_on_the_anchor_year(self):
+        """the evaluation measures age from the year before the test year, --train from the newest posting year; after the
+        rescaling to a mean of 1 the anchor drops out, so both give the same weights to the same rows."""
+        fy = np.array([2010, 2015, 2020, 2021, 2024, 2024])
+        np.testing.assert_allclose(self.m30.decay_weights(fy, 2024, 3), self.m30.decay_weights(fy, 2031, 3), rtol=1e-12)
+
 
 if __name__ == "__main__":
     unittest.main()

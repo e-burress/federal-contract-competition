@@ -767,10 +767,11 @@ def shipped_model_name(card):
 
 # ---- the what-if calculator of the forecast model ---------------------------------------------------------------------
 # The page rebuilds forecast_lib.predict for one hypothetical solicitation: the linear predictor (intercept + category
-# coefficients + b * (x - mean) / sd + flag coefficients), then expit, then the correction by sector group.
-CALC_CATS = ("sector", "agency", "subagency", "setaside", "notice_type", "sol_letter", "pscg", "naics3", "month")
+# coefficients + b * (x - mean) / sd + flag coefficients + the agency's typical component effect), then expit, then the
+# correction by sector group.
+CALC_CATS = ("sector", "agency", "setaside", "notice_type", "sol_letter", "pscg", "naics3", "month")
 CALC_SECTORS = ("civilian except GSA", "GSA", "Department of Defense")
-CALC_UNNAMED = ("(name withheld)", "component without its own coefficient")   # how the card writes a component (no names)
+CALC_COMPONENT = ("lo_subagency", "mo_subagency")    # inside the one typical component effect per agency, not page inputs
 SETASIDE_LABELS = {"none": "No set-aside", "small business": "Small business", "8(a)": "8(a)", "HUBZone": "HUBZone", "SDVOSB": "SDVOSB",
                    "WOSB": "WOSB/EDWOSB", "VOSB": "VOSB", "other": "Other set-aside"}
 # industry labels: the official 2022 NAICS subsector titles (reference/naics3_titles.csv, from the Census Bureau's code file);
@@ -815,7 +816,8 @@ def build_calculator(rd, card, ref=None):
     """Everything the what-if calculator needs, or None.  Needs the card's 'calculator' block (scripts/30_model_v2.py --train)
     and the public coefficient table, and the two must describe the same model (each published coefficient equal to the card's
     full-precision one rounded to 4 places).  Agency level or coarser: office history appears only as medians by sector, and the
-    component (sub-agency) only as the unnamed typical component of each agency.  A card that names a component gives None."""
+    component (sub-agency) only as one typical component effect per agency.  A card with any component row (a sub-agency table
+    in its coefficients, named or unnamed) gives None."""
     calc = card.get("calculator") if isinstance(card, dict) else None
     coef_rows = rd.csv("model_v2_coefficients.csv")
     if not isinstance(calc, dict) or not coef_rows or not isinstance(calc.get("logit"), dict):
@@ -837,15 +839,10 @@ def build_calculator(rd, card, ref=None):
     groups = {s: g["group"] for g in cal.get("by_sector_group") or [] for s in g.get("sectors", [])}
     by = {g["group"]: [g["a"], g["b"]] for g in cal.get("by_sector_group") or []}
     comp = typ.get("component_by_agency") or {}
-    agencies = [a for a in cats.get("agency", {}) if a in typ.get("agency", {}) and isinstance(comp.get(a), dict)]
-
-    def unnamed(level):
-        ag, _, sub = str(level).partition(" | ")
-        return level == "unknown" or sub == ag or sub.endswith(CALC_UNNAMED)
-    if not all(unnamed(lv) for lv in logit.get("cat", {}).get("subagency", {})) or not all(unnamed(comp[a].get("subagency")) for a in agencies):
-        return None                                         # a component is named: publish no calculator
-    used = {comp[a]["subagency"] for a in agencies}
-    cats["subagency"] = {lv: b for lv, b in cats.get("subagency", {}).items() if lv in used}
+    if "subagency" in logit.get("cat", {}):
+        return None                                         # a component row is published: publish no calculator
+    agencies = [a for a in cats.get("agency", {}) if a in typ.get("agency", {}) and isinstance(comp.get(a), dict)
+                and isinstance(comp[a].get("effect"), (int, float))]
 
     def strip(d, keys):
         return {k: d[k] for k in keys if k in d}
@@ -853,14 +850,14 @@ def build_calculator(rd, card, ref=None):
     out = {
         "years": calc.get("years"),
         "b0": round(logit["intercept"], 10), "cat": cats,
-        "cont": {f: [round(v, 10) for v in bms] for f, bms in logit.get("cont", {}).items()},
+        "cont": {f: [round(v, 10) for v in bms] for f, bms in logit.get("cont", {}).items() if f not in CALC_COMPONENT},
         "bin": {f: round(b, 10) for f, b in logit.get("bin", {}).items()},
         "cal": {"a": cal["a_pooled"], "b": cal["b_pooled"], "groups": groups, "by": by}, "eps": 1e-4,
         "typ": {"overall": strip(typ.get("overall", {}), ["lo_all"]),
                 "office": {s: strip(typ.get("office_by_sector", {}).get(s, {}), office_f) for s in CALC_SECTORS
                            if s in typ.get("office_by_sector", {})},
                 "agency": {a: strip(typ["agency"][a], ["lo_agency"]) for a in agencies},
-                "comp": {a: strip(comp[a], ["subagency", "lo_subagency", "mo_subagency"]) for a in agencies},
+                "comp": {a: {"effect": round(comp[a]["effect"], 10)} for a in agencies},
                 "pscg": {lv: strip(v, ["lo_pscg", "lo_psc4"]) for lv, v in typ.get("pscg", {}).items() if lv in cats.get("pscg", {})},
                 "naics3": {lv: strip(v, ["lo_naics", "log_depth", "depth_missing", "naics_missing"]) for lv, v in typ.get("naics3", {}).items()
                            if lv in cats.get("naics3", {})}},

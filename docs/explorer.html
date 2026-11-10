@@ -1797,7 +1797,7 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
   function sectorOf(a) { return a === DOD ? DOD : a === GSA_FULL ? "GSA" : "civilian except GSA"; }
   function has(o, k) { return Object.prototype.hasOwnProperty.call(o || {}, k); }
   function keys(o) { return Object.keys(o || {}); }
-  /* components below agency level are not named: each agency gets its typical component (T.comp), shown greyed */
+  /* components below agency level are not published: each agency gets one typical component effect (T.comp), shown greyed */
   var agencies = keys(T.agency).filter(function (a) { return has(T.office, sectorOf(a)) && has(T.comp, a); }).sort();
   if (!agencies.length || !has(T.overall, "lo_all")) return;
   function codeSort(a, b) { var na = /^\d/.test(a), nb = /^\d/.test(b); return na !== nb ? (na ? -1 : 1) : (a < b ? -1 : a > b ? 1 : 0); }
@@ -1822,11 +1822,10 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
 
   /* the feature row of forecast_lib.build_features for the chosen circumstances (history inputs: typical values) */
   function features(st) {
-    var s = sectorOf(st.agency), x = { sector: s, agency: st.agency, subagency: T.comp[st.agency].subagency, setaside: st.setaside, notice_type: st.notice_type,
+    var s = sectorOf(st.agency), x = { sector: s, agency: st.agency, component: T.comp[st.agency].effect, setaside: st.setaside, notice_type: st.notice_type,
       sol_letter: st.sol_letter, pscg: st.pscg, naics3: st.naics3, month: st.month };
     function put(o) { keys(o).forEach(function (k) { x[k] = o[k]; }); }
     put(T.overall); put(T.office[s]); put(T.agency[st.agency]);
-    x.lo_subagency = T.comp[st.agency].lo_subagency; x.mo_subagency = T.comp[st.agency].mo_subagency;
     put(T.pscg[st.pscg]); put(T.naics3[st.naics3]);
     var w = st.window === "none" ? NaN : +st.window, good = isFinite(w) && w > 0 && w <= 365;
     x.log_window = Math.log1p(good ? Math.min(Math.max(w, 0), 120) : 14);
@@ -1843,6 +1842,7 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
     keys(Q.cat).forEach(function (f) { var v = has(Q.cat[f], x[f]) ? Q.cat[f][x[f]] : 0; terms[f] = v; lp += v; });
     keys(Q.cont).forEach(function (f) { var c = Q.cont[f], v = c[0] * (x[f] - c[1]) / c[2]; terms[f] = v; lp += v; });
     keys(Q.bin).forEach(function (f) { var v = Q.bin[f] * x[f]; terms[f] = v; lp += v; });
+    terms.component = x.component; lp += x.component;
     var g = (Q.cal.groups || {})[x.sector], ab = g && (Q.cal.by || {})[g] ? Q.cal.by[g] : [Q.cal.a, Q.cal.b];
     var raw = expit(lp);
     return { p: expit(ab[0] + ab[1] * logit(raw)), raw: raw, lp: lp, terms: terms };
@@ -1853,7 +1853,7 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
   /* what each bar adds up: one choice of the visitor, or one fixed typical value */
   var GROUPS = [
     { name: "Agency", f: ["sector", "agency", "lo_agency"], show: function (s) { return agencyShortName(s.agency); } },
-    { name: "Typical component", fixed: true, f: ["subagency", "lo_subagency", "mo_subagency"],
+    { name: "Typical component", fixed: true, f: ["component"],
       show: function (s) { return "fixed: the typical component of " + agencyShortName(s.agency) + " (not named)"; } },
     { name: "Set-aside", f: ["setaside"], show: function (s) { return (L.setaside || {})[s.setaside] || s.setaside; } },
     { name: "Kind of notice", f: ["notice_type", "sol_letter"], show: function (s) { return (NOTICE[s.notice_type] || s.notice_type) + ", " + (LETTER[s.sol_letter] || s.sol_letter); } },
@@ -1946,9 +1946,9 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
   $("m2-calc-scale").textContent = "Each bar shows how far one choice moves the forecast, compared with the model's reference point (the average value, or the rarer levels pooled together). " +
     "Orange pushes the chance of a single offer up, blue pushes it down. The numbers are on the log-odds scale the model adds up: +0.7 roughly doubles the odds, and −0.7 roughly halves them. " +
     "A final correction for the sector then stretches or shrinks the total.";
-  var note = ["Components below agency level are not named, so the calculator uses the typical component of the chosen agency. " +
+  var note = ["Effects of components below agency level are part of the model but are not published, so the calculator uses the typical component effect of the chosen agency. " +
     "The buying office's own past single-offer rate and volume are office-level data and stay private. " +
-    "Here they are set to the median for the sector. The recent rates of the agency, component, product group and industry are set to their medians too, all from solicitations posted in " + yrs + "."];
+    "Here they are set to the median for the sector. The recent rates of the agency, product group and industry are set to their medians too, all from solicitations posted in " + yrs + "."];
   if (Q.oot && Q.oot.auc) note.push("Tested on years it had not seen, the model scored an AUC of " + Q.oot.auc[0].toFixed(2) + " to " + Q.oot.auc[1].toFixed(2) +
     " in fiscal years " + Q.oot.years[0] + " to " + Q.oot.years[1] + " (0.5 is a coin flip, 1.0 is perfect).");
   note.push("It knows only what is on the first notice and in past awards. It cannot see the details of the requirement or which companies are able to bid, and it covers only solicitations that end in a competed award.");

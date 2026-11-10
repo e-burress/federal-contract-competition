@@ -22,7 +22,7 @@ Three steps (run them in this order; --all runs all three)
   --train            Final model on ALL resolved solicitations (Newton's method, 50,000 rows at a time).  The calibration is
                      fitted on the held-out predictions of the last three test years.  Writes <DATA>/models/model_v2.json (PRIVATE: everything needed to score, with
                      office-level history) and the public results/model_v2_card.json, results/model_v2_coefficients.csv
-                     (no office-level rows) and figures/model_v2.png.
+                     (no office or component rows) and figures/model_v2.png.
 
 Which model is shipped (rules fixed in this file, applied to the out-of-time results)
   Rule 1, the logistic candidates (written down on 10 November 2026, before any candidate below was fitted).
@@ -649,10 +649,11 @@ def fit_calibration(p, y, sector=None):
     return cal
 
 
-def nested_calibration(oot, col, years, by_sector=False):
+def nested_calibration(oot, col, years, by_sector=False, fits=None):
     """calibrated copy of column `col`: for test year t the correction is fitted on held-out predictions of the (at most
     CAL_YEARS) earlier test years, using only solicitations whose award was dated before fiscal year t.
-    by_sector: the correction by sector group (fit_calibration), keyed on the sector known on the posting day."""
+    by_sector: the correction by sector group (fit_calibration), keyed on the sector known on the posting day.
+    fits: an optional dictionary that receives {t: the correction used for test year t}."""
     out = oot[col].to_numpy(float).copy()
     for t in years:
         prev = [u for u in years if u < t][-CAL_YEARS:]
@@ -661,6 +662,37 @@ def nested_calibration(oot, col, years, by_sector=False):
         if len(fit) >= MIN_CAL_ROWS and fit.y.nunique() == 2:
             cal = fit_calibration(fit[col].to_numpy(float), fit.y.to_numpy(float), fit.sector_known.to_numpy(object) if by_sector else None)
             out[now] = fl.apply_calibration(out[now], cal, oot.sector_known.to_numpy(object)[now] if by_sector else None)
+            if fits is not None:
+                fits[t] = cal
+    return out
+
+
+def defense_limit(oot, col, raw_col, years, cal, by_sector):
+    """The limits of the shipped Defense correction, from the data (sentences for the card's caveats): how the out-of-time
+    Defense forecasts above 0.7 did on the held-out years behind the correction, and whether the shipped Defense slope is
+    steeper than every Defense slope used in the out-of-time evaluation."""
+    out = []
+    held = oot[oot.test_fy.isin(years[-CAL_YEARS:]) & (oot.sector_known == fl.DOD) & oot[col].notna()]
+    top = held[held[col] > 0.7]
+    span = f"FY{years[-CAL_YEARS:][0]} to FY{years[-1]}"
+    if len(top):
+        out.append(f"On the held-out years behind the correction ({span}), Defense forecasts above 0.7 averaged {top[col].mean():.2f} "
+                   f"and came true {top.y.mean():.2f} of the time ({len(top):,} solicitations)."
+                   + (" So the highest Defense forecasts run high." if top[col].mean() > top.y.mean() + 0.01 else
+                      " So the highest Defense forecasts run low." if top[col].mean() < top.y.mean() - 0.01 else ""))
+    if not cal:
+        return out
+    g = fl.CAL_GROUPS.get(fl.DOD)
+    shipped_b = (cal.get("by_group") or {}).get(g, cal)["b"]
+    fits = {}
+    nested_calibration(oot, raw_col, years, by_sector=by_sector, fits=fits)
+    used = [(c.get("by_group") or {}).get(g, c)["b"] for c in fits.values()]
+    if used and shipped_b > max(used):
+        out.append(f"The shipped Defense correction (slope {shipped_b:.2f}) is steeper than any used in the out-of-time "
+                   f"evaluation (at most {max(used):.2f}). So the published scores do not fully cover it.")
+    elif used:
+        out.append(f"The shipped Defense correction (slope {shipped_b:.2f}) is within the range used in the out-of-time "
+                   f"evaluation ({min(used):.2f} to {max(used):.2f}).")
     return out
 
 
@@ -935,41 +967,22 @@ def choose_model(ev, oot, years):
     return kind, cand, reasons, tab
 
 
-WITHHELD_NOTE = "Component name withheld: published results name nothing below agency level (the top-tier agency)."
-POOLED_COMPONENT = "component without its own coefficient"
-
-
-def public_subagency_labels(levels):
-    """{sub-agency level: public label}.  A level that names a component ("Department of Defense | Defense Logistics Agency")
-    becomes "<agency> | component <k> (name withheld)"; k counts within the agency in an order set by a seeded hash of the
-    name, so it follows neither size nor the alphabet.  "unknown" and "<agency> | <the same agency>" name no component and stay."""
-    import hashlib
-    out, by_agency = {}, {}
-    for lv in levels:
-        ag, _, sub = str(lv).partition(" | ")
-        if not sub or sub == ag:
-            out[lv] = lv
-        else:
-            by_agency.setdefault(ag, []).append(lv)
-    for ag, lvs in by_agency.items():
-        lvs = sorted(lvs, key=lambda v: hashlib.sha256(f"{SEED}|{v}".encode("utf-8")).hexdigest())
-        for k, lv in enumerate(lvs, 1):
-            out[lv] = f"{ag} | component {k} (name withheld)"
-    return out
+COMPONENT_NOTE = "Component (sub-agency) effects are part of the model but are not published."
 
 
 def public_logit(logit):
-    """the coefficients with the sub-agency levels renamed by public_subagency_labels (the private model keeps the names)"""
-    names = public_subagency_labels(list(logit["cat"].get("subagency", {})))
-    cat = {c: ({names[lv]: b for lv, b in t.items()} if c == "subagency" else dict(t)) for c, t in logit["cat"].items()}
-    return {**logit, "cat": cat}
+    """the coefficients without the sub-agency (component) table.  No public file carries a row for a component, named or
+    unnamed: unnamed labels did not protect the names (see the review of 10 November 2026), because coefficients published
+    with names in earlier versions can be matched to them.  The private model file keeps every component; the calculator gets
+    one typical component effect per agency instead (calculator_card)."""
+    return {**logit, "cat": {c: dict(t) for c, t in logit["cat"].items() if c != "subagency"}}
 
 
 def coefficient_table(logit):
-    """the public coefficient table; pass public_logit(logit) so that no component is named"""
+    """the public coefficient table.  It never has a row for a component (sub-agency), even when given the private model."""
     block_of = {c: b for b, (cols, _) in fl.BLOCKS.items() for c in cols}
     rows = [{"feature": "(intercept)", "level": "", "type": "intercept", "block": "", "coefficient": logit["intercept"]}]
-    for c, table in logit["cat"].items():
+    for c, table in public_logit(logit)["cat"].items():
         rows += [{"feature": c, "level": lv, "type": "category level (against the pooled other levels)", "block": block_of.get(c, ""),
                   "coefficient": b} for lv, b in table.items()]
     for c, (b, mean, sd) in logit["cont"].items():
@@ -979,7 +992,6 @@ def coefficient_table(logit):
         rows.append({"feature": c, "level": "yes", "type": "flag", "block": block_of.get(c, ""), "coefficient": b})
     out = pd.DataFrame(rows)
     out["odds_ratio"] = np.exp(out.coefficient)
-    out["note"] = np.where(out.level.astype(str).str.endswith("(name withheld)"), WITHHELD_NOTE, "")
     out = out.reindex(out.coefficient.abs().sort_values(ascending=False, kind="mergesort").index)
     out[["coefficient", "odds_ratio"]] = out[["coefficient", "odds_ratio"]].round(4)
     return out
@@ -996,16 +1008,16 @@ def calculator_card(F, logit, last_fy):
     medians of the training rows (the last CALC_YEARS posting years), and never below agency level:
       office history (8 features)                -> median by sector (a typical buying office of the sector)
       lo_agency                                  -> median by agency
-      subagency, lo_subagency, mo_subagency      -> the typical component of the agency: the training row (recent rows of the
-                                                    agency) whose component effect (sub-agency coefficient + the two rate terms)
-                                                    is the median; its component is published unnamed (public_subagency_labels)
+      subagency, lo_subagency, mo_subagency      -> ONE number per agency, the typical component effect: the median over the
+                                                    agency's recent training rows of (sub-agency coefficient + the two rate
+                                                    terms), and the number of component levels the model has for the agency.
+                                                    No component is published, named or unnamed (public_logit)
       lo_pscg, lo_psc4                           -> median by product or service group
       lo_naics, log_depth, depth_missing, naics_missing -> median by 3-digit industry
       lo_all                                     -> median of all recent rows
-    Also the full-precision coefficients (the public coefficient table rounds them to 4 places; components unnamed) and the
+    Also the full-precision coefficients (the public coefficient table rounds them to 4 places; no component table) and the
     most common level of each input (the calculator's starting point).  Agency level or coarser: no office codes, numbers,
     companies or component names."""
-    names = public_subagency_labels(list(logit["cat"].get("subagency", {})))
     pub = public_logit(logit)
     recent = (F.posted_fy >= last_fy - CALC_YEARS + 1).to_numpy()
 
@@ -1042,8 +1054,7 @@ def calculator_card(F, logit, last_fy):
         lo, mo = rows["lo_subagency"].to_numpy(float), rows["mo_subagency"].to_numpy(float)
         effect = np.array([sub_coef.get(v, 0.0) for v in sub]) + b_lo * (lo - m_lo) / s_lo + b_mo * (mo - m_mo) / s_mo
         i = int(np.argsort(effect, kind="mergesort")[(len(effect) - 1) // 2])
-        label = names.get(sub[i], f"{ag} | {POOLED_COMPONENT}")
-        components[ag] = {"subagency": label, "lo_subagency": round(float(lo[i]), 4), "mo_subagency": round(float(mo[i]), 4)}
+        components[ag] = {"effect": float(effect[i]), "component_levels": sum(str(v).startswith(ag + " | ") for v in sub_coef)}
     pscg = by_group("pscg", ["lo_pscg", "lo_psc4"], levels=list(logit["cat"].get("pscg", {})))
     naics = by_group("naics3", ["lo_naics", "log_depth", "depth_missing", "naics_missing"], levels=list(logit["cat"].get("naics3", {})))
 
@@ -1060,7 +1071,8 @@ def calculator_card(F, logit, last_fy):
                     "(medians of the training rows) for the inputs that come from history. Office history is replaced by the "
                     "median of the sector, so the calculator shows a typical buying office of the sector, not any real one.",
             "years": [int(last_fy - CALC_YEARS + 1), int(last_fy)], "rows_recent": int(recent.sum()),
-            "component_note": WITHHELD_NOTE,
+            "component_note": COMPONENT_NOTE + " Each agency gets one typical component effect (the median over its "
+                                               "recent solicitations) and the number of component levels the model has for it.",
             "logit": pub, "typical": {"overall": overall, "office_by_sector": sectors, "agency": agencies, "component_by_agency": components,
                                         "pscg": pscg, "naics3": naics},
             "modes": modes}
@@ -1072,7 +1084,7 @@ def train():
         say("the evaluation is missing or older than the training table: running --evaluate first")
         evaluate()
     ev = pd.read_csv(EVAL_CSV, dtype={"test_fy": str})
-    oot = pd.read_parquet(OOT_PATH, columns=["test_fy", "y", "sector", "sector_known", "p_gbm", "p_gbm_cal"]
+    oot = pd.read_parquet(OOT_PATH, columns=["test_fy", "y", "sector", "sector_known", "award_date", "p_gbm", "p_gbm_cal"]
                           + sorted({c for r in RAW_MODELS for c in (r["col"], r["col"] + "_cal", r["col"] + "_sec")}))
     summary = read_json(SUMMARY_PATH)
     years = sorted(int(v) for v in oot.test_fy.unique())
@@ -1109,6 +1121,7 @@ def train():
                                 "fitted_on": f"held-out predictions for test years {years[-CAL_YEARS:]}"}
     else:
         model["calibration"] = None
+    limits = defense_limit(oot, {"logit": cand["col"], "gbm": "p_gbm_cal"}[kind], raw_col, years, model["calibration"], by_sector)
     n_rows, share, mean_fit = int(len(F)), float(y.mean()), float(fl.predict(model, F).mean())
     posting_years = [int(F.posted_fy.min()), int(F.posted_fy.max())]
     calculator = calculator_card(F, logit, last_fy) if kind == "logit" else None     # public aggregates (see calculator_card)
@@ -1131,7 +1144,7 @@ def train():
     say(f"final model: {kind}, {n_rows:,} rows, mean forecast {mean_fit:.3f}, single-offer share {share:.3f}; saved {MODEL_PATH} "
         f"({os.path.getsize(MODEL_PATH) / 1e6:.1f} MB)  [{time.time() - t0:.0f}s]")
 
-    coef = coefficient_table(public_logit(logit))                     # components unnamed (public_subagency_labels)
+    coef = coefficient_table(logit)                                   # no component rows (public_logit)
     coef.to_csv(COEF_CSV, index=False)
     by_year, by_sector, total = funnel_tables(summary)
     pooled = ev[(ev.test_fy == "pooled") & ~ev.model.str.contains("without")]
@@ -1224,6 +1237,7 @@ def train():
                                                  "model file only, because it names components below agency level.",
                                          "subtier_pairs": len((model["history"].get("crosswalk") or {}).get("subtier") or {}),
                                          "departments": len((model["history"].get("crosswalk") or {}).get("department") or {})},
+        "components": COMPONENT_NOTE,
         "private_files": "The model file, the training table and the history tables hold office-level history and stay in the private data folder. "
                          "This card, the coefficient table and the evaluation tables are at agency level or coarser.",
         "caveats": [
@@ -1235,6 +1249,7 @@ def train():
             "Defense data are published 90 days late; the two-quarter lag covers that.",
             "Single-offer outcomes became more predictable in recent years, mostly in Defense. A model fitted on many years and a "
             "correction fitted on three years lag behind such a drift; the out-of-time tables show how much.",
+            *limits,
             "Award years present when this card was built: " + ", ".join(str(v) for v in summary["award_years"]) + ". Rerun all three steps when more arrive."],
         "rerun": ["python -I scripts/30_model_v2.py --build-training", "python -I scripts/30_model_v2.py --evaluate", "python -I scripts/30_model_v2.py --train"],
         "peak_mb": {"build": summary.get("peak_mb"), "train": peak_mb()}}
