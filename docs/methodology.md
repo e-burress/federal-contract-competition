@@ -543,7 +543,7 @@ It fell clearly in 4, rose clearly in 0 and was unclear in 7 of 11 tests.
 **Model version 2** (`30_model_v2.py`, being built). Trained on every archived solicitation that can be matched to a competed award in the history tables, for every agency, with the outcome rule of `09_resolve_forecast.py`. Evaluation is rolling-origin: for each test year, train on solicitations posted and awarded before it and test on the solicitations posted in it, against simple baselines and version 1's feature set refitted. Which model is shipped follows rules fixed in the script. Public files are at agency level or coarser.
 
 <!-- auto:m-model-v2 -->
-
+- **Forecast model, version 2 (built November 10, 2026).** Trained on 656,878 solicitations from SAM.gov's archive that were matched to a competed award (award years FY2008–FY2021). Tested out of time on FY2009–FY2021, the shipped L2 logistic regression ranks solicitations with an AUC of 0.692 (0.496 for the sector-wide rate and 0.681 for version 1's features refitted), with a Brier score of 0.160 against 0.175 for the sector-wide rate and a calibration slope of 0.95 (1.00 is ideal). It is a risk indicator about markets, not a statement about anyone's conduct. Details: [`results/model_v2_card.json`](../results/model_v2_card.json).
 <!-- /auto:m-model-v2 -->
 
 ## 18. Known limitations

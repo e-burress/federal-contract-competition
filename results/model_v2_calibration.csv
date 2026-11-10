@@ -1,0 +1,109 @@
+model,sector,band,n,mean_forecast,observed_share,test_years
+logistic v2,all,0.00-0.05,22863,0.0363,0.0454,FY2009-FY2021
+logistic v2,all,0.05-0.10,79551,0.0771,0.0758,FY2009-FY2021
+logistic v2,all,0.10-0.15,108575,0.1254,0.1318,FY2009-FY2021
+logistic v2,all,0.15-0.20,109652,0.1748,0.1833,FY2009-FY2021
+logistic v2,all,0.20-0.30,173295,0.2466,0.2523,FY2009-FY2021
+logistic v2,all,0.30-0.40,93975,0.3428,0.3471,FY2009-FY2021
+logistic v2,all,0.40-0.50,36341,0.4411,0.4386,FY2009-FY2021
+logistic v2,all,0.50-0.70,18048,0.5687,0.5436,FY2009-FY2021
+logistic v2,all,0.70-1.00,2056,0.7678,0.7096,FY2009-FY2021
+logistic v2,civilian except GSA,0.00-0.05,10732,0.0353,0.0508,FY2009-FY2021
+logistic v2,civilian except GSA,0.05-0.10,26133,0.076,0.0807,FY2009-FY2021
+logistic v2,civilian except GSA,0.10-0.15,26726,0.1245,0.1375,FY2009-FY2021
+logistic v2,civilian except GSA,0.15-0.20,22567,0.174,0.1926,FY2009-FY2021
+logistic v2,civilian except GSA,0.20-0.30,33065,0.2468,0.2724,FY2009-FY2021
+logistic v2,civilian except GSA,0.30-0.40,20902,0.3455,0.3601,FY2009-FY2021
+logistic v2,civilian except GSA,0.40-0.50,12699,0.4446,0.4306,FY2009-FY2021
+logistic v2,civilian except GSA,0.50-0.70,8121,0.5696,0.5147,FY2009-FY2021
+logistic v2,civilian except GSA,0.70-1.00,587,0.7379,0.6337,FY2009-FY2021
+logistic v2,GSA,0.00-0.05,514,0.037,0.0739,FY2009-FY2021
+logistic v2,GSA,0.05-0.10,862,0.0724,0.087,FY2009-FY2021
+logistic v2,GSA,0.10-0.15,520,0.1233,0.1577,FY2009-FY2021
+logistic v2,GSA,0.15-0.20,353,0.1735,0.1756,FY2009-FY2021
+logistic v2,GSA,0.20-0.30,381,0.2455,0.2126,FY2009-FY2021
+logistic v2,GSA,0.30-0.40,163,0.3436,0.3006,FY2009-FY2021
+logistic v2,GSA,0.40-0.50,68,0.4395,0.3235,FY2009-FY2021
+logistic v2,GSA,0.50-0.70,6,0.5473,0.6667,FY2009-FY2021
+logistic v2,GSA,0.70-1.00,0,,,FY2009-FY2021
+logistic v2,Department of Defense,0.00-0.05,11617,0.0371,0.0393,FY2009-FY2021
+logistic v2,Department of Defense,0.05-0.10,52556,0.0777,0.0732,FY2009-FY2021
+logistic v2,Department of Defense,0.10-0.15,81329,0.1257,0.1298,FY2009-FY2021
+logistic v2,Department of Defense,0.15-0.20,86732,0.175,0.1809,FY2009-FY2021
+logistic v2,Department of Defense,0.20-0.30,139849,0.2465,0.2476,FY2009-FY2021
+logistic v2,Department of Defense,0.30-0.40,72910,0.342,0.3435,FY2009-FY2021
+logistic v2,Department of Defense,0.40-0.50,23574,0.4392,0.4433,FY2009-FY2021
+logistic v2,Department of Defense,0.50-0.70,9921,0.5681,0.5672,FY2009-FY2021
+logistic v2,Department of Defense,0.70-1.00,1469,0.7797,0.74,FY2009-FY2021
+logistic v2 (raw),all,0.00-0.05,27454,0.0355,0.048,FY2009-FY2021
+logistic v2 (raw),all,0.05-0.10,80339,0.0773,0.0754,FY2009-FY2021
+logistic v2 (raw),all,0.10-0.15,100624,0.1254,0.1306,FY2009-FY2021
+logistic v2 (raw),all,0.15-0.20,99071,0.1744,0.1804,FY2009-FY2021
+logistic v2 (raw),all,0.20-0.30,161996,0.2473,0.2429,FY2009-FY2021
+logistic v2 (raw),all,0.30-0.40,100193,0.3434,0.3264,FY2009-FY2021
+logistic v2 (raw),all,0.40-0.50,44282,0.442,0.4174,FY2009-FY2021
+logistic v2 (raw),all,0.50-0.70,26436,0.5736,0.5078,FY2009-FY2021
+logistic v2 (raw),all,0.70-1.00,3961,0.7653,0.6718,FY2009-FY2021
+logistic v2 (raw),civilian except GSA,0.00-0.05,13122,0.0345,0.0552,FY2009-FY2021
+logistic v2 (raw),civilian except GSA,0.05-0.10,26527,0.0754,0.0816,FY2009-FY2021
+logistic v2 (raw),civilian except GSA,0.10-0.15,25265,0.1245,0.1402,FY2009-FY2021
+logistic v2 (raw),civilian except GSA,0.15-0.20,20115,0.1738,0.1914,FY2009-FY2021
+logistic v2 (raw),civilian except GSA,0.20-0.30,29669,0.2469,0.265,FY2009-FY2021
+logistic v2 (raw),civilian except GSA,0.30-0.40,20450,0.3465,0.3421,FY2009-FY2021
+logistic v2 (raw),civilian except GSA,0.40-0.50,13521,0.446,0.4132,FY2009-FY2021
+logistic v2 (raw),civilian except GSA,0.50-0.70,11396,0.5764,0.491,FY2009-FY2021
+logistic v2 (raw),civilian except GSA,0.70-1.00,1467,0.7472,0.6169,FY2009-FY2021
+logistic v2 (raw),GSA,0.00-0.05,682,0.0356,0.0762,FY2009-FY2021
+logistic v2 (raw),GSA,0.05-0.10,751,0.0722,0.0839,FY2009-FY2021
+logistic v2 (raw),GSA,0.10-0.15,446,0.1244,0.1794,FY2009-FY2021
+logistic v2 (raw),GSA,0.15-0.20,308,0.1732,0.1688,FY2009-FY2021
+logistic v2 (raw),GSA,0.20-0.30,376,0.2438,0.1915,FY2009-FY2021
+logistic v2 (raw),GSA,0.30-0.40,194,0.341,0.3041,FY2009-FY2021
+logistic v2 (raw),GSA,0.40-0.50,86,0.4442,0.3256,FY2009-FY2021
+logistic v2 (raw),GSA,0.50-0.70,24,0.5401,0.2917,FY2009-FY2021
+logistic v2 (raw),GSA,0.70-1.00,0,,,FY2009-FY2021
+logistic v2 (raw),Department of Defense,0.00-0.05,13650,0.0365,0.0397,FY2009-FY2021
+logistic v2 (raw),Department of Defense,0.05-0.10,53061,0.0783,0.0722,FY2009-FY2021
+logistic v2 (raw),Department of Defense,0.10-0.15,74913,0.1257,0.1271,FY2009-FY2021
+logistic v2 (raw),Department of Defense,0.15-0.20,78648,0.1746,0.1777,FY2009-FY2021
+logistic v2 (raw),Department of Defense,0.20-0.30,131951,0.2475,0.2381,FY2009-FY2021
+logistic v2 (raw),Department of Defense,0.30-0.40,79549,0.3426,0.3224,FY2009-FY2021
+logistic v2 (raw),Department of Defense,0.40-0.50,30675,0.4403,0.4196,FY2009-FY2021
+logistic v2 (raw),Department of Defense,0.50-0.70,15016,0.5716,0.521,FY2009-FY2021
+logistic v2 (raw),Department of Defense,0.70-1.00,2494,0.776,0.7041,FY2009-FY2021
+gradient boosting,all,0.00-0.05,24004,0.0358,0.0602,FY2009-FY2021
+gradient boosting,all,0.05-0.10,86928,0.077,0.0955,FY2009-FY2021
+gradient boosting,all,0.10-0.15,101227,0.1248,0.1297,FY2009-FY2021
+gradient boosting,all,0.15-0.20,102684,0.1749,0.1768,FY2009-FY2021
+gradient boosting,all,0.20-0.30,176949,0.2474,0.2434,FY2009-FY2021
+gradient boosting,all,0.30-0.40,99280,0.3435,0.3488,FY2009-FY2021
+gradient boosting,all,0.40-0.50,36088,0.4408,0.4574,FY2009-FY2021
+gradient boosting,all,0.50-0.70,15602,0.5649,0.5495,FY2009-FY2021
+gradient boosting,all,0.70-1.00,1594,0.7597,0.7572,FY2009-FY2021
+gradient boosting,civilian except GSA,0.00-0.05,6252,0.0342,0.0413,FY2009-FY2021
+gradient boosting,civilian except GSA,0.05-0.10,19608,0.0771,0.0652,FY2009-FY2021
+gradient boosting,civilian except GSA,0.10-0.15,24467,0.1253,0.1071,FY2009-FY2021
+gradient boosting,civilian except GSA,0.15-0.20,23294,0.1745,0.1669,FY2009-FY2021
+gradient boosting,civilian except GSA,0.20-0.30,40994,0.248,0.2464,FY2009-FY2021
+gradient boosting,civilian except GSA,0.30-0.40,26867,0.3451,0.3472,FY2009-FY2021
+gradient boosting,civilian except GSA,0.40-0.50,13411,0.4425,0.4502,FY2009-FY2021
+gradient boosting,civilian except GSA,0.50-0.70,6311,0.5608,0.5498,FY2009-FY2021
+gradient boosting,civilian except GSA,0.70-1.00,328,0.7503,0.7561,FY2009-FY2021
+gradient boosting,GSA,0.00-0.05,122,0.0405,0.0656,FY2009-FY2021
+gradient boosting,GSA,0.05-0.10,690,0.0783,0.0884,FY2009-FY2021
+gradient boosting,GSA,0.10-0.15,726,0.1236,0.0854,FY2009-FY2021
+gradient boosting,GSA,0.15-0.20,473,0.1747,0.1522,FY2009-FY2021
+gradient boosting,GSA,0.20-0.30,524,0.2397,0.2061,FY2009-FY2021
+gradient boosting,GSA,0.30-0.40,244,0.3419,0.3033,FY2009-FY2021
+gradient boosting,GSA,0.40-0.50,70,0.4429,0.2571,FY2009-FY2021
+gradient boosting,GSA,0.50-0.70,18,0.5752,0.5556,FY2009-FY2021
+gradient boosting,GSA,0.70-1.00,0,,,FY2009-FY2021
+gradient boosting,Department of Defense,0.00-0.05,17630,0.0363,0.0669,FY2009-FY2021
+gradient boosting,Department of Defense,0.05-0.10,66630,0.077,0.1045,FY2009-FY2021
+gradient boosting,Department of Defense,0.10-0.15,76034,0.1247,0.1374,FY2009-FY2021
+gradient boosting,Department of Defense,0.15-0.20,78917,0.1751,0.1799,FY2009-FY2021
+gradient boosting,Department of Defense,0.20-0.30,135431,0.2472,0.2426,FY2009-FY2021
+gradient boosting,Department of Defense,0.30-0.40,72169,0.3429,0.3495,FY2009-FY2021
+gradient boosting,Department of Defense,0.40-0.50,22607,0.4397,0.4622,FY2009-FY2021
+gradient boosting,Department of Defense,0.50-0.70,9273,0.5677,0.5493,FY2009-FY2021
+gradient boosting,Department of Defense,0.70-1.00,1266,0.7622,0.7575,FY2009-FY2021

@@ -308,7 +308,7 @@ The scripts that created the sealed forecasts (10 and 10b) and the frozen foreca
 - **After award, not prices.** The after-award comparison (finding 8) measures obligations, scope changes, terminations and options, not prices. Extra obligations and scope changes are often legitimate.
 - **Forecast model version 2 is being built** on SAM.gov's archive files (`22_sam_archive.py`, `30_model_v2.py`). Until it is finished, the frozen October 2026 model above is the published one.
 <!-- auto:model-v2 -->
-
+- **Forecast model, version 2 (built November 10, 2026).** Trained on 656,878 solicitations from SAM.gov's archive that were matched to a competed award (award years FY2008–FY2021). Tested out of time on FY2009–FY2021, the shipped L2 logistic regression ranks solicitations with an AUC of 0.692 (0.496 for the sector-wide rate and 0.681 for version 1's features refitted), with a Brier score of 0.160 against 0.175 for the sector-wide rate and a calibration slope of 0.95 (1.00 is ideal). It is a risk indicator about markets, not a statement about anyone's conduct. Details: [`results/model_v2_card.json`](results/model_v2_card.json).
 <!-- /auto:model-v2 -->
 
 ## Responsible use

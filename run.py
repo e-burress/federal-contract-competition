@@ -82,6 +82,9 @@ STEPS = {
     "split-screen":        ("scripts/26_split_screen.py", [], False, "split-like purchase clusters: excess at each threshold over placebo lines"),
     "outcomes":            ("scripts/24_outcomes.py", [], False, "after award: single-offer versus multi-offer awards, from the history tables"),
     "threshold-scan":      ("scripts/27_threshold_scan.py", [], False, "pile-ups under every FAR dollar threshold since FY2008, with placebo values and before/after tests"),
+    "model-build":         ("scripts/30_model_v2.py", ["--build-training"], False, "forecast model v2: the labeled training table (needs the history and SAM archive tables)"),
+    "model-evaluate":      ("scripts/30_model_v2.py", ["--evaluate"], False, "forecast model v2: out-of-time evaluation against baselines"),
+    "model-train":         ("scripts/30_model_v2.py", ["--train"], False, "forecast model v2: final fit, private model file and public model card"),
     "score-f1":            ("scripts/09_resolve_forecast.py", [], True, "score the sealed single-offer forecast F1 (optional: path to the private file)"),
 }
 PIPELINES = {
@@ -89,6 +92,7 @@ PIPELINES = {
     "all":   ["download", "build-five", "build-civilian", "build-threshold", "atlas", "atlas-civilian", "quality", "threshold",
               "threshold-quarterly", "sql-check", "figures", "report", "dashboard", "explorer"],
     "daily": ["sam-snapshot", "live", "track-f2", "dashboard", "explorer"],
+    "model": ["model-build", "model-evaluate", "model-train"],
     "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "split-screen", "outcomes", "report", "dashboard", "explorer"],
 }
 # results that change every day, are not rebuilt by quick/all, or are never published (office level); `verify` skips them

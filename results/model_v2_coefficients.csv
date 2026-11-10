@@ -1,0 +1,356 @@
+feature,level,type,block,coefficient,odds_ratio
+(intercept),,intercept,,-2.0707,0.1261
+kw_sole,yes,flag,keywords,0.9054,2.4729
+pscg,55,category level (against the pooled other levels),product and industry,-0.8641,0.4214
+setaside,none,category level (against the pooled other levels),set-aside,0.7955,2.2157
+naics3,311,category level (against the pooled other levels),product and industry,0.6819,1.9775
+setaside,SDVOSB,category level (against the pooled other levels),set-aside,-0.6684,0.5125
+pscg,13,category level (against the pooled other levels),product and industry,0.6227,1.864
+naics3,492,category level (against the pooled other levels),product and industry,-0.6215,0.5371
+pscg,K,category level (against the pooled other levels),product and industry,0.6019,1.8256
+pscg,80,category level (against the pooled other levels),product and industry,-0.5974,0.5503
+agency,Agency for International Development,category level (against the pooled other levels),agency,-0.5901,0.5543
+subagency,Agency for International Development | Agency for International Development,category level (against the pooled other levels),agency,-0.5901,0.5543
+pscg,83,category level (against the pooled other levels),product and industry,-0.5749,0.5628
+pscg,Y,category level (against the pooled other levels),product and industry,-0.5682,0.5665
+pscg,84,category level (against the pooled other levels),product and industry,-0.5676,0.5669
+pscg,20,category level (against the pooled other levels),product and industry,0.5647,1.7589
+subagency,Department of the Interior | Bureau of Indian Affairs and Bureau of Indian Education,category level (against the pooled other levels),agency,0.5294,1.6978
+subagency,Department of Defense | Defense Information Systems Agency,category level (against the pooled other levels),agency,-0.512,0.5993
+naics3,236,category level (against the pooled other levels),product and industry,-0.5063,0.6027
+naics3,713,category level (against the pooled other levels),product and industry,0.5011,1.6506
+pscg,C,category level (against the pooled other levels),product and industry,-0.498,0.6077
+naics3,112,category level (against the pooled other levels),product and industry,0.4845,1.6234
+naics3,113,category level (against the pooled other levels),product and industry,0.4723,1.6037
+pscg,72,category level (against the pooled other levels),product and industry,-0.4416,0.643
+subagency,Department of the Treasury | Bureau of Engraving and Printing,category level (against the pooled other levels),agency,0.4382,1.5499
+pscg,12,category level (against the pooled other levels),product and industry,0.4362,1.5468
+naics3,484,category level (against the pooled other levels),product and industry,-0.4342,0.6478
+naics3,813,category level (against the pooled other levels),product and industry,0.4249,1.5294
+pscg,16,category level (against the pooled other levels),product and industry,0.4239,1.5279
+pscg,75,category level (against the pooled other levels),product and industry,-0.4208,0.6565
+naics3,212,category level (against the pooled other levels),product and industry,-0.4163,0.6595
+naics3,481,category level (against the pooled other levels),product and industry,0.4145,1.5137
+pscg,23,category level (against the pooled other levels),product and industry,-0.4118,0.6624
+pscg,J,category level (against the pooled other levels),product and industry,0.402,1.4949
+pscg,A,category level (against the pooled other levels),product and industry,0.3894,1.4761
+pscg,P,category level (against the pooled other levels),product and industry,-0.3892,0.6776
+naics3,561,category level (against the pooled other levels),product and industry,-0.3874,0.6788
+subagency,Department of the Interior | U.S. Geological Survey,category level (against the pooled other levels),agency,0.3872,1.4728
+subagency,"Department of Justice | Offices, Boards and Divisions",category level (against the pooled other levels),agency,0.3824,1.4658
+pscg,Z,category level (against the pooled other levels),product and industry,-0.3698,0.6909
+pscg,L,category level (against the pooled other levels),product and industry,0.3679,1.4447
+pscg,56,category level (against the pooled other levels),product and industry,-0.3621,0.6962
+subagency,Department of Energy | Federal Energy Regulatory Commission,category level (against the pooled other levels),agency,0.3564,1.4282
+naics3,238,category level (against the pooled other levels),product and industry,-0.3547,0.7014
+agency,United States Trade and Development Agency,category level (against the pooled other levels),agency,-0.3469,0.7069
+subagency,United States Trade and Development Agency | United States Trade and Development Agency,category level (against the pooled other levels),agency,-0.3469,0.7069
+naics3,711,category level (against the pooled other levels),product and industry,0.3466,1.4142
+naics3,511,category level (against the pooled other levels),product and industry,0.3426,1.4086
+agency,Department of the Interior,category level (against the pooled other levels),agency,0.3411,1.4066
+pscg,14,category level (against the pooled other levels),product and industry,0.34,1.405
+pscg,87,category level (against the pooled other levels),product and industry,0.3399,1.4048
+subagency,Department of Agriculture | Natural Resources Conservation Service,category level (against the pooled other levels),agency,-0.3385,0.7129
+subagency,Department of State | Department of State,category level (against the pooled other levels),agency,-0.3382,0.713
+naics3,622,category level (against the pooled other levels),product and industry,-0.3362,0.7145
+pscg,53,category level (against the pooled other levels),product and industry,-0.3331,0.7167
+pscg,40,category level (against the pooled other levels),product and industry,-0.3304,0.7187
+naics3,922,category level (against the pooled other levels),product and industry,0.3262,1.3856
+naics3,325,category level (against the pooled other levels),product and industry,-0.3161,0.729
+subagency,Department of Defense | Defense Logistics Agency,category level (against the pooled other levels),agency,0.3108,1.3645
+naics3,444,category level (against the pooled other levels),product and industry,0.3006,1.3507
+pscg,G,category level (against the pooled other levels),product and industry,0.2954,1.3437
+naics3,562,category level (against the pooled other levels),product and industry,0.2914,1.3383
+naics3,unknown,category level (against the pooled other levels),product and industry,-0.2882,0.7496
+subagency,Department of Health and Human Services | Food and Drug Administration,category level (against the pooled other levels),agency,0.287,1.3324
+naics3,611,category level (against the pooled other levels),product and industry,0.2862,1.3314
+agency,Department of Veterans Affairs,category level (against the pooled other levels),agency,0.2835,1.3278
+subagency,Department of Veterans Affairs | Department of Veterans Affairs,category level (against the pooled other levels),agency,0.2835,1.3278
+subagency,Department of Homeland Security | U.S. Secret Service,category level (against the pooled other levels),agency,0.2722,1.3129
+pscg,41,category level (against the pooled other levels),product and industry,0.2643,1.3026
+pscg,79,category level (against the pooled other levels),product and industry,-0.2641,0.7679
+subagency,Department of Homeland Security | Federal Emergency Management Agency,category level (against the pooled other levels),agency,-0.2601,0.771
+pscg,46,category level (against the pooled other levels),product and industry,0.2556,1.2913
+subagency,Department of Defense | Defense Media Activity,category level (against the pooled other levels),agency,0.2542,1.2895
+pscg,X,category level (against the pooled other levels),product and industry,0.2536,1.2886
+pscg,29,category level (against the pooled other levels),product and industry,-0.2529,0.7765
+subagency,Department of Commerce | National Oceanic and Atmospheric Administration,category level (against the pooled other levels),agency,0.2517,1.2862
+naics3,623,category level (against the pooled other levels),product and industry,0.2502,1.2843
+pscg,U,category level (against the pooled other levels),product and industry,0.2502,1.2842
+pscg,24,category level (against the pooled other levels),product and industry,-0.2495,0.7792
+pscg,44,category level (against the pooled other levels),product and industry,0.2449,1.2774
+agency,Department of Energy,category level (against the pooled other levels),agency,0.2439,1.2763
+agency,Department of Health and Human Services,category level (against the pooled other levels),agency,0.2386,1.2695
+pscg,7E,category level (against the pooled other levels),product and industry,-0.2381,0.7881
+subagency,Department of Homeland Security | Office of Procurement Operations,category level (against the pooled other levels),agency,-0.2378,0.7884
+pscg,77,category level (against the pooled other levels),product and industry,-0.2371,0.7889
+pscg,70,category level (against the pooled other levels),product and industry,-0.2352,0.7904
+subagency,Department of Homeland Security | U.S. Customs and Border Protection,category level (against the pooled other levels),agency,0.2322,1.2613
+pscg,19,category level (against the pooled other levels),product and industry,0.2319,1.261
+subagency,Department of Defense | Defense Microelectronics Activity,category level (against the pooled other levels),agency,0.2314,1.2604
+pscg,7B,category level (against the pooled other levels),product and industry,-0.2292,0.7952
+agency,Department of Justice,category level (against the pooled other levels),agency,0.2283,1.2564
+lo_naics,per standard deviation (0.583; mean -1.034),continuous,product and industry,0.2231,1.2499
+subagency,Department of Justice | Federal Prison Industries / Unicor,category level (against the pooled other levels),agency,0.2224,1.249
+subagency,Department of Agriculture | Animal and Plant Health Inspection Service,category level (against the pooled other levels),agency,0.221,1.2473
+kw_brand,yes,flag,keywords,-0.2208,0.8018
+pscg,88,category level (against the pooled other levels),product and industry,0.2185,1.2442
+agency,Department of Commerce,category level (against the pooled other levels),agency,0.2182,1.2438
+pscg,81,category level (against the pooled other levels),product and industry,0.2175,1.243
+pscg,69,category level (against the pooled other levels),product and industry,0.2158,1.2409
+subagency,Department of Labor | Employment and Training Administration,category level (against the pooled other levels),agency,-0.2152,0.8064
+lo_prefix,per standard deviation (0.613; mean -1.205),continuous,office history,0.2145,1.2392
+naics3,532,category level (against the pooled other levels),product and industry,-0.2138,0.8075
+pscg,H,category level (against the pooled other levels),product and industry,0.2119,1.2361
+subagency,Department of Agriculture | Agricultural Research Service,category level (against the pooled other levels),agency,0.2117,1.2358
+agency,Department of State,category level (against the pooled other levels),agency,-0.2112,0.8096
+agency,Department of the Treasury,category level (against the pooled other levels),agency,0.2085,1.2319
+subagency,Department of Justice | Federal Bureau of Investigation,category level (against the pooled other levels),agency,-0.2069,0.8131
+subagency,Department of Defense | Washington Headquarters Services,category level (against the pooled other levels),agency,0.2062,1.229
+pscg,M,category level (against the pooled other levels),product and industry,0.2034,1.2255
+pscg,48,category level (against the pooled other levels),product and industry,0.2025,1.2245
+agency,Department of Education,category level (against the pooled other levels),agency,-0.2013,0.8177
+subagency,Department of Education | Department of Education,category level (against the pooled other levels),agency,-0.2013,0.8177
+pscg,60,category level (against the pooled other levels),product and industry,-0.1999,0.8188
+subagency,Department of Health and Human Services | National Institutes of Health,category level (against the pooled other levels),agency,0.1958,1.2163
+pscg,52,category level (against the pooled other levels),product and industry,0.1955,1.216
+subagency,Department of Defense | U.S. Special Operations Command,category level (against the pooled other levels),agency,0.1946,1.2148
+naics3,488,category level (against the pooled other levels),product and industry,0.1936,1.2136
+pscg,68,category level (against the pooled other levels),product and industry,0.1932,1.2131
+pscg,26,category level (against the pooled other levels),product and industry,0.1929,1.2128
+pscg,65,category level (against the pooled other levels),product and industry,0.1915,1.2111
+prefix_known,yes,flag,office history,0.1889,1.2079
+pscg,91,category level (against the pooled other levels),product and industry,0.1882,1.207
+pscg,22,category level (against the pooled other levels),product and industry,0.1843,1.2024
+pscg,B,category level (against the pooled other levels),product and industry,0.1838,1.2018
+pscg,36,category level (against the pooled other levels),product and industry,0.1791,1.1962
+pscg,10,category level (against the pooled other levels),product and industry,0.1787,1.1956
+subagency,Department of Health and Human Services | Office of the Assistant Secretary for Administration,category level (against the pooled other levels),agency,-0.1774,0.8374
+naics3,721,category level (against the pooled other levels),product and industry,-0.1758,0.8388
+naics3,812,category level (against the pooled other levels),product and industry,0.1756,1.1919
+naics3,213,category level (against the pooled other levels),product and industry,0.1753,1.1917
+subagency,General Services Administration | Public Buildings Service,category level (against the pooled other levels),agency,-0.1735,0.8408
+pscg,37,category level (against the pooled other levels),product and industry,0.1705,1.1859
+pscg,T,category level (against the pooled other levels),product and industry,-0.1704,0.8433
+setaside,small business,category level (against the pooled other levels),set-aside,0.1681,1.1831
+pscg,R,category level (against the pooled other levels),product and industry,-0.167,0.8462
+naics3,115,category level (against the pooled other levels),product and industry,-0.166,0.847
+pscg,95,category level (against the pooled other levels),product and industry,-0.1639,0.8489
+pscg,93,category level (against the pooled other levels),product and industry,-0.1627,0.8499
+setaside,HUBZone,category level (against the pooled other levels),set-aside,-0.1626,0.85
+pscg,49,category level (against the pooled other levels),product and industry,0.1592,1.1726
+naics3,337,category level (against the pooled other levels),product and industry,-0.1588,0.8532
+setaside,8(a),category level (against the pooled other levels),set-aside,-0.158,0.8539
+naics3,515,category level (against the pooled other levels),product and industry,0.1579,1.1711
+subagency,Department of Health and Human Services | Centers for Medicare and Medicaid Services,category level (against the pooled other levels),agency,-0.1575,0.8543
+subagency,"Department of Justice | Bureau of Alcohol, Tobacco, Firearms and Explosives Acquisition and Property Management Division",category level (against the pooled other levels),agency,0.1537,1.1662
+agency,Small Business Administration,category level (against the pooled other levels),agency,-0.1534,0.8577
+subagency,Small Business Administration | Small Business Administration,category level (against the pooled other levels),agency,-0.1534,0.8577
+subagency,Department of Defense | Defense Security Cooperation Agency,category level (against the pooled other levels),agency,-0.1521,0.8589
+agency,Millennium Challenge Corporation,category level (against the pooled other levels),agency,-0.1512,0.8596
+subagency,Millennium Challenge Corporation | Millennium Challenge Corporation,category level (against the pooled other levels),agency,-0.1512,0.8596
+pscg,58,category level (against the pooled other levels),product and industry,0.1501,1.162
+subagency,Department of Defense | Department of the Army,category level (against the pooled other levels),agency,0.1491,1.1607
+subagency,Department of Justice | Drug Enforcement Administration,category level (against the pooled other levels),agency,-0.1461,0.864
+pscg,N,category level (against the pooled other levels),product and industry,0.1458,1.157
+naics3,237,category level (against the pooled other levels),product and industry,-0.1446,0.8654
+naics3,519,category level (against the pooled other levels),product and industry,0.1441,1.155
+naics3,314,category level (against the pooled other levels),product and industry,-0.144,0.8659
+agency,Department of Agriculture,category level (against the pooled other levels),agency,0.1435,1.1544
+pscg,31,category level (against the pooled other levels),product and industry,0.1417,1.1523
+sector,civilian except GSA,category level (against the pooled other levels),agency,-0.1399,0.8695
+lo_agency,per standard deviation (0.431; mean -0.979),continuous,agency,-0.1392,0.8701
+naics3,339,category level (against the pooled other levels),product and industry,-0.1377,0.8714
+agency,National Aeronautics and Space Administration,category level (against the pooled other levels),agency,0.1364,1.1461
+subagency,National Aeronautics and Space Administration | National Aeronautics and Space Administration,category level (against the pooled other levels),agency,0.1364,1.1461
+naics3,326,category level (against the pooled other levels),product and industry,-0.1351,0.8736
+naics3,512,category level (against the pooled other levels),product and industry,-0.1322,0.8761
+pscg,71,category level (against the pooled other levels),product and industry,-0.13,0.8781
+naics3,454,category level (against the pooled other levels),product and industry,-0.1282,0.8796
+subagency,Department of the Treasury | Bureau of the Fiscal Service,category level (against the pooled other levels),agency,-0.1257,0.8819
+naics3,335,category level (against the pooled other levels),product and industry,-0.1253,0.8822
+subagency,Department of Transportation | Federal Highway Administration,category level (against the pooled other levels),agency,0.1233,1.1312
+subagency,Department of the Interior | U.S. Fish and Wildlife Service,category level (against the pooled other levels),agency,0.1231,1.131
+pscg,76,category level (against the pooled other levels),product and industry,0.1224,1.1302
+subagency,Department of Health and Human Services | Indian Health Service,category level (against the pooled other levels),agency,0.1204,1.128
+subagency,Department of the Interior | Bureau of Reclamation,category level (against the pooled other levels),agency,-0.1201,0.8869
+naics3,331,category level (against the pooled other levels),product and industry,-0.1189,0.8879
+subagency,Department of Agriculture | Forest Service,category level (against the pooled other levels),agency,-0.1178,0.8888
+naics3,524,category level (against the pooled other levels),product and industry,-0.1165,0.89
+lo_office,per standard deviation (0.641; mean -1.045),continuous,office history,0.1159,1.1229
+pscg,59,category level (against the pooled other levels),product and industry,0.1153,1.1222
+naics3,712,category level (against the pooled other levels),product and industry,-0.1151,0.8913
+subagency,Department of Transportation | Federal Aviation Administration,category level (against the pooled other levels),agency,-0.1135,0.8927
+pscg,62,category level (against the pooled other levels),product and industry,-0.1126,0.8935
+subagency,Department of Energy | Department of Energy,category level (against the pooled other levels),agency,-0.1125,0.8936
+pscg,51,category level (against the pooled other levels),product and industry,-0.1112,0.8947
+pscg,32,category level (against the pooled other levels),product and industry,0.111,1.1174
+month,9,category level (against the pooled other levels),calendar,0.1105,1.1169
+pscg,V,category level (against the pooled other levels),product and industry,0.1102,1.1165
+naics3,811,category level (against the pooled other levels),product and industry,0.1096,1.1159
+naics3,111,category level (against the pooled other levels),product and industry,0.1092,1.1154
+short7,yes,flag,response window,0.108,1.1141
+sector,unknown,category level (against the pooled other levels),agency,0.1078,1.1139
+agency,unknown,category level (against the pooled other levels),agency,0.1078,1.1139
+naics_missing,yes,flag,product and industry,-0.1077,0.8979
+pscg,38,category level (against the pooled other levels),product and industry,-0.1076,0.898
+pscg,28,category level (against the pooled other levels),product and industry,0.1066,1.1125
+naics3,451,category level (against the pooled other levels),product and industry,-0.1047,0.9006
+naics3,722,category level (against the pooled other levels),product and industry,-0.1038,0.9014
+pscg,42,category level (against the pooled other levels),product and industry,-0.1034,0.9018
+subagency,Department of Health and Human Services | Centers for Disease Control and Prevention,category level (against the pooled other levels),agency,-0.1033,0.9019
+agency,Environmental Protection Agency,category level (against the pooled other levels),agency,0.1028,1.1082
+subagency,Environmental Protection Agency | Environmental Protection Agency,category level (against the pooled other levels),agency,0.1028,1.1082
+month,8,category level (against the pooled other levels),calendar,0.1017,1.1071
+naics3,446,category level (against the pooled other levels),product and industry,-0.1016,0.9034
+subagency,Department of Labor | Office of the Assistant Secretary for Administration and Management,category level (against the pooled other levels),agency,0.1011,1.1063
+subagency,Department of Homeland Security | U.S. Citizenship and Immigration Services,category level (against the pooled other levels),agency,0.1008,1.1061
+subagency,Department of Labor | Bureau of Labor Statistics,category level (against the pooled other levels),agency,0.0987,1.1037
+subagency,Department of Agriculture | Agricultural Marketing Service,category level (against the pooled other levels),agency,0.0984,1.1034
+naics3,485,category level (against the pooled other levels),product and industry,-0.0975,0.9071
+subagency,Department of Transportation | Maritime Administration,category level (against the pooled other levels),agency,0.0971,1.102
+naics3,316,category level (against the pooled other levels),product and industry,-0.0968,0.9077
+setaside,other,category level (against the pooled other levels),set-aside,0.0966,1.1015
+subagency,Department of Defense | Department of Defense Education Activity,category level (against the pooled other levels),agency,-0.0951,0.9093
+subagency,General Services Administration | Federal Acquisition Service,category level (against the pooled other levels),agency,0.0931,1.0976
+subagency,Department of the Interior | National Park Service,category level (against the pooled other levels),agency,0.0926,1.0971
+pscg,67,category level (against the pooled other levels),product and industry,-0.0923,0.9118
+pscg,66,category level (against the pooled other levels),product and industry,0.0904,1.0947
+pscg,15,category level (against the pooled other levels),product and industry,-0.0895,0.9144
+naics3,443,category level (against the pooled other levels),product and industry,-0.0894,0.9145
+mo_prefix,per standard deviation (0.234; mean -0.036),continuous,office history,0.0893,1.0934
+office_known,yes,flag,office history,-0.0891,0.9148
+subagency,Department of Commerce | National Institute of Standards and Technology,category level (against the pooled other levels),agency,0.0876,1.0916
+pscg,43,category level (against the pooled other levels),product and industry,0.086,1.0898
+subagency,Department of Defense | Defense Commissary Agency,category level (against the pooled other levels),agency,0.0857,1.0895
+naics3,221,category level (against the pooled other levels),product and industry,0.0827,1.0862
+sol_letter,other,category level (against the pooled other levels),notice type,-0.0811,0.9221
+agency,Pension Benefit Guaranty Corporation,category level (against the pooled other levels),agency,-0.0804,0.9227
+subagency,Pension Benefit Guaranty Corporation | Pension Benefit Guaranty Corporation,category level (against the pooled other levels),agency,-0.0804,0.9227
+subagency,Department of Defense | Department of the Navy,category level (against the pooled other levels),agency,0.0798,1.083
+sector,GSA,category level (against the pooled other levels),agency,0.0794,1.0827
+agency,General Services Administration,category level (against the pooled other levels),agency,0.0794,1.0827
+naics3,423,category level (against the pooled other levels),product and industry,-0.0793,0.9237
+naics3,518,category level (against the pooled other levels),product and industry,-0.0784,0.9246
+naics3,424,category level (against the pooled other levels),product and industry,-0.0777,0.9253
+pscg,61,category level (against the pooled other levels),product and industry,0.0776,1.0806
+naics3,333,category level (against the pooled other levels),product and industry,-0.0763,0.9266
+subagency,Department of Homeland Security | U.S. Coast Guard,category level (against the pooled other levels),agency,-0.0761,0.9267
+lo_psc4,per standard deviation (0.554; mean -1.022),continuous,product and industry,0.0752,1.0781
+pscg,54,category level (against the pooled other levels),product and industry,-0.0744,0.9283
+naics3,327,category level (against the pooled other levels),product and industry,0.074,1.0768
+month,1,category level (against the pooled other levels),calendar,-0.0735,0.9292
+naics3,442,category level (against the pooled other levels),product and industry,-0.0731,0.9295
+agency,Department of Homeland Security,category level (against the pooled other levels),agency,0.0727,1.0755
+naics3,324,category level (against the pooled other levels),product and industry,0.0722,1.0748
+naics3,332,category level (against the pooled other levels),product and industry,0.0718,1.0745
+pscg,99,category level (against the pooled other levels),product and industry,0.0702,1.0728
+depth_missing,yes,flag,market depth,0.0696,1.0721
+pscg,34,category level (against the pooled other levels),product and industry,-0.0693,0.9331
+pscg,74,category level (against the pooled other levels),product and industry,-0.0689,0.9334
+pscg,39,category level (against the pooled other levels),product and industry,0.0684,1.0708
+agency,National Archives and Records Administration,category level (against the pooled other levels),agency,-0.0668,0.9354
+subagency,National Archives and Records Administration | National Archives and Records Administration,category level (against the pooled other levels),agency,-0.0668,0.9354
+pscg,W,category level (against the pooled other levels),product and industry,0.0666,1.0689
+naics3,312,category level (against the pooled other levels),product and industry,-0.0666,0.9356
+lo_all,per standard deviation (0.221; mean -0.998),continuous,trend,-0.0661,0.936
+month,2,category level (against the pooled other levels),calendar,-0.0656,0.9365
+subagency,Department of the Interior | Departmental Offices,category level (against the pooled other levels),agency,-0.0652,0.9369
+subagency,Department of the Treasury | Internal Revenue Service,category level (against the pooled other levels),agency,-0.0642,0.9378
+subagency,unknown,category level (against the pooled other levels),agency,-0.0638,0.9382
+pscg,73,category level (against the pooled other levels),product and industry,-0.0628,0.9392
+pscg,7A,category level (against the pooled other levels),product and industry,-0.0622,0.9397
+pscg,63,category level (against the pooled other levels),product and industry,0.0619,1.0638
+lo_pscg,per standard deviation (0.539; mean -1.020),continuous,product and industry,-0.0616,0.9403
+subagency,Department of Justice | U.S. Marshals Service,category level (against the pooled other levels),agency,0.0614,1.0634
+naics3,517,category level (against the pooled other levels),product and industry,0.0595,1.0613
+sol_letter,B,category level (against the pooled other levels),notice type,0.0595,1.0613
+naics3,541,category level (against the pooled other levels),product and industry,0.0586,1.0603
+pscg,89,category level (against the pooled other levels),product and industry,-0.0584,0.9433
+subagency,Department of Defense | Defense Human Resources Activity,category level (against the pooled other levels),agency,-0.0584,0.9433
+mo_subagency,per standard deviation (0.154; mean -0.031),continuous,agency,0.0575,1.0592
+pscg,E,category level (against the pooled other levels),product and industry,0.0557,1.0573
+pscg,D,category level (against the pooled other levels),product and industry,0.0554,1.057
+pscg,30,category level (against the pooled other levels),product and industry,-0.0543,0.9471
+late_sept,yes,flag,calendar,-0.0542,0.9472
+sol_letter,unknown,category level (against the pooled other levels),notice type,0.0511,1.0524
+subagency,Department of Agriculture | Farm Service Agency,category level (against the pooled other levels),agency,0.0505,1.0518
+setaside,WOSB,category level (against the pooled other levels),set-aside,-0.0505,0.9507
+pscg,F,category level (against the pooled other levels),product and industry,0.0492,1.0504
+naics3,531,category level (against the pooled other levels),product and industry,0.0491,1.0503
+agency,Department of Labor,category level (against the pooled other levels),agency,-0.0487,0.9525
+subagency,Department of Homeland Security | U.S. Immigration and Customs Enforcement,category level (against the pooled other levels),agency,0.0486,1.0498
+sector,Department of Defense,category level (against the pooled other levels),agency,-0.0474,0.9537
+agency,Department of Defense,category level (against the pooled other levels),agency,-0.0474,0.9537
+naics3,483,category level (against the pooled other levels),product and industry,-0.0456,0.9555
+subagency,Department of Housing and Urban Development | Department of Housing and Urban Development,category level (against the pooled other levels),agency,0.0428,1.0437
+naics3,624,category level (against the pooled other levels),product and industry,0.0425,1.0435
+subagency,Department of Transportation | National Highway Traffic Safety Administration,category level (against the pooled other levels),agency,0.0425,1.0434
+month,12,category level (against the pooled other levels),calendar,-0.0423,0.9586
+has_presol,yes,flag,earlier notice,-0.042,0.9588
+naics3,315,category level (against the pooled other levels),product and industry,-0.0394,0.9614
+mo_office,per standard deviation (0.212; mean -0.021),continuous,office history,0.0387,1.0395
+agency,U.S. Agency for Global Media,category level (against the pooled other levels),agency,0.0379,1.0386
+subagency,U.S. Agency for Global Media | U.S. Agency for Global Media,category level (against the pooled other levels),agency,0.0379,1.0386
+month,5,category level (against the pooled other levels),calendar,0.0378,1.0386
+agency,Social Security Administration,category level (against the pooled other levels),agency,0.0374,1.0382
+subagency,Social Security Administration | Social Security Administration,category level (against the pooled other levels),agency,0.0374,1.0382
+short14,yes,flag,response window,0.0373,1.0381
+window_missing,yes,flag,response window,0.0366,1.0373
+agency,Department of Housing and Urban Development,category level (against the pooled other levels),agency,0.0365,1.0372
+subagency,Department of Justice | Federal Prison System / Bureau of Prisons,category level (against the pooled other levels),agency,-0.0348,0.9658
+sol_letter,R,category level (against the pooled other levels),notice type,-0.0347,0.9659
+pscg,25,category level (against the pooled other levels),product and industry,0.0341,1.0346
+lo_subagency,per standard deviation (0.508; mean -0.995),continuous,agency,0.0338,1.0343
+pscg,7G,category level (against the pooled other levels),product and industry,0.0308,1.0313
+log_window,per standard deviation (0.582; mean 2.466),continuous,response window,0.0288,1.0292
+naics3,322,category level (against the pooled other levels),product and industry,-0.0284,0.972
+notice_type,Solicitation,category level (against the pooled other levels),notice type,-0.0276,0.9728
+notice_type,Combined Synopsis/Solicitation,category level (against the pooled other levels),notice type,0.0276,1.028
+pscg,78,category level (against the pooled other levels),product and industry,0.0271,1.0274
+agency,Securities and Exchange Commission,category level (against the pooled other levels),agency,0.0258,1.0261
+subagency,Securities and Exchange Commission | Securities and Exchange Commission,category level (against the pooled other levels),agency,0.0258,1.0261
+month,11,category level (against the pooled other levels),calendar,-0.0255,0.9748
+subagency,Department of the Interior | Bureau of Land Management,category level (against the pooled other levels),agency,0.0247,1.025
+has_ss,yes,flag,earlier notice,0.0245,1.0248
+pscg,S,category level (against the pooled other levels),product and industry,0.0224,1.0227
+month,10,category level (against the pooled other levels),calendar,-0.022,0.9782
+setaside,VOSB,category level (against the pooled other levels),set-aside,-0.0209,0.9793
+month,6,category level (against the pooled other levels),calendar,-0.02,0.9802
+pscg,47,category level (against the pooled other levels),product and industry,-0.0195,0.9806
+subagency,Department of Agriculture | Under Secretary for Farm and Foreign Agricultural Services,category level (against the pooled other levels),agency,0.0195,1.0196
+subagency,Department of Defense | USTRANSCOM,category level (against the pooled other levels),agency,-0.0178,0.9824
+naics3,336,category level (against the pooled other levels),product and industry,0.0177,1.0179
+naics3,921,category level (against the pooled other levels),product and industry,0.0171,1.0173
+subagency,Department of Transportation | Immediate Office of the Secretary of Transportation,category level (against the pooled other levels),agency,0.0169,1.0171
+subagency,Department of Defense | Department of the Air Force,category level (against the pooled other levels),agency,0.0156,1.0157
+pscg,35,category level (against the pooled other levels),product and industry,0.0152,1.0153
+subagency,Department of Commerce | U.S. Census Bureau,category level (against the pooled other levels),agency,0.0149,1.015
+subagency,Department of Homeland Security | Transportation Security Administration,category level (against the pooled other levels),agency,0.0147,1.0148
+naics3,323,category level (against the pooled other levels),product and industry,0.0124,1.0125
+naics3,334,category level (against the pooled other levels),product and industry,0.0109,1.011
+naics3,441,category level (against the pooled other levels),product and industry,0.0107,1.0108
+naics3,453,category level (against the pooled other levels),product and industry,-0.0095,0.9906
+pscg,96,category level (against the pooled other levels),product and industry,0.0089,1.009
+month,7,category level (against the pooled other levels),calendar,-0.0088,0.9912
+subagency,Department of Defense | Uniformed Services University of the Health Sciences,category level (against the pooled other levels),agency,-0.0084,0.9917
+log_depth,per standard deviation (1.966; mean 7.647),continuous,market depth,-0.0082,0.9918
+naics3,621,category level (against the pooled other levels),product and industry,-0.008,0.992
+pscg,45,category level (against the pooled other levels),product and industry,-0.0078,0.9922
+pscg,17,category level (against the pooled other levels),product and industry,0.0077,1.0078
+month,3,category level (against the pooled other levels),calendar,0.0072,1.0072
+naics3,313,category level (against the pooled other levels),product and industry,0.0067,1.0067
+agency,Department of Transportation,category level (against the pooled other levels),agency,0.0064,1.0064
+naics3,493,category level (against the pooled other levels),product and industry,0.0064,1.0064
+agency,Nuclear Regulatory Commission,category level (against the pooled other levels),agency,-0.0063,0.9938
+subagency,Nuclear Regulatory Commission | Nuclear Regulatory Commission,category level (against the pooled other levels),agency,-0.0063,0.9938
+pscg,Q,category level (against the pooled other levels),product and industry,0.006,1.006
+subagency,Department of Homeland Security | Federal Law Enforcement Training Center,category level (against the pooled other levels),agency,-0.006,0.994
+log_office_n,per standard deviation (3.433; mean 6.752),continuous,office history,0.0049,1.0049
+subagency,"Department of the Interior | Office of Surface Mining, Reclamation and Enforcement",category level (against the pooled other levels),agency,0.0044,1.0044
+sol_letter,T,category level (against the pooled other levels),notice type,0.0035,1.0035
+sol_letter,Q,category level (against the pooled other levels),notice type,0.0018,1.0018
+subagency,Department of Defense | Defense Finance and Accounting Service,category level (against the pooled other levels),agency,0.0006,1.0006
+month,4,category level (against the pooled other levels),calendar,0.0004,1.0004
+naics3,321,category level (against the pooled other levels),product and industry,-0.0004,0.9996
+log_prefix_n,per standard deviation (3.120; mean 6.697),continuous,office history,0.0004,1.0004
