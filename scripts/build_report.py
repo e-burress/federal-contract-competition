@@ -2021,7 +2021,10 @@ def main():
     check = "--check" in sys.argv[1:]
     changed, seen = [], set()
     for path in DOCS:
-        label = os.path.relpath(path, PROJECT).replace(os.sep, "/")
+        try:
+            label = os.path.relpath(path, PROJECT).replace(os.sep, "/")
+        except ValueError:                      # Windows: the file is on another drive than the project (tests in a temp folder)
+            label = os.path.basename(path)
         with open(path, encoding="utf-8", newline="") as fh:
             old = fh.read()
         new = fill(old, changed, seen, label)

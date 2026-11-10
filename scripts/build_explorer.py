@@ -1070,6 +1070,13 @@ def build(results_dir=DEFAULT_RESULTS, out_path=DEFAULT_OUT, repo=None, today=No
     return data
 
 
+def shown_path(path):
+    """path relative to the project for messages; the full path when it is on another drive (Windows)"""
+    try:
+        return os.path.relpath(path, ROOT)
+    except ValueError:
+        return path
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.strip().splitlines()[0])
     ap.add_argument("--results", default=DEFAULT_RESULTS, help="folder with the result files (default: results/)")
@@ -1080,7 +1087,7 @@ def main(argv=None):
         sys.exit(f"no results folder: {a.results}")
     d = build(a.results, a.out, reference_dir=a.reference)
     size = os.path.getsize(a.out)
-    print(f"explorer data: {len(d['agencies'])} agencies, {len(d['sources'])} source files, {size / 1024:.1f} KB -> {os.path.relpath(a.out, ROOT)}")
+    print(f"explorer data: {len(d['agencies'])} agencies, {len(d['sources'])} source files, {size / 1024:.1f} KB -> {shown_path(a.out)}")
     if d.get("trimmed"):
         print("trimmed to stay under the size cap: " + "; ".join(d["trimmed"]))
     if size > SIZE_CAP:
