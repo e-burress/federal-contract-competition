@@ -80,6 +80,8 @@ STEPS = {
     "threshold-staggered": ("scripts/21_threshold_staggered.py", [], False, "the 2018 change, agency by agency (staggered adoption dates)"),
     "drivers":             ("scripts/23_drivers.py", [], False, "why some competed awards get one offer: shares, model, blocks"),
     "split-screen":        ("scripts/26_split_screen.py", [], False, "split-like purchase clusters: excess at each threshold over placebo lines"),
+    "outcomes":            ("scripts/24_outcomes.py", [], False, "after award: single-offer versus multi-offer awards, from the history tables"),
+    "threshold-scan":      ("scripts/27_threshold_scan.py", [], False, "pile-ups under every FAR dollar threshold since FY2008, with placebo values and before/after tests"),
     "score-f1":            ("scripts/09_resolve_forecast.py", [], True, "score the sealed single-offer forecast F1 (optional: path to the private file)"),
 }
 PIPELINES = {
@@ -87,7 +89,7 @@ PIPELINES = {
     "all":   ["download", "build-five", "build-civilian", "build-threshold", "atlas", "atlas-civilian", "quality", "threshold",
               "threshold-quarterly", "sql-check", "figures", "report", "dashboard", "explorer"],
     "daily": ["sam-snapshot", "live", "track-f2", "dashboard", "explorer"],
-    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered", "drivers", "split-screen"],
+    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "split-screen", "outcomes"],
 }
 # results that change every day, are not rebuilt by quick/all, or are never published (office level); `verify` skips them
 LIVE_OR_FROZEN = ("tracking_", "live_fy", "sam_daily_", "model_", "resolution_", "threshold_resolution_", "atlas_offices")
