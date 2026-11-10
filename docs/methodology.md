@@ -196,6 +196,14 @@ These results are from the October 24, 2026 build and are frozen. Its SAM.gov tr
 
 **How the scoring works.** [`scoring-forecasts.md`](scoring-forecasts.md) is a step-by-step guide for a person, with no AI involved. PIO-F1 is scored with `python run.py score-f1` (`scripts/09_resolve_forecast.py`) on each check date. The script first fingerprints the private forecast file and refuses to score it if the SHA-256 does not match the published one. It then applies the resolution rule written into the file: normalised solicitation number, base actions dated on or after the forecast date, the earliest one wins, scored only if competed with 1 to 998 offers. Unresolved forecasts are counted by reason and not scored. Scores are the Brier score, log loss, ROC-AUC and a calibration table, with the same numbers for the stored baseline. Only aggregate numbers are made public, and only once at least 20 forecasts have resolved, with small cells hidden; the row-level file stays private because it names buying offices. PIO-F2 is scored by `12_resolve_threshold.py` with exactly the estimator of section 4; the daily job tracks it with `13_track_threshold.py` and checks its fingerprint on every run.
 
+## 6b. Daily sealed forecasts
+
+Every morning `31_daily_forecast.py` forecasts each new open solicitation in SAM.gov's daily list of active notices with model version 2 (section 17), writes the day's forecasts to one private batch file and publishes its SHA-256 fingerprint, a row of counts and short hashes of the solicitation numbers in [`forecasts/daily/`](../forecasts/daily/). `32_score_daily.py` scores the sealed batches once the awards appear, with the rule written in every batch: an award counts only if it is a base action with the same normalised solicitation number dated on or after the day offers were due, competed with 1 to 998 offers. Only totals are published, with small cells hidden. The step-by-step guide is [`daily-forecasts.md`](daily-forecasts.md).
+
+<!-- auto:m-daily-forecasts -->
+**Daily forecasts.** The daily series is built and tested; the first batch has not been sealed yet.
+<!-- /auto:m-daily-forecasts -->
+
 ## 7. Data-quality monitor
 
 **Script:** `16_quality_monitor.py`, run by `python run.py quick` on the FY2024–FY2026 civilian table.
@@ -232,6 +240,8 @@ These results are from the October 24, 2026 build and are frozen. Its SAM.gov tr
 - `award_year_FY<year>`: one row per award with any action in the year: number of actions, dollars obligated, the largest and the latest single change in potential value and in exercised value, the last action date, and how many actions were option exercises, scope changes (supplemental agreements, change orders) or terminations. Joining the years gives each award's history after it was made. On each transaction the base-and-all-options value is the change made by that action, not a running total. A later build of the tables adds the sum of each year's changes (`value_sum`, `exercised_sum`); the first build (`history-v1`) does not have it, so total growth of potential value cannot be built from it.
 
 **Company codes, and why they are not anonymous.** `vendor_id` is the first 16 hexadecimal digits of SHA-256("fcc-v1:" + UEI), or of SHA-256("fcc-v1:duns:" + DUNS) when there is no UEI. It lets the same company be followed across awards (incumbency in section 13, clusters in section 15). It is **not anonymous**: anyone with the identifier can compute the same code, contract numbers are kept, and the underlying records are public on USAspending.gov. A company whose records carry a UEI in some years and only a DUNS in others (the switch came in April 2022) gets two codes; separate UEI and DUNS codes on each base action can link them. Buying-office names, company names and raw company identifiers are left out to keep the tables small and focused, not to hide anything. Every published result is at agency level or coarser; office codes and company codes are used only inside the computations.
+
+**Completeness check** (`28_reconcile.py`). For every fiscal year with a yearly table, our number of transactions and our obligated dollars are compared with USAspending's own totals (`spending_by_transaction_count` and `spending_over_time`), once with the same filters as our downloads (award types, action dates in the fiscal year, the same list of top-tier awarding agencies) and once with no agency filter. The first comparison checks that nothing was lost; the second measures what the agency list leaves out. <!-- auto:m-reconcile -->`28_reconcile.py` compares our yearly transaction counts and dollars with USAspending's own totals. With the same filters as our downloads, FY2008–FY2023 (16 years checked) match USAspending's totals exactly. Awarding agencies missing from USAspending's top-tier agency list are not downloaded; they hold at most 0.29 percent of a year's transactions.<!-- /auto:m-reconcile -->
 
 ## 9. Single-offer shares since FY2008
 
@@ -526,6 +536,57 @@ It fell clearly in 4, rose clearly in 0 and was unclear in 7 of 11 tests.
 
 **Limits.** It cannot tell a prohibited split from legitimate repeat buying (monthly supplies, task-sized orders). It is a pattern in public data, not evidence that any purchase was split. Dollar totals of split-like clusters are left blank when fewer than 3 clusters stand behind them; company and office codes never leave the computation.
 
+## 15b. Who wins the awards: the supplier base
+
+**Script:** `33_supplier_base.py`. **Data:** every base action (new award) in the yearly tables, one fiscal year read at a time; sectors civilian except GSA, GSA and Defense, and all sectors together.
+
+**Company.** One company id per award: `vendor_id`, with DUNS-based and UEI-based codes linked into one id wherever a record carries both (see *Identifier switch*). Counts are of registered identifiers, so a company with several registrations counts more than once, and parents and subsidiaries count separately.
+
+**Two series.** All awards, and awards above $25,000 of initial potential value (base and all options). Reporting of very small purchases changed over time (for example the FY2008 Veterans Affairs micro-purchases, see the `note` column of `results/history_by_fy.csv`, and the higher micro-purchase limits from FY2016 and FY2018), so the above-$25,000 series is the headline. Inside a series every rule uses that series' awards: in the above-$25,000 series, a company "won" in a year if it won an award above $25,000. Dollars are not adjusted for inflation.
+
+**New companies.** A company is new in year t if it won no award in t−1, t−2 and t−3. The look-back is fixed, so every year is measured the same way; the first measurable year is the fourth year present, and a year whose three previous years are not all present gets no value. As a sensitivity, "never seen" means no award in any earlier year present (since FY2008); it falls over time by construction, because the look-back grows. Reported: the number of new companies and their share of companies, of awards and of initial dollars.
+
+**Staying.** Of the companies that won in year t, the share that won again in t+1, and within t+1 to t+3. Only when those years are present and complete (a Defense year whose September is missing or thin is incomplete).
+
+**Concentration.** Dollar measures use purchase orders and definitive contracts: a contract vehicle's initial value is a ceiling for future orders, often billions, not money to be spent. Initial values above $10 billion are left out as likely recording errors (a few a year, counted in `results/supplier_base_concentration.csv`). Top shares: the share of initial dollars won by the top 1% and top 10% of companies, with the dollars obligated at award as a check. Market concentration: for each 4-digit NAICS industry with at least 20 awards in the year, the Herfindahl-Hirschman index (HHI, the sum of the squared percentage shares of initial dollars, from near 0 to 10,000), summarized as the award-weighted median and the share of awards in industries above 2,500. A 4-digit NAICS industry is much broader than a real market, and agencies do not buy everything in one market, so these HHIs are rough.
+
+**Link to competition.** Among competed awards with a usable offer count (as in section 9): the single-offer share of awards won by new companies and by established ones, with 95% Wilson intervals; new companies' share of awards by set-aside group (the groups of section 13); and new companies' share of awards with one offer and with two or more. Pooled over the years whose new-company measures are comparable.
+
+**Identifier switch.** Until April 2022 companies were identified by DUNS numbers, after that by UEI. `vendor_id` is made from the UEI when a record has one, otherwise from the DUNS, so one company could carry two ids and look new around 2022. `vendor_uei_code` and `vendor_duns_code` use the same hash, so every `vendor_id` equals one of them. Wherever a table has both columns, each record carrying both links the two codes (union-find over all such records; one id per linked group), and every `vendor_id` of every year is mapped to its group. A measure whose window of years spans FY2022 is marked "not comparable" (column `note`, flags `*_comparable`, hollow markers on the chart) unless every year of the window up to FY2022 has the two columns and under 1% of its awards carry only a DUNS that no record links to a UEI. The unlinked series (raw `vendor_id`) is kept beside the linked one (`*_unlinked_ids`). No rows are dropped.
+
+**Privacy.** Company and buying-office codes are used inside the computation only. No output names or codes a company or an office, no statistic describes one company, and every cell resting on fewer than 10 companies is left blank. No single industry's HHI is published.
+
+<!-- auto:m-supplier-base -->
+**Results** (fiscal years present: FY2008–FY2025). All sectors, awards above $25,000:
+
+| Fiscal year | Awards | Companies | New companies (3-year look-back) | Never seen since the first year | Won again next year | Won again within 3 years | Top 1% share of dollars | Top 10% share | Median HHI (award-weighted) |
+|---|---|---|---|---|---|---|---|---|---|
+| FY2008 | 183,650 | 57,371 |  |  | 46.2% | 61.7% | 78.5% | 94.4% | 651 |
+| FY2009 | 180,180 | 57,823 |  | 54.2% | 46.9% | 60.7% | 71.2% | 92.1% | 467 |
+| FY2010 | 184,483 | 58,410 |  | 43.4% | 45.2% | 59.2% | 68.2% | 91.5% | 437 |
+| FY2011 | 176,635 | 54,111 | 35.8% | 35.8% | 46.0% | 60.6% | 74.1% | 93.1% | 455 |
+| FY2012 | 164,383 | 50,456 | 34.7% | 31.5% | 46.0% | 62.1% | 72.3% | 92.8% | 590 |
+| FY2013 | 155,035 | 45,957 | 32.7% | 26.6% | 49.6% | 65.2% | 79.1% | 94.4% | 594 |
+| FY2014 | 160,705 | 48,685 | 36.3% | 27.7% | 47.8% | 64.5% | 65.0% | 90.6% | 482 |
+| FY2015 | 157,295 | 47,646 | 35.4% | 25.9% | 48.5% | 65.0% | 66.3% | 91.2% | 322 |
+| FY2016 | 158,317 | 47,855 | 36.0% | 25.7% | 49.1% | 65.2% | 66.2% | 91.2% | 451 |
+| FY2017 | 161,185 | 47,991 | 34.2% | 24.1% | 49.0% | 65.5% | 71.1% | 92.6% | 351 |
+| FY2018 | 172,875 | 47,589 | 34.0% | 23.7% | 49.4% | 65.3% | 67.0% | 91.1% | 505 |
+| FY2019 | 164,772 | 46,623 | 33.0% | 21.8% | 50.0% | 66.4% (not comparable) | 65.4% | 90.8% | 331 |
+| FY2020 | 162,182 | 47,338 | 34.3% | 22.8% | 48.1% | 64.9% (not comparable) | 68.0% | 91.7% | 557 |
+| FY2021 | 154,502 | 45,969 | 34.1% | 22.2% | 48.4% (not comparable) | 64.7% (not comparable) | 69.0% | 92.1% | 515 |
+| FY2022 | 154,704 | 45,135 | 33.2% (not comparable) | 21.9% | 50.8% | 66.6% | 71.3% | 92.7% | 411 |
+| FY2023 | 160,178 | 46,590 | 34.0% (not comparable) | 22.3% | 49.9% |  | 67.3% | 91.6% | 497 |
+| FY2024 | 158,158 | 45,757 | 33.9% (not comparable) | 22.4% | 49.2% |  | 67.0% | 91.3% | 409 |
+| FY2025 | 162,999 | 44,466 | 33.0% | 22.0% |  |  | 65.1% | 90.7% | 410 |
+
+**Identifier switch.** Tables with both identifier codes: FY2022–FY2025; without them: FY2008–FY2021. 15,397 DUNS codes are linked to a UEI code; 0 linked groups hold more than two codes. In those tables, 100.0% or more of awards carry a UEI (lowest: FY2022), and at most 0.00% carry only a DUNS that no record links to a UEI. In the tables without the codes, at most 0.00% of awards carry a company id that matches a DUNS code seen in the newer tables, a sign that the older records carry UEIs too (USAspending has added UEIs to old records); the check covers only companies whose DUNS appears in a newer table. Linking changes the new-company share by at most 0.00 percentage points in any year. A one-time sample from the USAspending download service (1,452 transactions of Department of the Interior, 2010-03-01 to 2010-03-05 (FY2010), checked November 10, 2026) found 100.0% with a UEI ([reference/uei_backfill_check.json](../reference/uei_backfill_check.json)).
+
+**Link to competition** (FY2011–FY2021 and FY2025 pooled, all sectors, awards above $25,000): single-offer share of competed awards won by new companies 21.0% (20.8–21.2%), by established companies 26.5% (26.4–26.6%); new companies won 9.9% (9.8–10.0%) of competed awards with one offer and 12.9% (12.9–13.0%) of those with two or more; new companies' share of awards by set-aside: 8(a) 8.5% (8.4–8.7%); service-disabled veteran-owned small business 9.1% (8.8–9.3%); no set-aside 11.0% (10.9–11.0%); HUBZone small business 11.4% (10.7–12.1%); veteran-owned small business 15.2% (13.5–17.2%); small business 16.3% (16.2–16.4%); women-owned small business 23.1% (22.1–24.2%).
+<!-- /auto:m-supplier-base -->
+
+**Limits.** Only prime awards: subcontractors are not counted. Only new awards: orders under existing contract vehicles (delivery and task orders) are not in these tables, so a company that wins only such orders is missing, and a falling count can partly reflect a shift of buying toward orders under vehicles. These are patterns, not accusations and not proof of causes: fewer companies is not by itself less competition. GAO also reports fewer businesses, small and larger, receiving Defense contract obligations over FY2011 to FY2020 ([GAO-22-104621](https://www.gao.gov/products/gao-22-104621)); its counts use a different base (all obligations, Defense only) and are not compared number for number here.
+
 ## 16. Reference data
 
 <!-- auto:m-reference -->
@@ -540,10 +601,10 @@ It fell clearly in 4, rose clearly in 0 and was unclear in 7 of 11 tests.
 
 **Archive tables** (`22_sam_archive.py`). SAM.gov publishes one archive file per fiscal year with every past notice (about 0.5 to 1.3 GB each). A notice sits in the file of the fiscal year of its posting date, and each row is one version of a notice, so a solicitation's versions can sit in two files. The script streams a file to a temporary folder outside the repository, reads only whitelisted columns, and writes one table of notice versions and one of solicitations (first posting, first and final deadline, earlier presolicitation or sources-sought notice, award notice, response windows). Never written: contacts, awardee, addresses, descriptions, links, title text and office names; e-mail addresses and phone numbers inside numbers are masked. The description is used in memory only, for two keyword flags.
 
-**Model version 2** (`30_model_v2.py`, being built). Trained on every archived solicitation that can be matched to a competed award in the history tables, for every agency, with the outcome rule of `09_resolve_forecast.py`. Evaluation is rolling-origin: for each test year, train on solicitations posted and awarded before it and test on the solicitations posted in it, against simple baselines and version 1's feature set refitted. Which model is shipped follows rules fixed in the script. Public files are at agency level or coarser.
+**Model version 2** (`30_model_v2.py`). Trained on every archived solicitation that can be matched to a competed award in the history tables, for every agency, with the outcome rule of `09_resolve_forecast.py`. Evaluation is rolling-origin: for each test year, train on solicitations posted and awarded before it and test on the solicitations posted in it, against simple baselines and version 1's feature set refitted. Which model is shipped follows rules fixed in the script. Public files are at agency level or coarser.
 
 <!-- auto:m-model-v2 -->
-- **Forecast model, version 2 (built November 10, 2026).** Trained on 656,878 solicitations from SAM.gov's archive that were matched to a competed award (award years FY2008–FY2021). Tested out of time on FY2009–FY2021, the shipped L2 logistic regression ranks solicitations with an AUC of 0.692 (0.496 for the sector-wide rate and 0.681 for version 1's features refitted), with a Brier score of 0.160 against 0.175 for the sector-wide rate and a calibration slope of 0.95 (1.00 is ideal). It is a risk indicator about markets, not a statement about anyone's conduct. Details: [`results/model_v2_card.json`](../results/model_v2_card.json).
+- **Forecast model, version 2 (built November 10, 2026).** It is the model of the daily forecasts (see *Pre-registered forecasts*). Trained on 656,878 solicitations from SAM.gov's archive that were matched to a competed award (award years FY2008–FY2021; its award history ends September 30, 2021). Tested out of time on FY2009–FY2021, the shipped L2 logistic regression ranks solicitations with an AUC of 0.692 (0.583 for the best simple baseline, the buying office's past rate, and 0.681 for version 1's features refitted), with a Brier score of 0.160 against 0.179 for that baseline and a calibration slope of 0.95 (1.00 is ideal). Its award history ends more than 9 months before it was trained, so it must not score live solicitations until it is retrained on newer award years; the daily forecast script refuses a model this old. Version 1 (section 5) is the earlier model, frozen since the October 24, 2026 build. Both are risk indicators about markets, not statements about anyone's conduct. Details: [`results/model_v2_card.json`](../results/model_v2_card.json).
 <!-- /auto:m-model-v2 -->
 
 ## 18. Known limitations

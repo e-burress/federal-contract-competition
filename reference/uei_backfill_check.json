@@ -1,0 +1,13 @@
+{
+ "what": "Do contract records from before the April 2022 switch carry a UEI on USAspending.gov today? One small sample, checked once.",
+ "checked_on": "2026-11-10",
+ "source": "USAspending.gov download service, POST https://api.usaspending.gov/api/v2/download/transactions/ (no key or account)",
+ "request": {"award_type_codes": ["B", "C", "D"], "awarding_agency": "Department of the Interior",
+             "action_dates": "2010-03-01 to 2010-03-05 (FY2010)",
+             "columns": ["contract_transaction_unique_key", "action_date", "modification_number", "recipient_uei", "recipient_duns"]},
+ "transactions": 1452,
+ "share_with_uei": 1.0,
+ "share_with_duns": 0.8891,
+ "share_with_duns_but_no_uei": 0.0,
+ "reading": "Every sampled FY2010 transaction carries a UEI, so USAspending has filled in UEIs on old records; a company's vendor_id is UEI-based before and after the switch whenever its records got a UEI. One agency and five days only: a check, not a measurement."
+}

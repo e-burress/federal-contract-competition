@@ -1,0 +1,181 @@
+{
+ "checked_utc": "2026-11-10T10:25:13Z",
+ "years_present": [
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023
+ ],
+ "years_checked": [
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023
+ ],
+ "years_not_answered": [],
+ "flag_threshold_pct": 1.0,
+ "years_above_threshold": [],
+ "largest_differences": [
+  {
+   "fy": 2008,
+   "diff_transactions_pct": 0.0,
+   "diff_obligations_pct": -0.0
+  },
+  {
+   "fy": 2009,
+   "diff_transactions_pct": 0.0,
+   "diff_obligations_pct": 0.0
+  },
+  {
+   "fy": 2010,
+   "diff_transactions_pct": 0.0,
+   "diff_obligations_pct": 0.0
+  },
+  {
+   "fy": 2011,
+   "diff_transactions_pct": 0.0,
+   "diff_obligations_pct": 0.0
+  },
+  {
+   "fy": 2012,
+   "diff_transactions_pct": 0.0,
+   "diff_obligations_pct": 0.0
+  }
+ ],
+ "all_agencies_largest_transaction_gap_pct": 0.2898,
+ "all_agencies_by_year": {
+  "2008": {
+   "diff_transactions_pct": -0.1427,
+   "diff_obligations_pct": -0.0586
+  },
+  "2009": {
+   "diff_transactions_pct": -0.2611,
+   "diff_obligations_pct": -0.0714
+  },
+  "2010": {
+   "diff_transactions_pct": -0.2389,
+   "diff_obligations_pct": -0.0998
+  },
+  "2011": {
+   "diff_transactions_pct": -0.2248,
+   "diff_obligations_pct": -0.0805
+  },
+  "2012": {
+   "diff_transactions_pct": -0.2679,
+   "diff_obligations_pct": -0.1151
+  },
+  "2013": {
+   "diff_transactions_pct": -0.2686,
+   "diff_obligations_pct": -0.1312
+  },
+  "2014": {
+   "diff_transactions_pct": -0.2795,
+   "diff_obligations_pct": -0.1057
+  },
+  "2015": {
+   "diff_transactions_pct": -0.2541,
+   "diff_obligations_pct": -0.0873
+  },
+  "2016": {
+   "diff_transactions_pct": -0.1931,
+   "diff_obligations_pct": -0.0716
+  },
+  "2017": {
+   "diff_transactions_pct": -0.1983,
+   "diff_obligations_pct": -0.0648
+  },
+  "2018": {
+   "diff_transactions_pct": -0.2398,
+   "diff_obligations_pct": -0.0787
+  },
+  "2019": {
+   "diff_transactions_pct": -0.2482,
+   "diff_obligations_pct": -0.1771
+  },
+  "2020": {
+   "diff_transactions_pct": -0.2347,
+   "diff_obligations_pct": -0.0899
+  },
+  "2021": {
+   "diff_transactions_pct": -0.2724,
+   "diff_obligations_pct": -0.0684
+  },
+  "2022": {
+   "diff_transactions_pct": -0.2898,
+   "diff_obligations_pct": -0.0829
+  },
+  "2023": {
+   "diff_transactions_pct": -0.2704,
+   "diff_obligations_pct": -0.0952
+  }
+ },
+ "table_file_date_by_year": {
+  "2008": "2026-11-10",
+  "2009": "2026-11-10",
+  "2010": "2026-11-10",
+  "2011": "2026-11-10",
+  "2012": "2026-11-10",
+  "2013": "2026-11-10",
+  "2014": "2026-11-10",
+  "2015": "2026-11-10",
+  "2016": "2026-11-10",
+  "2017": "2026-11-10",
+  "2018": "2026-11-10",
+  "2019": "2026-11-10",
+  "2020": "2026-11-10",
+  "2021": "2026-11-10",
+  "2022": "2026-11-10",
+  "2023": "2026-11-10"
+ },
+ "json_transactions_equal_n_tx": {
+  "2008": true,
+  "2009": true,
+  "2010": true,
+  "2011": true,
+  "2012": true,
+  "2013": true,
+  "2014": true,
+  "2015": true,
+  "2016": true,
+  "2017": true,
+  "2018": true,
+  "2019": true,
+  "2020": true,
+  "2021": true,
+  "2022": true,
+  "2023": true
+ },
+ "verdict": "16 of 16 fiscal years were compared with USAspending's own totals for the agencies our downloads ask for. Every year is within 1 percent (largest difference 0.00 percent). Counting every awarding agency, including ones missing from USAspending's top-tier list, our transaction counts are up to 0.29 percent lower. Small differences are expected because USAspending changes its records every day after our download.",
+ "errors": [],
+ "caveats": [
+  "One combined total per year (civilian and Defense together): our yearly tables hold awards, not agencies, so they cannot be split reliably.",
+  "Sector download_agencies = the API filtered to the same top-tier agency list as our downloads (the like-for-like check). Sector all_agencies = no agency filter; the gap there is transactions of awarding agencies that are not on USAspending's top-tier reference list, which our downloads never ask for.",
+  "USAspending updates daily and Defense data are published 90 days late; our files have the date shown in table_file_date_by_year.",
+  "Our tables drop repeated transaction keys within a file; the API count is of its own current records.",
+  "The API's dollars are the sum of obligations by the fiscal year of the action date, for the same award types."
+ ]
+}

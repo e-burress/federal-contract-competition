@@ -445,5 +445,84 @@ class ExplorerV2Tests(unittest.TestCase):
         self.assertEqual(len(load_js(self.out)["scan"]["years"]), len(YEARS))
 
 
+
+class DailyScoreboard(unittest.TestCase):
+    """The scoreboard section: the public ledger of the daily sealed forecasts (forecasts/daily/ next to the results folder) and the
+    public scores of 32_score_daily.py.  Left out (null) before the first batch."""
+    LEDGER = ("batch_id,forecast_date,made_at_utc,snapshot_date,model_version,model_sha256,n_forecasts,n_civilian_except_gsa,n_gsa,"
+              "n_defense,n_unknown,n_fresh,mean_forecast,batch_sha256\n"
+              "PIO-D-20301102,2030-11-02,x,2030-11-02,2,abc,4,1,0,3,0,1,,def\n"
+              "PIO-D-20301101,2030-11-01,x,2030-11-01,2,abc,5000,1000,10,3990,0,300,0.2254,ghi\n"
+              "PIO-D-20301103,2030-11-0\n")
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.res = os.path.join(self.tmp, "results")
+        self.daily = os.path.join(self.tmp, "forecasts", "daily")
+        os.makedirs(self.res)
+        base_files(self.res)
+        self.out = os.path.join(self.tmp, "docs", "data", "explorer-data.js")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def build(self):
+        bx.build(self.res, self.out, repo="someone/project", today=date(2030, 11, 10))
+        return load_js(self.out)
+
+    def ledger(self):
+        os.makedirs(self.daily, exist_ok=True)
+        with open(os.path.join(self.daily, "ledger.csv"), "w", encoding="utf-8", newline="") as f:
+            f.write(self.LEDGER)
+
+    def scores(self, obj):
+        with open(os.path.join(self.res, "daily_forecast_scores.json"), "w", encoding="utf-8") as f:
+            json.dump(obj, f)
+
+    def test_before_the_first_batch(self):
+        os.makedirs(self.daily)
+        with open(os.path.join(self.daily, "README.md"), "w") as f:
+            f.write("# Daily sealed forecasts\n")
+        d = self.build()
+        self.assertIsNone(d["scoreboard"])
+        self.assertNotIn("forecasts/daily/ledger.csv", d["sources"])
+
+    def test_ledger_only(self):
+        self.ledger()
+        sb = self.build()["scoreboard"]
+        self.assertEqual(sb["days"], [["2030-11-01", 5000, 300, 0.225], ["2030-11-02", 4, 1, None]])   # half-written row dropped
+        self.assertEqual(sb["totals"]["batches"], 2)
+        self.assertEqual(sb["totals"]["forecasts"], 5004)
+        self.assertIsNone(sb["totals"]["brier"])
+        self.assertFalse(sb["published"])
+        self.assertIn("forecasts/daily/ledger.csv", self.build()["sources"])
+
+    def test_scores_of_32_not_published(self):
+        self.ledger()
+        self.scores({"as_of": "2030-11-20", "batches": {"sealed": 2}, "n_forecasts": 5004, "n_resolved": 12, "scores_published": False,
+                     "scores_note": "12 of 5004 forecasts have resolved.", "scores": None})
+        sb = self.build()["scoreboard"]
+        self.assertEqual(sb["totals"], {"batches": 2, "forecasts": 5004, "resolved": 12, "brier": None, "baseline": None})
+        self.assertEqual(sb["months"], [])
+        self.assertEqual(sb["notes"], ["12 of 5004 forecasts have resolved."])
+        self.assertEqual(len(sb["days"]), 2)
+
+    def test_scores_of_32_published(self):
+        self.ledger()
+        self.scores({"as_of": "2030-12-20", "batches": {"sealed": 2}, "n_forecasts": 5004, "n_resolved": 40, "scores_published": True,
+                     "scores": {"as_of": "2030-12-18",
+                                "overall": {"n_resolved": 38, "model": {"brier": 0.15123, "auc": 0.6}, "agency_rate": {"brier": 0.17}},
+                                "by_month": [{"group": "2030-11", "n_forecasts": 5004, "n_resolved": 38, "model": {"brier": 0.151},
+                                              "agency_rate": {"brier": 0.17}, "suppressed": False},
+                                             {"group": "2030-12", "n_forecasts": 3, "n_resolved": 2, "model": None, "agency_rate": None,
+                                              "suppressed": True}]}})
+        sb = self.build()["scoreboard"]
+        self.assertTrue(sb["published"])
+        self.assertEqual(sb["updated"], "2030-12-18")
+        self.assertEqual(sb["totals"]["brier"], 0.15123)
+        self.assertEqual(sb["totals"]["baseline"], 0.17)
+        self.assertEqual(sb["months"], [["2030-11", 2, 5004, 38, 0.151, 0.17], ["2030-12", None, 3, 2, None, None]])
+
+
 if __name__ == "__main__":
     unittest.main()

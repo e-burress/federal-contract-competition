@@ -10,6 +10,7 @@ run.py - run the whole project with one command. Plain Python; no AI is involved
   python run.py test      run the automatic tests (offline, seconds)
   python run.py steps     list every step
   python run.py STEP      run one step, for example: python run.py figures
+                          (anything typed after the step name goes to its script: python run.py daily-forecast --dry-run)
 
 Maintainers only:
   python run.py export-data     write the public snapshot files to dist/ from your own download
@@ -17,6 +18,7 @@ Maintainers only:
 
 Never part of any command: the scripts that create the sealed forecasts (10 and 10b) and the forecast model (05-08, 11),
 whose October 2026 inputs were not kept.  See docs/run-it-yourself.md.
+daily-forecast and score-daily (31, 32) are steps but in no pipeline: they need the private model and batch files.
 
 This file uses only the standard library, so `check` works before anything is installed.
 """
@@ -82,21 +84,28 @@ STEPS = {
     "split-screen":        ("scripts/26_split_screen.py", [], False, "split-like purchase clusters: excess at each threshold over placebo lines"),
     "outcomes":            ("scripts/24_outcomes.py", [], False, "after award: single-offer versus multi-offer awards, from the history tables"),
     "threshold-scan":      ("scripts/27_threshold_scan.py", [], False, "pile-ups under every FAR dollar threshold since FY2008, with placebo values and before/after tests"),
+    "supplier-base":       ("scripts/33_supplier_base.py", [], False, "who wins the awards: companies, new companies, staying, concentration, from the history tables"),
     "model-build":         ("scripts/30_model_v2.py", ["--build-training"], False, "forecast model v2: the labeled training table (needs the history and SAM archive tables)"),
     "model-evaluate":      ("scripts/30_model_v2.py", ["--evaluate"], False, "forecast model v2: out-of-time evaluation against baselines"),
     "model-train":         ("scripts/30_model_v2.py", ["--train"], False, "forecast model v2: final fit, private model file and public model card"),
     "score-f1":            ("scripts/09_resolve_forecast.py", [], True, "score the sealed single-offer forecast F1 (optional: path to the private file)"),
+    "reconcile":           ("scripts/28_reconcile.py", [], True, "compare our yearly totals with USAspending's own totals"),
+    "brief":               ("scripts/build_brief.py", [], False, "the one-page brief (docs/brief.html)"),
+    "daily-forecast":      ("scripts/31_daily_forecast.py", [], True, "forecast today's new open solicitations and seal them (batch private, fingerprint public)"),
+    "score-daily":         ("scripts/32_score_daily.py", [], True, "score the sealed daily forecasts (totals only)"),
 }
 PIPELINES = {
-    "quick": ["get-snapshot", "atlas", "atlas-civilian", "quality", "threshold", "threshold-quarterly", "figures", "report", "dashboard", "explorer"],
+    "quick": ["get-snapshot", "atlas", "atlas-civilian", "quality", "threshold", "threshold-quarterly", "figures", "report", "dashboard", "brief", "explorer"],
     "all":   ["download", "build-five", "build-civilian", "build-threshold", "atlas", "atlas-civilian", "quality", "threshold",
-              "threshold-quarterly", "sql-check", "figures", "report", "dashboard", "explorer"],
-    "daily": ["sam-snapshot", "live", "track-f2", "dashboard", "explorer"],
+              "threshold-quarterly", "sql-check", "figures", "report", "dashboard", "brief", "explorer"],
+    "daily": ["sam-snapshot", "live", "track-f2", "dashboard", "brief", "explorer"],
     "model": ["model-build", "model-evaluate", "model-train"],
-    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "split-screen", "outcomes", "report", "dashboard", "explorer"],
+    "history": ["get-history", "history-atlas", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "split-screen", "outcomes", "supplier-base", "reconcile", "report", "dashboard", "brief", "explorer"],
 }
-# results that change every day, are not rebuilt by quick/all, or are never published (office level); `verify` skips them
-LIVE_OR_FROZEN = ("tracking_", "live_fy", "sam_daily_", "model_", "resolution_", "threshold_resolution_", "atlas_offices")
+# results that change every day, are not rebuilt by quick/all, or are never published (office level); `verify` skips them.
+# daily_forecast_ (32_score_daily.py) and reconciliation (28_reconcile.py) depend on the day they were made and on USAspending's live totals.
+LIVE_OR_FROZEN = ("tracking_", "live_fy", "sam_daily_", "model_", "resolution_", "threshold_resolution_", "atlas_offices",
+                  "daily_forecast_", "reconciliation")
 
 
 def say(msg=""):

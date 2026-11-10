@@ -496,6 +496,39 @@ def sec_split(res):
     return section("split", "Split purchases?", lead, body, note)
 
 
+def sec_supplier(res):
+    """Who wins: the supplier base (scripts/33_supplier_base.py), from its summary file only"""
+    s = load_json(res, "supplier_base_summary.json") or {}
+    c = s.get("companies_above_25k") or {}
+    if None in (num(c.get("first")), num(c.get("last")), num(c.get("change"))):
+        return ""
+    ch = num(c["change"])
+    lead = (f"<b>{int(c['last']):,}</b> companies won at least one new award above $25,000 in FY{c['last_year']}, "
+            f"against {int(c['first']):,} in FY{c['first_year']} ({pct(abs(ch), 0)} {'fewer' if ch < 0 else 'more'}).")
+    nw, st = s.get("new_companies_above_25k") or {}, s.get("staying_above_25k") or {}
+    if num(nw.get("share_of_companies_mean")) is not None:
+        lead += (f" In an average year ({years_text(nw.get('years') or [])}), <b>{pct(nw['share_of_companies_mean'], 0)}</b> of them had won "
+                 f"no such award in the three years before, and together they won {pct(nw['share_of_awards_mean'], 0)} of the awards.")
+    if num(st.get("next_year_mean")) is not None:
+        lead += f" About {pct(st['next_year_mean'], 0)} won again the next year."
+    cp = s.get("competition_above_25k_pooled") or {}
+    a, b = cp.get("single_offer_share_new") or {}, cp.get("single_offer_share_established") or {}
+    if num(a.get("share")) is not None and num(b.get("share")) is not None:
+        lead += (f" Competed awards won by new companies drew a single offer {pct(a['share'])} of the time, against {pct(b['share'])} "
+                 f"for established companies ({esc(str(cp.get('period', '')).replace('-', ' to '))}).")
+    body = figure(res, "supplier_base.png", "Who wins new federal awards: companies, new companies, staying, and single-offer shares")
+    k = s.get("concentration_above_25k") or {}
+    if num(k.get("top1pct_last")) is not None:
+        body += (f"<p>The top 1% of companies won {pct(k['top1pct_last'], 0)} of the initial dollars of purchase orders and definitive "
+                 f"contracts above $25,000 in FY{k['last_year']}.</p>")
+    note = ("A company is one registered identifier: parents and subsidiaries count separately. Only new prime awards are counted; "
+            "orders under existing contract vehicles are not in these tables. Dollars are not adjusted for inflation. Company "
+            "identifiers changed from DUNS to UEI in 2022; years that could not be checked across that switch are hollow on the chart "
+            "and marked not comparable in the files. No company is named, and cells with fewer than 10 companies are left out. "
+            "These are patterns, not proof of causes.")
+    return section("supplier", "Who wins: the supplier base", lead, body, note)
+
+
 QUALITY_METRICS = {"offers_1": "share with one offer", "offers_2": "share with two offers", "offers_3": "share with three offers",
                    "offers_unusable": "share with no usable offer count", "competed": "share marked competed",
                    "volume": "number of awards, vs. the same quarter a year earlier"}
@@ -569,6 +602,47 @@ def sec_quality(res):
     return section("quality", "Data quality", lead, body, note)
 
 
+# ---- the daily sealed forecasts (31_daily_forecast.py, 32_score_daily.py): a small block under the scoreboard.  True in both states:
+# before the first batch it says so in one sentence; it calls the series running only when forecasts/daily/ledger.csv lists a batch.
+def daily_block(res, daily):
+    led = []
+    for r in load_csv(daily, "ledger.csv") or []:
+        k, d = num(r.get("n_forecasts")), str(r.get("forecast_date") or "")[:10]
+        if k is not None and re.fullmatch(r"\d{4}-\d\d-\d\d", d):
+            led.append((d, int(k), num(r.get("n_fresh"))))
+    guide = f'<a href="{REPO}/blob/main/docs/daily-forecasts.md">how it works</a>'
+    if not led:
+        return (f'<div class="card" style="margin-top:12px"><p class="note" style="margin:0"><b>Daily forecasts.</b> A daily series of '
+                f"sealed forecasts, one for each new open solicitation, is built and tested; the first batch has not been sealed yet "
+                f"({guide}).</p></div>")
+    led.sort()
+    k = sum(x[1] for x in led)
+    fresh = [x[2] for x in led if x[2] is not None]
+    tiles = [(f"{len(led):,}", "daily batches sealed since " + nice(led[0][0])), (f"{k:,}", "forecasts in them")]
+    if fresh and len(fresh) == len(led) and k:
+        tiles.append((pct(sum(fresh) / k, 0), "fresh: first posted at most 3 days before the forecast"))
+    s = load_json(res, "daily_forecast_scores.json")
+    score = ""
+    if isinstance(s, dict) and num(s.get("n_resolved")) is not None and num(s.get("n_forecasts")) is not None:
+        tiles.append((f"{int(num(s['n_resolved'])):,}", f"of {int(num(s['n_forecasts'])):,} forecasts resolved so far"))
+        sc = s.get("scores") if s.get("scores_published") is True and isinstance(s.get("scores"), dict) else {}
+        o = sc.get("overall") or {}
+        mod, ag = o.get("model") or {}, o.get("agency_rate") or {}
+        if num(o.get("n_resolved")) is not None and num(mod.get("brier")) is not None and num(mod.get("auc")) is not None:
+            score = (f" Scores on {int(num(o['n_resolved'])):,} resolved forecasts: Brier score {num(mod['brier']):.3f}"
+                     + (f" against {num(ag['brier']):.3f} for the agency's past rate" if num(ag.get("brier")) is not None else "")
+                     + f" (lower is better), AUC {num(mod['auc']):.3f} (0.5 is a coin flip).")
+        else:
+            score = " Scores are published once enough forecasts have resolved."
+    kp = "".join(f'<div class="card kpi"><b>{esc(b)}</b><span>{esc(t)}</span></div>' for b, t in tiles)
+    return (f'<div class="card" style="margin-top:12px"><p class="lead"><b>Daily forecasts.</b> Every morning each new open solicitation '
+            f"gets a forecast of its chance of only one offer. The day's batch stays private (it names buying offices); its fingerprint "
+            f'and counts are published the same morning in <a href="{REPO}/tree/main/forecasts/daily">forecasts/daily</a>.</p>'
+            f'<div class="kpis" style="margin-top:0">{kp}</div>'
+            f'<p class="note">An award counts only if it is dated on or after the day offers were due. Only totals are published.{score} '
+            f"({guide})</p></div>")
+
+
 # (function, anchor, label for the "What's new" line, figures it may show)
 NEW_SECTIONS = [(sec_history, "history", "Since 2008", ["single_offer_history.png"]),
                 (sec_threshold_history, "limits", "Pile-ups by year", ["threshold_history.png", "threshold_staggered.png"]),
@@ -576,6 +650,7 @@ NEW_SECTIONS = [(sec_history, "history", "Since 2008", ["single_offer_history.pn
                 (sec_drivers, "drivers", "Why only one bid?", ["drivers.png"]),
                 (sec_outcomes, "outcomes", "After award", ["outcomes.png"]),
                 (sec_split, "split", "Split purchases?", []),
+                (sec_supplier, "supplier", "Who wins", ["supplier_base.png"]),
                 (sec_quality, "quality", "Data quality", [])]
 
 
@@ -781,6 +856,7 @@ def main():
 
     # ---- long-history sections (FY2008 onward) ---------------------------------------------------
     present = new_sections(RES)
+    daily_html = daily_block(RES, os.path.join(FC, "daily"))
     new_html = "".join(h for _, _, h in present)
     new_line = whats_new(present)
 
@@ -844,7 +920,7 @@ footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
 <button class="theme" id="theme" type="button">Theme</button>
 <h1>Federal Contract Competition: Findings &amp; Forecasts</h1>
 <p class="sub">{scope_text(present)}</p>
-<p class="sub">By <a href="{AUTHOR_URL}">{AUTHOR}</a> · data through {nice(CFG["analysis"]["window_end"])} · <a href="explorer.html"><b>explore the data</b></a> · <a href="{REPO}">code and data</a> · <a href="methodology">methodology</a></p>
+<p class="sub">By <a href="{AUTHOR_URL}">{AUTHOR}</a> · data through {nice(CFG["analysis"]["window_end"])} · <a href="explorer.html"><b>explore the data</b></a> · <a href="brief.html">one-page brief</a> · <a href="{REPO}">code and data</a> · <a href="methodology">methodology</a></p>
 {new_line}
 
 <div class="kpis">
@@ -898,6 +974,7 @@ footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
   </tbody></table></div>
   <p class="note">Both forecasts were sealed on {nice(F1["sealed"])}, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>{f1_hash}</code> · PIO-F2 <code>{f2_hash}</code>. PIO-F2 is <a href="{REPO}/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 will be posted unchanged when it is scored.</p>
 </div>
+{daily_html}
 {track_html}
 
 <h2>How to read this</h2>

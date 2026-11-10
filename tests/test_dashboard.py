@@ -113,6 +113,12 @@ def synthetic(root):
     write_json(os.path.join(res, "split_screen_summary.json"), {"years_used": [2009, 2010], "excess_ratio_pooled": {
         "defense|SAT|all": {"ratio": 1.15, "ci_lo": 1.128, "ci_hi": 1.175}, "defense|SAT|donut": {"ratio": 1.036, "ci_lo": 1.0, "ci_hi": 1.06},
         "gsa|MPT|all": {"ratio": 1.05, "ci_lo": 0.9, "ci_hi": 1.2}}})
+    write_json(os.path.join(res, "supplier_base_summary.json"), {   # the supplier base (33_supplier_base.py)
+        "companies_above_25k": {"first_year": 2008, "first": 57371, "last_year": 2010, "last": 45757, "change": -0.2024},
+        "new_companies_above_25k": {"years": [2010], "share_of_companies_mean": 0.346, "share_of_awards_mean": 0.13},
+        "staying_above_25k": {"next_year_mean": 0.4819},
+        "competition_above_25k_pooled": {"period": "FY2011-FY2021 pooled", "single_offer_share_new": {"share": 0.215},
+                                         "single_offer_share_established": {"share": 0.263}}})
     write_json(os.path.join(res, "quality_summary.json"), {
         "n_flags": 4, "by_metric": {"volume": 1, "offers_1": 3},
         "top_15": [{"agency": "Department of the Interior", "award_kind": "PO", "quarter": "FY2025Q3", "metric": "offers_1",
@@ -195,6 +201,10 @@ class Synthetic(unittest.TestCase):
         sp = bd.sec_split(self.res)
         self.assertIn("1.05 to 1.15", sp)
         self.assertIn("not enough data", sp)                                   # GSA donut missing
+        su = bd.sec_supplier(self.res)
+        self.assertIn("<b>45,757</b>", su)
+        self.assertIn("20% fewer", su)
+        self.assertIn("21.5%", su)
         q = bd.sec_quality(self.res)
         self.assertIn("<b>4</b>", q)
         self.assertIn("Interior", q)
@@ -208,12 +218,12 @@ class Synthetic(unittest.TestCase):
 
     def test_whats_new_and_numbering(self):
         present = bd.new_sections(self.res)
-        self.assertEqual([s for s, _, _ in present], ["history", "limits", "scan", "drivers", "outcomes", "split", "quality"])
+        self.assertEqual([s for s, _, _ in present], ["history", "limits", "scan", "drivers", "outcomes", "split", "supplier", "quality"])
         line = bd.whats_new(present)
         self.assertIn('href="#history"', line)
         page = bd.number_sections('<h2 class="num" id="a">A</h2><h2 id="x">X</h2>' + "".join(h for _, _, h in present))
         self.assertIn('id="a">1. A', page)
-        self.assertIn('id="quality">8. Data quality', page)
+        self.assertIn('id="quality">9. Data quality', page)
         self.assertIn('id="x">X', page)
 
     def test_placebo_failure_is_reported(self):
@@ -297,6 +307,68 @@ class Polish(unittest.TestCase):
         share, vol = bd.quality_tops(old)
         self.assertEqual([f["agency"] for f in share], ["B"])
         self.assertEqual([f["agency"] for f in vol], ["A"])
+
+
+LEDGER = ("batch_id,forecast_date,made_at_utc,snapshot_date,model_version,model_sha256,n_forecasts,n_civilian_except_gsa,n_gsa,"
+          "n_defense,n_unknown,n_fresh,mean_forecast,batch_sha256\n"
+          "PIO-D-20301101,2030-11-01,2030-11-01T11:00:00Z,2030-11-01,2,abc,300,100,0,200,0,30,0.225,ghi\n"
+          "PIO-D-20301102,2030-11-02,2030-11-02T11:00:00Z,2030-11-02,2,abc,100,50,0,50,0,70,0.2,def\n")
+
+
+class DailyForecasts(unittest.TestCase):
+    """the small daily-forecast block under the scoreboard: true before the first batch and after it"""
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.res, self.daily = os.path.join(self.tmp.name, "results"), os.path.join(self.tmp.name, "daily")
+        os.makedirs(self.res)
+        os.makedirs(self.daily)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def ledger(self, text):
+        with open(os.path.join(self.daily, "ledger.csv"), "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+
+    def test_before_the_first_batch(self):
+        for text in (None, "batch_id,forecast_date,n_forecasts\n", "batch_id,forecast_date,n_forecasts\nX,2030-11-0"):
+            if text is not None:
+                self.ledger(text)
+            h = bd.daily_block(self.res, self.daily)
+            check_html(self, h)
+            self.assertIn("the first batch has not been sealed yet", h)
+            self.assertNotIn("kpi", h)
+
+    def test_after_the_first_batch(self):
+        self.ledger(LEDGER)
+        h = bd.daily_block(self.res, self.daily)
+        check_html(self, h)
+        self.assertNotIn("not been sealed", h)
+        self.assertIn("<b>2</b><span>daily batches sealed since Nov 1, 2030</span>", h)
+        self.assertIn("<b>400</b><span>forecasts in them</span>", h)
+        self.assertIn("<b>25%</b><span>fresh", h)                      # (30 + 70) / 400
+        self.assertNotIn("resolved", h)
+        write_json(os.path.join(self.res, "daily_forecast_scores.json"),
+                   {"n_forecasts": 400, "n_resolved": 12, "scores_published": False, "scores": None})
+        h = bd.daily_block(self.res, self.daily)
+        self.assertIn("<b>12</b><span>of 400 forecasts resolved so far</span>", h)
+        self.assertIn("Scores are published once enough forecasts have resolved.", h)
+        write_json(os.path.join(self.res, "daily_forecast_scores.json"),
+                   {"n_forecasts": 400, "n_resolved": 40, "scores_published": True,
+                    "scores": {"overall": {"n_resolved": 38, "model": {"brier": 0.1512, "auc": 0.6789}, "agency_rate": {"brier": 0.1701}}}})
+        h = bd.daily_block(self.res, self.daily)
+        check_html(self, h)
+        self.assertIn("Scores on 38 resolved forecasts: Brier score 0.151 against 0.170 for the agency's past rate", h)
+        self.assertIn("AUC 0.679", h)
+
+    def test_broken_scores_file(self):
+        self.ledger(LEDGER)
+        with open(os.path.join(self.res, "daily_forecast_scores.json"), "w", encoding="utf-8") as f:
+            f.write("{not json")
+        h = bd.daily_block(self.res, self.daily)
+        check_html(self, h)
+        self.assertIn("daily batches sealed", h)
+        self.assertNotIn("resolved so far", h)
 
 
 if __name__ == "__main__":

@@ -154,14 +154,35 @@ def main():
         "value_sum": g["value_sum"].sum(), "exercised_sum": g["exercised_sum"].sum()})
     ay = ay.reset_index().assign(fy=fy)
 
-    base.to_parquet(os.path.join(out_dir, f"base_actions_FY{fy}.parquet"), index=False, compression="zstd")
-    ay.to_parquet(os.path.join(out_dir, f"award_year_FY{fy}.parquet"), index=False, compression="zstd")
     counts = {"fiscal_year": fy, "transactions": int(n_rows), "base_actions": int(len(base)), "defense_base_actions": int(base.is_dod.sum()),
               "competed": int(base.competed.sum()), "eval_set": int(base.eval_set.sum()), "single": int((base.eval_set & base.single).sum()),
               "awards_with_actions": int(len(ay)), "files": [os.path.basename(z) for z in zips]}
-    with open(os.path.join(out_dir, f"history_FY{fy}.json"), "w", encoding="utf-8") as f:
-        json.dump(counts, f, indent=1)
+    # write each table under a temporary name and swap it in, so a reader never sees a half-written file
+    for name, write in ((f"base_actions_FY{fy}.parquet", lambda p: base.to_parquet(p, index=False, compression="zstd")),
+                        (f"award_year_FY{fy}.parquet", lambda p: ay.to_parquet(p, index=False, compression="zstd")),
+                        (f"history_FY{fy}.json", lambda p: write_json(counts, p))):
+        swap_in(write, os.path.join(out_dir, name))
     print(json.dumps({k: v for k, v in counts.items() if k != "files"}, indent=1))
+
+
+def write_json(obj, path):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=1)
+
+
+def swap_in(write, dest, tries=30, wait=2.0):
+    """write(tmp) then replace dest with tmp.  On Windows the swap fails while another program has dest open, so it is retried."""
+    import time
+    tmp = dest + ".tmp"
+    write(tmp)
+    for i in range(tries):
+        try:
+            os.replace(tmp, dest)
+            return
+        except PermissionError:
+            if i == tries - 1:
+                raise
+            time.sleep(wait)
 
 
 if __name__ == "__main__":

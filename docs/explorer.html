@@ -150,7 +150,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
 <nav class="secnav" aria-label="Sections of this page"><ul id="secnav">
   <li><a href="#agencies">Agencies</a></li><li><a href="#sectors">Sectors</a></li><li><a href="#whyone">Why only one bid?</a></li><li><a href="#after">After award</a></li>
   <li class="sep" aria-hidden="true"></li>
-  <li><a href="#thresholds">Dollar limits</a></li><li><a href="#scan">Every dollar limit</a></li><li><a href="#switch2018">The 2018 switch</a></li><li><a href="#split">Split purchases?</a></li>
+  <li><a href="#thresholds">Dollar limits</a></li><li><a href="#scan">Every dollar limit</a></li><li><a href="#switch2018">The 2018 switch</a></li><li><a href="#split">Split purchases?</a></li><li><a href="#supplier">Who wins</a></li>
   <li class="sep" aria-hidden="true"></li>
   <li data-opt="model"><a href="#model">Forecast model</a></li><li data-opt="score"><a href="#score">Forecast scoreboard</a></li>
   <li><a href="#quality">Data quality</a></li><li><a href="#open">Open today</a></li>
@@ -298,6 +298,17 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <p class="note" id="split-note"></p>
 </div>
 
+<h2 id="supplier">Who wins: the supplier base</h2>
+<div class="card" id="sup-card">
+  <p class="sub" id="sup-lead" style="margin-bottom:10px"></p>
+  <div class="controls" id="sup-controls"></div>
+  <div class="legend" id="sup-legend"></div>
+  <div class="chart" id="sup-chart"></div>
+  <details><summary>Show the numbers</summary><div class="tablewrap" id="sup-table"></div></details>
+  <details><summary>New and established companies, pooled over the years</summary><div class="tablewrap" id="sup-comp"></div></details>
+  <p class="note" id="sup-note"></p>
+</div>
+
 <h2 id="model" data-opt="model">Forecast model, version 2</h2>
 <div data-opt="model">
 <div class="kpis" id="m2-kpis"></div>
@@ -336,6 +347,12 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <div class="chart" id="sb-chart"></div>
   <details><summary>Show the numbers</summary><div class="tablewrap" id="sb-table"></div></details>
   <p class="note" id="sb-note"></p>
+</div>
+<div class="card" id="sb-days-card" style="margin-top:12px">
+  <h3 style="margin:0 0 6px;font-size:1rem">Daily batches</h3>
+  <p class="sub" style="margin-bottom:8px">One row per sealed batch, from the public ledger. Each batch holds the forecasts for the new open solicitations of that morning; the forecasts themselves stay private.</p>
+  <div class="tablewrap" id="sb-days"></div>
+  <p class="note" id="sb-days-note"></p>
 </div>
 </div>
 
@@ -1556,6 +1573,71 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
     "What this cannot show: whether any purchase was split. Legitimate repeat buying makes the same pattern. Company and office codes are used only inside the computation; nothing below sector level is published.";
 })();
 
+/* ---------- who wins: the supplier base ---------- */
+(function () {
+  var S = D.supplier;
+  if (!S || !S.series || !Object.keys(S.series).length) { $("sup-card").innerHTML = empty("The supplier-base results (supplier_base_by_fy.csv) are not in the results folder yet."); return; }
+  var SECS = ["all sectors", "civilian except GSA", "GSA", "Department of Defense"];
+  var SCOPE = { above_25k: "Awards above $25,000", all: "All awards" };
+  // measure: [label, column in a row, column of its "comparable" flag, format]
+  var MEAS = { companies: ["Companies winning at least one award", 1, null, "int"], newco: ["New companies (no award in the 3 previous years)", 3, 6, "pct"],
+    stay1: ["Won again the next year", 4, 7, "pct"], stay3: ["Won again within 3 years", 5, 8, "pct"] };
+  var scope = S.series.above_25k ? "above_25k" : Object.keys(S.series)[0], meas = "companies";
+  var h = S.head || {}, c = h.companies_above_25k, nw = h.new_companies_above_25k, st = h.staying_above_25k, cp = h.competition || {};
+  var lead = [];
+  if (c && isNum(c.first) && isNum(c.last)) lead.push(int(c.last) + " companies won at least one new award above $25,000 in FY" + c.last_year + ", against " + int(c.first) + " in FY" + c.first_year + ".");
+  if (nw && isNum(nw.share_of_companies_mean)) lead.push("In an average year, " + pct(nw.share_of_companies_mean, 0) + " of them had won no such award in the three years before.");
+  if (st && isNum(st.next_year_mean)) lead.push("About " + pct(st.next_year_mean, 0) + " won again the next year.");
+  if (cp.single_offer_share_new && cp.single_offer_share_established) lead.push("Competed awards won by new companies drew a single offer " + pct(cp.single_offer_share_new.share) + " of the time, against " + pct(cp.single_offer_share_established.share) + " for established companies (" + String(cp.period || "").replace(/-/g, " to ") + ").");
+  $("sup-lead").textContent = lead.join(" ");
+  $("sup-controls").appendChild(seg("supscope", "Awards counted", Object.keys(S.series).map(function (k) { return [k, SCOPE[k] || k]; }), scope, function (v) { scope = v; draw(); }));
+  $("sup-controls").appendChild(seg("supmeas", "Measure", Object.keys(MEAS).map(function (k) { return [k, MEAS[k][0]]; }), meas, function (v) { meas = v; draw(); }));
+  function fmtV(v) { return MEAS[meas][3] === "int" ? int(v) : pct(v); }
+  function draw() {
+    var m = MEAS[meas], sc = S.series[scope] || {}, xs = [], rows = [];
+    var series = SECS.filter(function (s) { return sc[s]; }).map(function (s, i) {
+      return { name: SECTOR_SHORT[s] || s, short: SECTOR_SHORT[s] || s, color: i, width: s === "all sectors" ? 2.6 : null,
+        pts: sc[s].map(function (p) {
+          if (xs.indexOf(p[0]) < 0) xs.push(p[0]);
+          rows.push({ s: s, p: p });
+          var bad = m[2] != null && p[m[2]] === 0;
+          return { x: p[0], y: isNum(p[m[1]]) ? (m[3] === "int" ? p[m[1]] / 1000 : p[m[1]]) : null, hollow: bad, raw: p, why: isNum(p[m[1]]) ? "" : "not measurable for this year" };
+        }) };
+    });
+    legend("sup-legend", series.map(function (s) { return { name: s.name, color: color(s.color) }; }));
+    lineChart($("sup-chart"), {
+      label: m[0] + " by fiscal year, " + (SCOPE[scope] || scope), series: series, xs: xs, direct: false, xFmt: String, xTip: fyTip,
+      breakAt: function (a, b) { return b - a > 1; }, gapLabel: gapYears,
+      yFmt: function (v) { return m[3] === "int" ? trimNum(v) + "K" : trimNum(v * 100) + "%"; },
+      yTip: function (p) { return "<b style='display:inline'>" + fmtV(p.raw[m[1]]) + "</b>" + (p.hollow ? ' <span class="muted">not comparable (DUNS to UEI switch)</span>' : ""); }
+    });
+    table($("sup-table"), [
+      { label: "Fiscal year", num: true, get: function (r) { return r.p[0]; }, fmt: function (r) { return r.p[0]; } },
+      { label: "Agencies", get: function (r) { return r.s; }, fmt: function (r) { return esc(SECTOR_SHORT[r.s] || r.s); } },
+      { label: "Awards", num: true, get: function (r) { return r.p[2]; }, fmt: function (r) { return int(r.p[2]); } },
+      { label: "Companies", num: true, get: function (r) { return r.p[1]; }, fmt: function (r) { return int(r.p[1]); } },
+      { label: "New companies", num: true, get: function (r) { return r.p[3]; }, fmt: function (r) { return pct(r.p[3]) + (r.p[6] === 0 ? ' <span class="muted">not comparable</span>' : ""); } },
+      { label: "Won again next year", num: true, get: function (r) { return r.p[4]; }, fmt: function (r) { return pct(r.p[4]) + (r.p[7] === 0 ? ' <span class="muted">not comparable</span>' : ""); } },
+      { label: "Won again within 3 years", num: true, get: function (r) { return r.p[5]; }, fmt: function (r) { return pct(r.p[5]) + (r.p[8] === 0 ? ' <span class="muted">not comparable</span>' : ""); } }
+    ], rows, { stack: true, sortCol: 0, sortDir: 1 });
+  }
+  onResize(draw);
+  var GROUP = { single_offer_share: "Single-offer share of competed awards", new_company_share_by_setaside: "New companies' share of awards, by set-aside",
+    new_company_share_by_offers: "New companies' share of competed awards, by offers" };
+  table($("sup-comp"), [
+    { label: "Agencies", get: function (r) { return r[0]; }, fmt: function (r) { return esc(SECTOR_SHORT[r[0]] || r[0]); } },
+    { label: "Awards counted", get: function (r) { return r[1]; }, fmt: function (r) { return esc(SCOPE[r[1]] || r[1]); } },
+    { label: "Measure", get: function (r) { return r[2]; }, fmt: function (r) { return esc(GROUP[r[2]] || r[2]); } },
+    { label: "Group", get: function (r) { return r[3]; }, fmt: function (r) { return esc(r[3]); } },
+    { label: "Share (95%)", num: true, get: function (r) { return r[4]; }, fmt: function (r) { return isNum(r[4]) ? "<b>" + pct(r[4]) + "</b> (" + ci(r[5], r[6], pct) + ")" : '<span class="muted">fewer than 10 companies</span>'; } },
+    { label: "Awards", num: true, get: function (r) { return r[7]; }, fmt: function (r) { return int(r[7]); } }
+  ], S.competition || [], { stack: true, limit: 16 });
+  $("sup-note").textContent = "A company is new in a year if it won no award in the three previous fiscal years (in the above-$25,000 view: no award above $25,000). " +
+    "Hollow points: measures that span the 2022 switch from DUNS to UEI company identifiers and could not be checked yet" +
+    (S.years_without_link_columns && S.years_without_link_columns.length ? " (tables without the linking columns: " + yearsText(S.years_without_link_columns) + ")" : "") + ". " +
+    "Years present: " + yearsText(S.years) + ". " + (S.caveats || []).slice(0, 3).join(" ") + " No company is named; cells with fewer than 10 companies are left blank.";
+})();
+
 /* ---------- forecast model, version 2 (optional) ---------- */
 (function () {
   var M = D.model2;
@@ -1665,13 +1747,24 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
 (function () {
   var B = D.scoreboard;
   if (!B) { hideOpt("score"); return; }
+  var days = B.days || [];
+  if (!days.length) $("sb-days-card").hidden = true;
+  else {
+    table($("sb-days"), [
+      { label: "Day", get: function (r) { return r[0]; }, fmt: function (r) { return esc(niceDate(r[0])); } },
+      { label: "Forecasts", num: true, get: function (r) { return r[1]; }, fmt: function (r) { return int(r[1]); } },
+      { label: "Fresh", num: true, get: function (r) { return r[2]; }, fmt: function (r) { return isNum(r[2]) ? int(r[2]) : "n/a"; } },
+      { label: "Mean forecast", num: true, get: function (r) { return r[3]; }, fmt: function (r) { return isNum(r[3]) ? pct(r[3]) : "not shown"; } }
+    ], days, { stack: true, sortCol: 0, sortDir: -1 });
+    $("sb-days-note").textContent = "Fresh: first posted at most 3 days before the forecast. The mean forecast is left blank for a batch with fewer than 5 forecasts. An award counts only if it is dated on or after the day offers were due.";
+  }
   var t = B.totals || {}, k = [];
   if (isNum(t.batches)) k.push('<div class="card kpi"><b>' + int(t.batches) + "</b><span>daily batches sealed</span></div>");
   if (isNum(t.forecasts)) k.push('<div class="card kpi"><b>' + int(t.forecasts) + "</b><span>forecasts" + (isNum(t.resolved) ? ", " + int(t.resolved) + " resolved so far" : "") + "</span></div>");
   if (isNum(t.brier)) k.push('<div class="card kpi"><b>' + t.brier.toFixed(3) + "</b><span>Brier score" + (isNum(t.baseline) ? " (baseline " + t.baseline.toFixed(3) + ")" : "") + "</span></div>");
   $("sb-kpis").innerHTML = k.join("");
   var ms = B.months || [];
-  if (!ms.length) { $("sb-chart").innerHTML = empty("No month has resolved forecasts yet."); }
+  if (!ms.length) { $("sb-chart").innerHTML = empty(B.published === false ? "Scores are published once enough forecasts have resolved." : "No month has resolved forecasts yet."); }
   else {
     var mlab = function (s) { var p = String(s).split("-"); return p.length >= 2 && /^\d{4}$/.test(p[0]) ? MONTHS[+p[1] - 1] + " " + p[0] : s; };
     var series = [{ name: "Brier score of the forecasts", short: "Forecasts", color: 0, pts: ms.map(function (m, i) { return { x: i, y: m[4], n: m[3] }; }) },
@@ -1686,7 +1779,7 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
       { label: "Batches", num: true, get: function (m) { return m[1]; }, fmt: function (m) { return int(m[1]); } },
       { label: "Forecasts", num: true, get: function (m) { return m[2]; }, fmt: function (m) { return int(m[2]); } },
       { label: "Resolved", num: true, get: function (m) { return m[3]; }, fmt: function (m) { return int(m[3]); } },
-      { label: "Brier", num: true, get: function (m) { return m[4]; }, fmt: function (m) { return isNum(m[4]) ? "<b>" + m[4].toFixed(3) + "</b>" : "not yet"; } },
+      { label: "Brier", num: true, get: function (m) { return m[4]; }, fmt: function (m) { return isNum(m[4]) ? "<b>" + m[4].toFixed(3) + "</b>" : B.published ? "hidden (too few)" : "not yet"; } },
       { label: "Baseline Brier", num: true, get: function (m) { return m[5]; }, fmt: function (m) { return isNum(m[5]) ? m[5].toFixed(3) : "n/a"; } }
     ], ms, { stack: true, sortCol: 0, sortDir: -1 });
   }
@@ -1874,6 +1967,7 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
     "model_v2_evaluation.csv": "forecast model version 2: test results by year and sector",
     "model_v2_calibration.csv": "forecast model version 2: forecast chances against outcomes",
     "daily_forecast_scores.json": "scoreboard of the daily sealed forecasts",
+    "forecasts/daily/ledger.csv": "daily sealed forecasts: one row of counts per batch",
     "quality_flags.csv": "every data-quality flag",
     "quality_summary.json": "flag counts and the rules used",
     "sam_daily_counts.csv": "SAM.gov notices by day, department and type",
@@ -1886,7 +1980,7 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
   var files = (D.sources || []).slice();
   ["atlas_civilian_by_kind.csv", "atlas_civilian_by_setaside.csv"].forEach(function (f) { if (files.indexOf(f) < 0) files.push(f); });
   $("data-links").innerHTML = files.sort(function (a, b) { return (a.indexOf("/") >= 0) - (b.indexOf("/") >= 0) || (a < b ? -1 : 1); }).map(function (f) {
-    var path = f.indexOf("reference/") === 0 ? f : "results/" + f;
+    var path = f.indexOf("/") >= 0 ? f : "results/" + f;
     return '<li><a href="' + esc(repo) + "/blob/main/" + path.split("/").map(encodeURIComponent).join("/") + '"><code>' + esc(f) + "</code></a>" + (DESC[f] ? " <span>" + esc(DESC[f]) + "</span>" : "") + "</li>";
   }).join("") + '<li><a href="' + esc(repo) + '/blob/main/docs/data/explorer-data.js"><code>explorer-data.js</code></a> <span>everything on this page in one file</span></li>';
   if (D.trimmed && D.trimmed.length) {

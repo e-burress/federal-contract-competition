@@ -87,3 +87,61 @@ Built on GitHub by `.github/workflows/history.yml` (scripts `17_history_download
 | n_options, n_scope_changes, n_terminations | Actions that exercised an option (FPDS action type G), changed the scope (B, D, L) or terminated the contract (E, F, X) |
 
 **history_FY<year>.json**: row counts and the files the year was built from.
+
+## Result files: who wins the awards (supplier base)
+
+Built by `scripts/33_supplier_base.py` from the history tables (`python run.py supplier-base`). Sector level or coarser only: no file names or codes a company or a buying office, and every cell resting on fewer than 10 companies is blank, with the reason in `note`. Two award scopes: `all` (every new award) and `above_25k` (initial potential value above $25,000, the headline series). Dollars are initial potential value (base and all options), not adjusted for inflation.
+
+**supplier_base_by_fy.csv**: one row per fiscal year, sector (`civilian except GSA`, `GSA`, `Department of Defense`, `all sectors`), award scope and award kind (`all`, `PO`, `DEF`, `IDV`).
+
+| Column | Meaning |
+|---|---|
+| n_awards, n_awards_no_company_id | New awards in the cell, and those without any company identifier |
+| n_companies, n_companies_unlinked_ids | Different companies that won at least one award: with DUNS and UEI codes linked, and with the raw `vendor_id` |
+| initial_dollars | Initial value of the cell's purchase orders and definitive contracts (contract vehicles and values above $10 billion left out) |
+| n_new_companies, new_share_companies, new_share_awards, new_share_dollars | Companies that won no award (in the same scope) in the three previous fiscal years: their number, and their share of companies, awards and initial dollars. Blank when the three previous years are not all present |
+| new_share_companies_unlinked_ids | The same share computed with the raw `vendor_id` (no linking), to show the size of the identifier correction |
+| new_share_companies_never_seen | Sensitivity: share of companies with no award in any earlier year present |
+| stay_share_next_year, stay_share_next_year_unlinked_ids, stay_share_within_3_years | Share of the cell's companies that won again (in the same scope) in the next year, or within the next three years; blank when those years are missing or incomplete |
+| new_measures_comparable, stay_next_year_comparable, stay_3_years_comparable | False when the measure spans the 2022 switch from DUNS to UEI identifiers and the switch could not be checked; blank when the measure is not computed |
+| note | Known reporting changes (FY2008 Veterans Affairs micro-purchases), incomplete Defense years, the identifier switch, suppressed cells |
+
+**supplier_base_concentration.csv**: one row per fiscal year, sector and award scope; purchase orders and definitive contracts only.
+
+| Column | Meaning |
+|---|---|
+| n_companies, n_awards, initial_dollars | Companies, awards and initial dollars counted |
+| awards_over_cap_left_out | Awards with an initial value above $10 billion, left out as likely recording errors |
+| top1pct_companies, top1pct_share_dollars, top10pct_companies, top10pct_share_dollars | Size of the top 1% and top 10% of companies (ranked by initial dollars) and their share of initial dollars; blank when the group has fewer than 10 companies |
+| top1pct_share_obligated_at_award, top10pct_share_obligated_at_award | The same shares with dollars obligated at award, as a check |
+| n_markets, awards_in_markets, awards_without_naics | 4-digit NAICS industries with at least 20 awards, the awards in them, and awards without a usable NAICS code |
+| hhi_median_award_weighted, share_awards_in_markets_hhi_above_2500 | Herfindahl-Hirschman index of initial dollars per industry (0 to 10,000): the award-weighted median, and the share of awards in industries above 2,500. No single industry is published |
+| note | As above |
+
+**supplier_base_competition.csv**: competed awards with a usable offer count, by new and established companies. One row per period (a fiscal year, or the comparable years pooled), sector, award scope, measure and group.
+
+| Column | Meaning |
+|---|---|
+| period, fy | `FY2013` and 2013, or `FY2011-FY2021 pooled` and blank |
+| measure, group | `single_offer_share` (groups: new companies, established companies; k = awards with one offer), `new_company_share_by_setaside` (groups: set-aside groups as in `23_drivers.py`; all awards; k = awards won by new companies), `new_company_share_by_offers` (groups: one offer, two or more offers; k = awards won by new companies) |
+| k, n, share, ci_lo, ci_hi | Count, total, share and 95% Wilson interval |
+| n_companies | Companies behind the cell (pooled rows: the largest yearly count); cells under 10 are blank |
+| note | As above |
+
+**supplier_base_summary.json**: the headline numbers the pages quote, the definitions, the identifier-switch checks by year (`identifier_switch.by_year`: share of awards with a UEI, with a DUNS, with only an unlinked DUNS; for tables without the linking columns, the share of company ids that match a DUNS code seen in the newer tables), the known reporting changes, the caveats and the run's time and memory.
+
+## Result files: completeness check
+
+Built by `scripts/28_reconcile.py` (`python run.py reconcile`) from the history tables and USAspending's public search API. These files depend on the day they were made, so `python run.py verify` does not compare them.
+
+**reconciliation.csv**: one row per fiscal year and comparison. `sector` is `download_agencies` (USAspending filtered to the same top-tier agencies as our downloads: the like-for-like check) or `all_agencies` (no agency filter). Columns: `our_transactions`, `api_transactions`, `diff_transactions_pct` (ours minus theirs, in percent of theirs), `our_obligations`, `api_obligations`, `diff_obligations_pct`, `checked_utc`, `endpoint`.
+
+**reconciliation_summary.json**: the years checked and not answered, the largest differences, `all_agencies_largest_transaction_gap_pct` (the largest share of a year's transactions held by awarding agencies that are not downloaded), the date of each yearly table, a plain-English `verdict` and the caveats.
+
+## Daily sealed forecasts
+
+Built by `scripts/31_daily_forecast.py` and `scripts/32_score_daily.py`. Guide: [`daily-forecasts.md`](daily-forecasts.md). The batches themselves are private. These files depend on the day they were made, so `python run.py verify` does not compare them.
+
+**forecasts/daily/ledger.csv** (public, one row per sealed batch): `batch_id`, `forecast_date`, `made_at_utc`, `snapshot_date`, `model_version`, `model_sha256`, `n_forecasts`, forecasts by sector (`n_civilian_except_gsa`, `n_gsa`, `n_defense`, `n_unknown`), `n_fresh` (first posted at most 3 days before the forecast), `mean_forecast` (blank under 5 forecasts) and `batch_sha256`. `SHA256SUMS.txt` holds the seal of each batch and `seen.txt` the short hashes of the solicitation numbers already forecast (see [`forecasts/daily/README.md`](../forecasts/daily/README.md)).
+
+**results/daily_forecast_scores.json** (public, totals only): counts of batches, forecasts and resolved forecasts, by sector and by freshness, the reasons forecasts are unresolved, and `scores_published`. Scores (Brier score, log loss and AUC for the model and its three baselines, a calibration table, and rows by sector, month and freshness) appear only once enough forecasts have resolved; small cells are hidden. `results/daily_forecast_scores.csv` holds the same in rows. The full list of keys is in the docstring of `32_score_daily.py`.

@@ -10,7 +10,8 @@ What it does
 
 Input : results/*.csv, results/*.json, results/threshold_summary.txt,
         results/model_summary.txt (frozen, from the October 2026 model build), forecasts/SHA256SUMS.txt,
-        forecasts/PIO-F2-threshold-fy2027q1-20261024.json, config.toml.  No downloads, no pandas.
+        forecasts/PIO-F2-threshold-fy2027q1-20261024.json, forecasts/daily/ledger.csv (once the daily series has started),
+        config.toml.  No downloads, no pandas.
 Output: README.md and docs/methodology.md, rewritten in place (only the marked blocks).
 
 Usage (from the repository root):
@@ -314,7 +315,7 @@ def r_status():
     five = ", ".join(SHORT[a] for a in ["VA", "HHS", "DHS", "DOI"]) + " and USDA"
     return (f"> **Status ({snap_day}):** every result was rebuilt from one public data snapshot, {snapshot_link()}, "
             f"downloaded from USAspending on {snap_day}. `python run.py quick` downloads it and rebuilds everything. "
-            f"{first_release_sentence()} The forecast model and the sealed forecasts are from {long_date(FIRST_RELEASE['date'])} "
+            f"{first_release_sentence()} The first forecast model (version 1) and the sealed forecasts PIO-F1 and PIO-F2 are from {long_date(FIRST_RELEASE['date'])} "
             f"and are unchanged.\n>\n"
             f"> The in-depth analysis and the forecasts cover five civilian departments ({five}) for {fy_span()}. "
             f"Single-offer shares cover every civilian agency, and the threshold test is civilian-wide. "
@@ -326,12 +327,12 @@ def history_status():
     """One sentence on the long history: which fiscal years its results use now, and which are still to come."""
     years = history_years()
     if not years:
-        return ("**Long history (FY2008 onward), in progress:** its yearly tables have not been built yet, so findings 4 to 9 "
+        return ("**Long history (FY2008 onward), in progress:** its yearly tables have not been built yet, so findings 4 to 10 "
                 "say \"not yet available\".")
     want = range(HISTORY_FIRST_FY, CONFIG["analysis"]["fiscal_years"][-1] + 1)
     missing = [y for y in want if y not in years]
     tail = f" {fy_text(missing)} {'is' if len(missing) == 1 else 'are'} still to come." if missing else ""
-    return (f"**Long history, in progress:** findings 4 to 9 add civilian agencies and Defense from FY{HISTORY_FIRST_FY} on. "
+    return (f"**Long history, in progress:** findings 4 to 10 add civilian agencies and Defense from FY{HISTORY_FIRST_FY} on. "
             f"The single-offer history now uses {fy_text(years)}.{tail} Each finding names the fiscal years it uses, which can differ "
             f"while the history is being built.")
 
@@ -1388,37 +1389,204 @@ def m_reference():
     return reference_text("../")
 
 
-# -- the forecast model, version 2 (30_model_v2.py): prints nothing until its card exists
-def model_v2_text(prefix):
+# -- the forecast model, version 2 (30_model_v2.py).  Before its card exists, a line saying it is being built.
+BASELINE_NAME = {"sector rate (baseline)": "the sector-wide rate", "agency rate (baseline)": "the agency's past rate",
+                 "office history only (baseline)": "the buying office's past rate"}
+TODAY = None            # the build date (date.today()); the tests set it
+
+
+def today():
+    return TODAY or date.today()
+
+
+@cache
+def stale_months():
+    """STALE_MONTHS of 31_daily_forecast.py (the daily forecast refuses a model whose award history is older), read from the script
+    so that the two never disagree; 9 if the script is not there."""
+    try:
+        m = re.search(r"^STALE_MONTHS\s*=\s*(\d+)", read_text(os.path.join(SCRIPTS, "31_daily_forecast.py")), re.M)
+    except OSError:
+        m = None
+    return int(m[1]) if m else 9
+
+
+def months_before(d, k):
+    y, m = divmod(d.year * 12 + d.month - 1 - k, 12)
+    return date(y, m + 1, min(d.day, 28))
+
+
+def model_v2_history_end(card):
+    """the last day of the newest fiscal year in the card's award history (fiscal years end on September 30), or None"""
+    years = [int(float(y)) for y in ((card or {}).get("data") or {}).get("award_years_present") or [] if fl(y) is not None]
+    return date(max(years), 9, 30) if years else None
+
+
+def model_v2_trained(card):
+    """the day the model was trained (the card's built_utc), or the build date when the card does not say"""
+    try:
+        return date.fromisoformat(str((card or {}).get("built_utc", ""))[:10])
+    except ValueError:
+        return today()
+
+
+def model_v2_stale(card):
+    """True when the model's award history ends more than STALE_MONTHS months before the day it was trained.  Both dates come
+    from the card, so the README does not change with the calendar.  (31_daily_forecast.py applies the same limit against
+    the day of each forecast and refuses a model that has become too old.)"""
+    end = model_v2_history_end(card)
+    return end is None or end < months_before(model_v2_trained(card), stale_months())
+
+
+def best_baseline(by):
+    """(name, row) of the simple baseline with the highest out-of-time AUC, or (None, None)"""
+    rs = [(k, r) for k, r in by.items() if k in BASELINE_NAME and fl(r.get("auc")) is not None]
+    return max(rs, key=lambda kr: float(kr[1]["auc"])) if rs else (None, None)
+
+
+def model_v2_text(prefix, v1_where):
     card = opt_json("model_v2_card.json")
     if not card:
-        return ""
+        return (f"- **Forecast model version 2 is being built** on SAM.gov's archive files (`22_sam_archive.py`, `30_model_v2.py`). "
+                f"Until it is finished, the frozen version 1 ({v1_where}) is the published model.")
     try:
         by = {r["model"]: r for r in opt_rows("model_v2_evaluation.csv") if r.get("test_fy") == "pooled" and r.get("sector") == "all"}
         m = by[card["shipped"]["name_in_evaluation"]]
-        base, v1 = by.get("sector rate (baseline)"), by.get("version 1 feature set (refit)")
-        cmp_ = series([f"{num(base['auc'], 3)} for the sector-wide rate" if base else "",
-                       f"{num(v1['auc'], 3)} for version 1's features refitted" if v1 else ""])
+        bname, base = best_baseline(by)
+        refit = by.get("version 1 feature set (refit)")
+        cmp_ = series([f"{num(base['auc'], 3)} for the best simple baseline, {BASELINE_NAME[bname]}," if base else "",
+                       f"{num(refit['auc'], 3)} for version 1's features refitted" if refit else ""]).rstrip(",")
         data = card.get("data") or {}
         built = card.get("built_utc", "")[:10]
-        return (f"- **Forecast model, version 2" + (f" (built {long_date(built)})" if built else "") + ".** "
-                f"Trained on {n(data['resolved_solicitations'])} solicitations from SAM.gov's archive that were matched to a competed award "
-                f"(award years {fy_text(data['award_years_present'])}). Tested out of time on {fy_text(card['evaluation']['test_years'])}, "
-                f"the shipped {card['shipped']['kind']} ranks solicitations with an AUC of {num(m['auc'], 3)}"
-                + (f" ({cmp_})" if cmp_ else "") + f", with a Brier score of {num(m['brier'], 3)}"
-                + (f" against {num(base['brier'], 3)} for the sector-wide rate" if base else "")
-                + f" and a calibration slope of {num(m['cal_slope'])} (1.00 is ideal). It is a risk indicator about markets, not a "
-                f"statement about anyone's conduct. Details: [`results/model_v2_card.json`]({prefix}results/model_v2_card.json).")
+        end = model_v2_history_end(card)
+        txt = (f"- **Forecast model, version 2" + (f" (built {long_date(built)})" if built else "") + ".** "
+               f"It is the model of the daily forecasts (see *Pre-registered forecasts*). "
+               f"Trained on {n(data['resolved_solicitations'])} solicitations from SAM.gov's archive that were matched to a competed award "
+               f"(award years {fy_text(data['award_years_present'])}" + (f"; its award history ends {long_date(end.isoformat())}" if end else "")
+               + f"). Tested out of time on {fy_text(card['evaluation']['test_years'])}, "
+               f"the shipped {card['shipped']['kind']} ranks solicitations with an AUC of {num(m['auc'], 3)}"
+               + (f" ({cmp_})" if cmp_ else "") + f", with a Brier score of {num(m['brier'], 3)}"
+               + (f" against {num(base['brier'], 3)} for that baseline" if base and fl(base.get("brier")) is not None else "")
+               + f" and a calibration slope of {num(m['cal_slope'])} (1.00 is ideal).")
+        if model_v2_stale(card):
+            txt += (f" Its award history ends more than {stale_months()} months before it was trained, so it must not score live "
+                    "solicitations until it is retrained on newer award years; the daily forecast script refuses a model this old.")
+        return (txt + f" Version 1 ({v1_where}) is the earlier model, frozen since the {long_date(FIRST_RELEASE['date'])} build. "
+                f"Both are risk indicators about markets, not statements about anyone's conduct. "
+                f"Details: [`results/model_v2_card.json`]({prefix}results/model_v2_card.json).")
     except (KeyError, TypeError, ValueError, IndexError):
         return ""
 
 
 def r_model_v2():
-    return model_v2_text("")
+    return model_v2_text("", "finding 3")
 
 
 def m_model_v2():
-    return model_v2_text("../")
+    return model_v2_text("../", "section 5")
+
+
+# -- the daily sealed forecasts (31_daily_forecast.py, 32_score_daily.py).  True before the first batch and after it: the series is
+# described as running only when forecasts/daily/ledger.csv lists a batch.
+DAILY = os.path.join(FORECASTS, "daily")
+
+
+def daily_ledger():
+    """[(forecast date, forecasts, fresh forecasts or None)] from forecasts/daily/ledger.csv, oldest first; [] before the first batch"""
+    out = []
+    for r in opt_rows("ledger.csv", DAILY):
+        try:
+            d = date.fromisoformat(str(r.get("forecast_date") or "")[:10]).isoformat()
+            k = int(float(r["n_forecasts"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+        f = fl(r.get("n_fresh"))
+        out.append((d, k, None if f is None else int(f)))
+    return sorted(out)
+
+
+def iso_day(s):
+    s = str(s or "")[:10]
+    return s if re.fullmatch(r"\d{4}-\d\d-\d\d", s) else ""
+
+
+def daily_text(guide, folder, method=True):
+    """method=False: the status sentences only (docs/methodology.md describes the method next to the block)"""
+    led = daily_ledger()
+    what = ("every new open solicitation on SAM.gov: the chance that its competed award gets only one offer, with forecast model "
+            "version 2.")
+    how = (f"A day's forecasts form one batch. The batch "
+           f"stays private, because it names solicitations and buying offices. Its SHA-256 fingerprint, a row of counts and short hashes "
+           f"of the solicitation numbers are made public in [`forecasts/daily/`]({folder}) the same morning, before any outcome exists. "
+           f"An award counts only if it is dated on or after the day offers were due. Scores are published as totals only. "
+           f"How it works: [`docs/daily-forecasts.md`]({guide}).")
+    if not led:
+        return ("**Daily forecasts.** The daily series is built and tested; the first batch has not been sealed yet."
+                + (f" When it starts, a robot will forecast each morning {what} {how}" if method else ""))
+    k = sum(x[1] for x in led)
+    fresh = [x[2] for x in led if x[2] is not None]
+    txt = ("**Daily forecasts.** " + (f"Each morning a robot forecasts {what} {how} " if method else "")
+           + f"So far: {n(len(led))} {'batch' if len(led) == 1 else 'batches'} holding {n(k)} "
+           f"{'forecast' if k == 1 else 'forecasts'}, the first on {long_date(led[0][0])}"
+           + (f"; {n(sum(fresh))} of them fresh (first posted at most 3 days before the forecast)" if len(fresh) == len(led) else "") + ".")
+    s = opt_json("daily_forecast_scores.json")
+    if not isinstance(s, dict) or fl(s.get("n_resolved")) is None or fl(s.get("n_forecasts")) is None:
+        return txt + " No forecast has been scored yet."
+    as_of = iso_day(s.get("as_of"))
+    txt += (f" {n(s['n_resolved'])} of the {n(s['n_forecasts'])} forecasts checked so far have resolved"
+            + (f" (as of {long_date(as_of)})" if as_of else "") + ".")
+    sc = s.get("scores") if s.get("scores_published") is True and isinstance(s.get("scores"), dict) else {}
+    o = sc.get("overall") or {}
+    mod, ag = o.get("model") or {}, o.get("agency_rate") or {}
+    if fl(o.get("n_resolved")) is not None and fl(mod.get("brier")) is not None and fl(mod.get("auc")) is not None:
+        sa = iso_day(sc.get("as_of"))
+        txt += (" Scores" + (f" as of {long_date(sa)}" if sa else "")
+                + f", on {n(o['n_resolved'])} resolved forecasts: Brier score {num(mod['brier'], 3)}"
+                + (f" against {num(ag['brier'], 3)} for the agency's past rate" if fl(ag.get("brier")) is not None else "")
+                + f" (lower is better), AUC {num(mod['auc'], 3)}"
+                + (f" against {num(ag['auc'], 3)}" if fl(ag.get("auc")) is not None else "") + " (0.5 is a coin flip).")
+    else:
+        txt += " Scores are published once enough forecasts have resolved."
+    return txt
+
+
+def r_daily():
+    return daily_text("docs/daily-forecasts.md", "forecasts/daily/")
+
+
+def m_daily():
+    return daily_text("daily-forecasts.md", "../forecasts/daily/", method=False)
+
+
+# -- the completeness check against USAspending's own totals (28_reconcile.py)
+def reconcile_text():
+    s = opt_json("reconciliation_summary.json")
+    years = s.get("years_checked") if isinstance(s, dict) else None
+    if not years:
+        return None
+    diffs = [abs(v) for d in s.get("largest_differences") or [] for v in (fl(d.get("diff_transactions_pct")), fl(d.get("diff_obligations_pct")))
+             if v is not None]
+    gap = fl(s.get("all_agencies_largest_transaction_gap_pct"))
+    txt = (f"`28_reconcile.py` compares our yearly transaction counts and dollars with USAspending's own totals. With the same filters as "
+           f"our downloads, {fy_text(years)} ({len(years)} {'year' if len(years) == 1 else 'years'} checked)"
+           + ((" match USAspending's totals exactly." if max(diffs) == 0 else f" differ by at most {num(max(diffs), 2)} percent.")
+              if diffs else " were compared.")
+           + (f" Awarding agencies missing from USAspending's top-tier agency list are not downloaded; they hold at most "
+              f"{num(abs(gap), 2)} percent of a year's transactions." if gap is not None else ""))
+    if s.get("years_not_answered"):
+        txt += f" USAspending did not answer for {fy_text(s['years_not_answered'])}."
+    return txt
+
+
+def r_reconcile():
+    t = reconcile_text()
+    if t is None:
+        return "**Completeness check.** *Not yet available:* `python run.py reconcile` runs it."
+    return f"**Completeness check.** {t} Full table: [`results/reconciliation.csv`](results/reconciliation.csv)."
+
+
+def m_reconcile():
+    t = reconcile_text()
+    return t if t is not None else "*Not yet available:* `python run.py reconcile` runs it."
 
 
 def r_limit_history():
@@ -1667,6 +1835,141 @@ def m_split():
     return "\n".join(out)
 
 
+# -- who wins the awards: the supplier base (33_supplier_base.py)
+def supplier():
+    return opt_json("supplier_base_summary.json") or {}
+
+
+def ci_text(e):
+    """'22.9% (22.6–23.1%)' from a {share, ci_lo, ci_hi} dict"""
+    return f"{pct(e['share'])} ({pts(e['ci_lo'])}–{pct(e['ci_hi'])})"
+
+
+def known_change(s, fy):
+    """' (FY2008 includes 741,240 purchase orders of the Department of Veterans Affairs at or under $3,000)' when the summary records a
+    known reporting change in that year, else ''"""
+    for k in s.get("known_reporting_changes") or []:
+        if k.get("fy") == fy and k.get("at_or_under_micro_purchase_threshold"):
+            return (f" (FY{fy} includes {n(k['at_or_under_micro_purchase_threshold'])} purchase orders of the {k['agency']} at or under "
+                    f"{usd(k['micro_purchase_threshold'])})")
+    return ""
+
+
+def r_supplier():
+    s = supplier()
+    c, a = s.get("companies_above_25k"), s.get("companies_all_awards")
+    if not c or not a:
+        return not_yet("the supplier-base analysis (`results/supplier_base_summary.json`) has not been built.")
+    fall = "fell" if c["change"] < 0 else "rose"
+    txt = [f"In FY{c['first_year']}, {n(c['first'])} companies won at least one new award above $25,000. In FY{c['last_year']}, "
+           f"{n(c['last'])} did, {pct(abs(c['change']), 0)} {'fewer' if c['change'] < 0 else 'more'}. Counting every award, the number "
+           f"{'fell' if a['change'] < 0 else 'rose'} from {n(a['first'])} to {n(a['last'])}, but much of that change is among companies with "
+           f"only small purchases, whose reporting changed over time{known_change(s, a['first_year'])}; "
+           "the above-$25,000 count is the steadier measure. Dollars are not adjusted for inflation."]
+    if fall == "rose":
+        txt[0] = txt[0].replace("much of that change", "part of that change")
+    if abs(a["change"]) <= abs(c["change"]):
+        txt[0] = txt[0].replace("but much of that change", "and part of that change")
+    nw, st = s.get("new_companies_above_25k"), s.get("staying_above_25k")
+    if nw:
+        txt.append(f"In an average year ({fy_text(nw['years'])}), {pct(nw['share_of_companies_mean'], 0)} of the companies winning "
+                   f"above $25,000 had won no such award in the three years before. These new companies won {pct(nw['share_of_awards_mean'], 0)} "
+                   f"of those awards and {pct(nw['share_of_dollars_mean'], 0)} of their initial dollars.")
+    if st and st.get("next_year_mean") is not None:
+        txt.append(f"About {pct(st['next_year_mean'], 0)} of the companies won again the next year"
+                   + (f", and {pct(st['within_3_years_mean'], 0)} within three years." if st.get("within_3_years_mean") is not None else "."))
+    k = s.get("concentration_above_25k")
+    if k and k.get("top1pct_last") is not None:
+        txt.append(f"The top 1% of companies won {pct(k['top1pct_last'], 0)} of the initial dollars of purchase orders and definitive "
+                   f"contracts above $25,000 in FY{k['last_year']} ({pct(k['top1pct_first'], 0)} in FY{k['first_year']}).")
+    cp = s.get("competition_above_25k_pooled") or {}
+    new, old = cp.get("single_offer_share_new"), cp.get("single_offer_share_established")
+    if new and old:
+        word = "less" if new["share"] < old["share"] else "more"
+        txt.append(f"Pooled over {cp['period'].replace(' pooled', '').replace('-', '–')}, competed awards won by new companies got a single "
+                   f"offer {word} often than awards won by established companies: {pct(new['share'])} (95% interval "
+                   f"{pts(new['ci_lo'])}–{pct(new['ci_hi'])}) against {ci_text(old)}.")
+    sw = s.get("identifier_switch") or {}
+    if sw.get("years_without_link_columns") and any(y >= 2019 for y in sw["years_without_link_columns"]):
+        txt.append("Years whose measures span the 2022 switch from DUNS to UEI company identifiers are marked not comparable until "
+                   "every table can link the two.")
+    return paras(" ".join(txt), figure("supplier_base.png", "Who wins new federal awards: companies, new companies, staying, and "
+                                                            "single-offer shares by company status"),
+                 cannot("why companies enter or leave, or whether fewer companies means less competition. A company here is one "
+                        "registered identifier: parents and subsidiaries count separately. Only prime awards are counted, and orders "
+                        "under existing contract vehicles are not in these tables. These are patterns, not proof of causes."))
+
+
+def m_supplier():
+    s = supplier()
+    yrs = s.get("years_present") or []
+    rows_ = [r for r in opt_rows("supplier_base_by_fy.csv") if r.get("sector") == "all sectors" and r.get("award_kind") == "all"
+             and r.get("award_scope") == "above_25k" and fl(r.get("n_companies")) is not None]
+    if not s or not rows_:
+        return not_yet("`results/supplier_base_summary.json` has not been built.")
+    conc = {r["fy"]: r for r in opt_rows("supplier_base_concentration.csv") if r.get("sector") == "all sectors"
+            and r.get("award_scope") == "above_25k"}
+    sw = s.get("identifier_switch") or {}
+
+    def cell(r, col, flag=None):
+        v = fl(r.get(col))
+        if v is None:
+            return ""
+        return pct(v) + (" (not comparable)" if flag and r.get(flag) == "False" else "")
+    out = [f"**Results** (fiscal years present: {fy_text(yrs)}" + (f"; incomplete: {fy_text(s['incomplete_years'])}" if s.get("incomplete_years") else "")
+           + "). All sectors, awards above $25,000:", "",
+           "| Fiscal year | Awards | Companies | New companies (3-year look-back) | Never seen since the first year | Won again next year | "
+           "Won again within 3 years | Top 1% share of dollars | Top 10% share | Median HHI (award-weighted) |",
+           "|---|---|---|---|---|---|---|---|---|---|"]
+    for r in sorted(rows_, key=lambda r: int(r["fy"])):
+        k = conc.get(r["fy"], {})
+        hhi = fl(k.get("hhi_median_award_weighted"))
+        out.append(f"| FY{r['fy']} | {n(r['n_awards'])} | {n(r['n_companies'])} | {cell(r, 'new_share_companies', 'new_measures_comparable')} | "
+                   f"{cell(r, 'new_share_companies_never_seen')} | {cell(r, 'stay_share_next_year', 'stay_next_year_comparable')} | "
+                   f"{cell(r, 'stay_share_within_3_years', 'stay_3_years_comparable')} | {cell(k, 'top1pct_share_dollars')} | "
+                   f"{cell(k, 'top10pct_share_dollars')} | {n(round(hhi)) if hhi is not None else ''} |")
+    by = sw.get("by_year") or {}
+    linked = sw.get("years_with_link_columns") or []
+    miss = sw.get("years_without_link_columns") or []
+    sw_txt = (f"**Identifier switch.** Tables with both identifier codes: {fy_text(linked) if linked else 'none yet'}"
+              + (f"; without them: {fy_text(miss)}" if miss else "") + f". {n(sw.get('duns_uei_links', 0))} DUNS codes are linked to a UEI "
+              f"code; {n(sw.get('linked_groups_with_more_than_two_codes', 0))} linked groups hold more than two codes.")
+    uni = [(y, d) for y, d in by.items() if d.get("has_link_columns") and d.get("share_with_uei") is not None]
+    if uni:
+        lo = min(uni, key=lambda x: x[1]["share_with_uei"])
+        sw_txt += (f" In those tables, {pct(lo[1]['share_with_uei'])} or more of awards carry a UEI (lowest: FY{lo[0]}), and at most "
+                   f"{pct(max(d.get('share_duns_only_unlinked') or 0 for _, d in uni), 2)} carry only a DUNS that no record links to a UEI.")
+    old = [(y, d) for y, d in by.items() if not d.get("has_link_columns") and d.get("share_id_matching_a_known_duns_code") is not None]
+    if old:
+        sw_txt += (f" In the tables without the codes, at most {pct(max(d['share_id_matching_a_known_duns_code'] for _, d in old), 2)} of "
+                   "awards carry a company id that matches a DUNS code seen in the newer tables, a sign that the older records carry UEIs "
+                   "too (USAspending has added UEIs to old records); the check covers only companies whose DUNS appears in a newer table.")
+    nw = s.get("new_companies_above_25k") or {}
+    if nw.get("largest_gap_linked_vs_unlinked_points") is not None:
+        g = nw["largest_gap_linked_vs_unlinked_points"]
+        sw_txt += (f" Linking changes the new-company share by at most {num(g, 2)} percentage points in any year"
+                   + (f" (largest in FY{nw['largest_gap_year']})." if g > 0 else "."))
+    bf = sw.get("usaspending_sample")
+    if bf and bf.get("transactions"):
+        sw_txt += (f" A one-time sample from the USAspending download service ({n(bf['transactions'])} transactions of "
+                   f"{bf.get('request', {}).get('awarding_agency', 'one agency')}, {bf.get('request', {}).get('action_dates', '')}, "
+                   f"checked {long_date(bf['checked_on'])}) found {pct(bf['share_with_uei'])} with a UEI "
+                   "([reference/uei_backfill_check.json](../reference/uei_backfill_check.json)).")
+    out += ["", sw_txt]
+    cp = s.get("competition_above_25k_pooled") or {}
+    if cp.get("single_offer_share_new"):
+        parts = [f"single-offer share of competed awards won by new companies {ci_text(cp['single_offer_share_new'])}, by established "
+                 f"companies {ci_text(cp['single_offer_share_established'])}"]
+        if cp.get("new_share_one_offer") and cp.get("new_share_several_offers"):
+            parts.append(f"new companies won {ci_text(cp['new_share_one_offer'])} of competed awards with one offer and "
+                         f"{ci_text(cp['new_share_several_offers'])} of those with two or more")
+        sa = cp.get("new_share_by_setaside") or {}
+        if sa:
+            parts.append("new companies' share of awards by set-aside: " + "; ".join(f"{LEVEL.get(g, g)} {ci_text(e)}" for g, e in sa.items()))
+        out += ["", f"**Link to competition** ({cp['period'].replace('-', '–')}, all sectors, awards above $25,000): " + "; ".join(parts) + "."]
+    return "\n".join(out)
+
+
 BLOCKS = {
     # README.md
     "status": r_status, "threshold-table": r_threshold_table, "threshold-quarters": r_threshold_quarters,
@@ -1688,11 +1991,16 @@ BLOCKS = {
     "m-quality": m_quality, "m-history": m_history, "m-threshold-history": m_threshold_history, "m-staggered": m_staggered,
     "m-scan": m_scan, "m-drivers": m_drivers, "m-outcomes": m_outcomes, "m-split": m_split, "m-reference": m_reference,
     "m-model-v2": m_model_v2,
+    # the supplier base (optional files)
+    "supplier-base": r_supplier, "m-supplier-base": m_supplier,
+    # the completeness check and the daily sealed forecasts (optional files)
+    "reconcile": r_reconcile, "m-reconcile": m_reconcile, "daily-forecasts": r_daily, "m-daily-forecasts": m_daily,
 }
 # blocks that read only optional files: they must never fail, whatever is missing (tests/test_report.py checks this)
 OPTIONAL_BLOCKS = ["history", "threshold-history", "threshold-staggered", "threshold-scan", "drivers", "outcomes", "split-screen",
                    "quality", "reference", "limit-history", "model-v2", "m-quality", "m-history", "m-threshold-history", "m-staggered",
-                   "m-scan", "m-drivers", "m-outcomes", "m-split", "m-reference", "m-model-v2"]
+                   "m-scan", "m-drivers", "m-outcomes", "m-split", "m-reference", "m-model-v2", "supplier-base", "m-supplier-base",
+                   "reconcile", "m-reconcile", "daily-forecasts", "m-daily-forecasts"]
 
 
 def fill(doc_text, changed, seen, label):

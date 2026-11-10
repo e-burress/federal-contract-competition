@@ -3,8 +3,8 @@ build_explorer.py - build the data file behind the interactive explorer (docs/ex
 
 Run from the repository root:
     python -I scripts/build_explorer.py [--results DIR] [--reference DIR] [--out FILE]
-It reads only result files (results/*.csv, results/*.json) and two public reference tables (reference/market_depth_naics.csv and
-reference/thresholds.csv), never data/, and writes docs/data/explorer-data.js, a small script that sets window.FCC_DATA = {...}.
+It reads only result files (results/*.csv, results/*.json), two public reference tables (reference/market_depth_naics.csv and
+reference/thresholds.csv) and the public ledger of the daily sealed forecasts (forecasts/daily/ledger.csv), never data/, and writes docs/data/explorer-data.js, a small script that sets window.FCC_DATA = {...}.
 A script file (not JSON loaded with fetch) lets the page work both on GitHub Pages and when opened from disk.
 Standard library only.  Every input except the civilian atlas is optional: a missing file leaves its section out (null), so the page
 can say "not available yet".  Files planned but not written yet (model_v2_card.json, daily_forecast_scores.json) are read when present.
@@ -617,6 +617,51 @@ def build_split(rd):
                        if k in design}}
 
 
+SUPPLIER_SECTORS = ["all sectors"] + SECTORS
+
+
+def build_supplier(rd):
+    """Who wins: the supplier base (scripts/33_supplier_base.py).  Per award scope and sector (sector level or coarser only): one row
+    per fiscal year [fy, companies, awards, new share, stay next year, stay within 3 years, new comparable, stay-1 comparable,
+    stay-3 comparable] (comparable: 1, 0 or null), plus the pooled competition rows and the headline numbers of the summary."""
+    rows = rd.csv("supplier_base_by_fy.csv") or []
+    summ = rd.json("supplier_base_summary.json") or {}
+    if not (rows or summ):
+        return None
+
+    def ok(x):
+        return None if x in (None, "") else (1 if truthy(x) else 0)
+    series = {}
+    for r in rows:
+        if r.get("award_kind") != "all" or r.get("sector") not in SUPPLIER_SECTORS:
+            continue
+        fy = fiscal_year(r.get("fy"))
+        if fy is None:
+            continue
+        series.setdefault(r.get("award_scope", ""), {}).setdefault(r["sector"], []).append(
+            [fy, num(r.get("n_companies"), 0), num(r.get("n_awards"), 0), r4(r.get("new_share_companies")), r4(r.get("stay_share_next_year")),
+             r4(r.get("stay_share_within_3_years")), ok(r.get("new_measures_comparable")), ok(r.get("stay_next_year_comparable")),
+             ok(r.get("stay_3_years_comparable"))])
+    for sc in series.values():
+        for v in sc.values():
+            v.sort(key=lambda p: p[0])
+    comp = []
+    for r in rd.csv("supplier_base_competition.csv") or []:
+        if r.get("fy") in (None, "") and r.get("sector") in SUPPLIER_SECTORS:          # the pooled rows only
+            comp.append([r.get("sector"), r.get("award_scope"), r.get("measure"), r.get("group"), r4(r.get("share")), r4(r.get("ci_lo")),
+                         r4(r.get("ci_hi")), num(r.get("n"), 0)])
+    head = {k: summ.get(k) for k in ("companies_above_25k", "companies_all_awards", "new_companies_above_25k", "staying_above_25k",
+                                     "concentration_above_25k") if isinstance(summ.get(k), dict)}
+    cp = summ.get("competition_above_25k_pooled") or {}
+    if isinstance(cp, dict):
+        head["competition"] = {k: cp.get(k) for k in ("period", "single_offer_share_new", "single_offer_share_established")}
+    sw = summ.get("identifier_switch") or {}
+    return {"series": series, "competition": comp, "head": head, "years": summ.get("years_present") or [],
+            "incomplete_years": summ.get("incomplete_years") or [],
+            "years_without_link_columns": sw.get("years_without_link_columns") or [],
+            "caveats": [c for c in (summ.get("caveats") or []) if isinstance(c, str)]}
+
+
 def build_outcomes(rd):
     """After award (scripts/24_outcomes.py): single-offer minus multi-offer differences by outcome, scope and follow-up window,
     and by cohort year.  Placebo and balance rows are kept and labelled by their role."""
@@ -768,13 +813,64 @@ def _score_row(d):
     return out
 
 
-def build_scoreboard(rd):
-    """The public scoreboard of daily sealed forecasts (results/daily_forecast_scores.json), when it exists.
-    Planned shape: totals and a list by month of batches, forecasts, resolved, Brier score and the baseline's Brier score.
-    Several key names are accepted, so a small change in the file does not break the page."""
+def num0(x):
+    """a whole number, or None for a blank (unlike integer(), which gives 0)"""
+    return num(x, 0)
+
+
+def daily_days(daily):
+    """[[forecast date, forecasts, fresh forecasts, mean forecast]] from forecasts/daily/ledger.csv (31_daily_forecast.py), oldest
+    first; None before the first batch.  Counts only: the ledger is public and names no solicitation."""
+    out = []
+    for r in (daily.csv("ledger.csv") if daily else None) or []:
+        d, k = str(r.get("forecast_date") or "")[:10], num0(r.get("n_forecasts"))
+        if re.fullmatch(r"\d{4}-\d\d-\d\d", d) and k is not None:
+            out.append([d, k, num0(r.get("n_fresh")), num(r.get("mean_forecast"), 3)])
+    return sorted(out) or None
+
+
+def _brier(d):
+    return num((d or {}).get("brier"), 5) if isinstance(d, dict) else None
+
+
+def _scores_32(s, days):
+    """The public file of 32_score_daily.py: counts always, Brier scores only when scores_published is true (small cells are
+    already hidden in the file; a hidden cell stays null here)."""
+    sc = s.get("scores") if s.get("scores_published") is True and isinstance(s.get("scores"), dict) else {}
+    o = sc.get("overall") or {}
+    b = s.get("batches") if isinstance(s.get("batches"), dict) else {}
+    per_month = {}
+    for d in days or []:
+        per_month[d[0][:7]] = per_month.get(d[0][:7], 0) + 1
+    months = []
+    for m in sc.get("by_month") or []:
+        if isinstance(m, dict) and m.get("group"):
+            months.append([str(m["group"]), per_month.get(str(m["group"])), num0(m.get("n_forecasts")), num0(m.get("n_resolved")),
+                           None if m.get("suppressed") else _brier(m.get("model")),
+                           None if m.get("suppressed") else _brier(m.get("agency_rate"))])
+    note = s.get("scores_note")
+    return {"updated": sc.get("as_of") or s.get("as_of"), "published": s.get("scores_published") is True,
+            "totals": {"batches": num0(b.get("sealed")) if b else (len(days) if days else None), "forecasts": num0(s.get("n_forecasts")),
+                       "resolved": num0(s.get("n_resolved")), "brier": _brier(o.get("model")), "baseline": _brier(o.get("agency_rate"))},
+            "months": sorted(months, key=lambda x: x[0]), "baseline_name": "the agency's past rate",
+            "notes": [cap_text(note, 400)] if isinstance(note, str) else []}
+
+
+def build_scoreboard(rd, daily=None):
+    """The daily sealed forecasts: the public ledger (forecasts/daily/ledger.csv) by day, and the public scores
+    (results/daily_forecast_scores.json, 32_score_daily.py) when they exist.  None before the first batch.
+    Older or planned shapes of the scores file are still read (several key names are accepted)."""
+    days = daily_days(daily)
     s = rd.json("daily_forecast_scores.json")
     if not isinstance(s, dict):
-        return None
+        if not days:
+            return None
+        return {"updated": days[-1][0], "published": False, "totals": {"batches": len(days), "forecasts": sum(d[1] for d in days),
+                "resolved": None, "brier": None, "baseline": None}, "months": [], "baseline_name": None, "notes": [], "days": days}
+    if "scores_published" in s:
+        out = _scores_32(s, days)
+        out["days"] = days
+        return out
     tot = _pick(s, ("totals", "overall", "summary", "all"))
     months = _pick(s, ("by_month", "months", "monthly")) or []
     if isinstance(months, dict):
@@ -790,7 +886,7 @@ def build_scoreboard(rd):
     return {"updated": _pick(s, ("updated", "as_of", "built", "built_utc", "generated", "generated_utc")),
             "totals": _score_row(tot if isinstance(tot, dict) else s), "months": mrows,
             "baseline_name": _pick(s, ("baseline_name", "baseline_label", "baseline_description")),
-            "notes": [cap_text(x, 400) for x in notes if isinstance(x, str)][:10] if isinstance(notes, list) else []}
+            "notes": [cap_text(x, 400) for x in notes if isinstance(x, str)][:10] if isinstance(notes, list) else [], "days": days}
 
 
 def build_market_depth(ref):
@@ -935,10 +1031,12 @@ def config_repo():
         return DEFAULT_REPO
 
 
-def build(results_dir=DEFAULT_RESULTS, out_path=DEFAULT_OUT, repo=None, today=None, reference_dir=None, cap=SIZE_CAP):
+def build(results_dir=DEFAULT_RESULTS, out_path=DEFAULT_OUT, repo=None, today=None, reference_dir=None, cap=SIZE_CAP, daily_dir=None):
     rd = Reader(results_dir)
     # the reference folder sits next to the results folder (repository layout; tests use a temporary copy of it)
     ref = Reader(reference_dir or os.path.join(os.path.dirname(os.path.abspath(results_dir)), "reference"), "reference/", rd.used)
+    # the public ledger of the daily sealed forecasts, forecasts/daily/ next to the results folder (missing before the first batch)
+    daily = Reader(daily_dir or os.path.join(os.path.dirname(os.path.abspath(results_dir)), "forecasts", "daily"), "forecasts/daily/", rd.used)
     repo = repo or os.environ.get("GITHUB_REPOSITORY") or config_repo()
     agencies, ameta = build_agencies(rd)
     abbr_to_name = {a["abbr"]: a["full"] for a in agencies if a["abbr"]}
@@ -955,9 +1053,10 @@ def build(results_dir=DEFAULT_RESULTS, out_path=DEFAULT_OUT, repo=None, today=No
         "scan": build_scan(rd),
         "drivers": build_drivers(rd),
         "split": build_split(rd),
+        "supplier": build_supplier(rd),
         "outcomes": build_outcomes(rd),
         "model2": build_model2(rd),
-        "scoreboard": build_scoreboard(rd),
+        "scoreboard": build_scoreboard(rd, daily),
         "market_depth": build_market_depth(ref),
         "threshold_table": build_threshold_table(ref),
     }

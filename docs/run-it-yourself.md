@@ -110,7 +110,16 @@ Type these after `python run.py` (or after `uv run run.py`).
 | `verify` | Compares your results with the published ones. | Seconds |
 | `test` | Offline tests. | Seconds |
 | `steps` | Lists all the steps. | Instant |
-| a step name | Runs just that one step. | Varies |
+| a step name | Runs just that one step. Anything typed after the name goes to its script, for example `python run.py daily-forecast --dry-run`. | Varies |
+
+Some steps worth knowing by name:
+
+| Step | What it does |
+|---|---|
+| `brief` | Rebuilds the one-page brief, `docs/brief.html`. Part of `quick`, `all`, `daily` and `history`. |
+| `reconcile` | Compares our yearly transaction counts and dollars with USAspending's own totals. Needs the history tables and the internet. Part of `history`. Writes `results/reconciliation.csv` and `results/reconciliation_summary.json`. |
+| `daily-forecast` | Forecasts the day's new open solicitations and seals the batch (the batch stays private, its fingerprint goes to `forecasts/daily/`). Needs the private model file, so it is in no pipeline. Use `--dry-run` to write nothing public. See [`daily-forecasts.md`](daily-forecasts.md). |
+| `score-daily` | Scores the sealed daily forecasts once the awards appear and writes the totals to `results/daily_forecast_scores.json`. Needs the private batch files, so it is in no pipeline. |
 
 Start with `check`, then `quick`, then `verify`.
 
@@ -118,7 +127,8 @@ Start with `check`, then `quick`, then `verify`.
 
 - **The sealed forecasts in `forecasts/`.** They were written once, before the answers were known, and fingerprinted so nobody can change them later. They are never re-created. Scripts 10 and 10b refuse to overwrite them.
 - **The F1 forecast file.** It names individual buying offices, so it stays private until it is scored. Its fingerprint is public, so it cannot be changed in the meantime.
-- **The forecast model's October 2026 training inputs.** They came from SAM.gov lookups that were not kept. The model results are frozen until the model is rebuilt on SAM.gov's official archive files.
+- **The forecast model's October 2026 training inputs.** They came from SAM.gov lookups that were not kept. The results of that first model (version 1) are frozen. Version 2 is trained on SAM.gov's official archive files (`python run.py model`).
+- **The daily forecast batches.** They name solicitations and buying offices, so they stay private; only their fingerprints and counts are public in `forecasts/daily/`. Without the private model file, `daily-forecast` cannot run, and without the batch files, `score-daily` cannot score.
 
 Everything else can be rebuilt.
 

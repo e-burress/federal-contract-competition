@@ -1,7 +1,8 @@
 """Offline tests for scripts/build_report.py, the blocks of the newer analyses (long history, threshold scan, drivers, outcomes,
-split screen, quality monitor, reference files, forecast model v2).  They render from small synthetic result files in a temporary
-folder; missing, thin or half-written files give a short "not yet available" line (model-v2: nothing) instead of an error; and
-rewriting a document twice changes nothing.  Standard library only."""
+split screen, quality monitor, reference files, forecast model v2, completeness check, daily sealed forecasts).  They render from
+small synthetic result files in a temporary folder; missing, thin or half-written files give a short "not yet available" line
+(model-v2: "being built"; the daily forecasts: "not been sealed yet") instead of an error; and rewriting a document twice changes
+nothing.  Standard library only."""
 import contextlib
 import csv
 import importlib.util
@@ -126,6 +127,24 @@ def synthetic(root):
                                                     {"threshold": "simplified_acquisition", "value_usd": 150000}])
     write_csv(os.path.join(ref, "market_depth_naics.csv"), [{"naics": "111110", "n_any": 10, "extract_date": "2026-11-01"},
                                                             {"naics": "111120", "n_any": 30, "extract_date": "2026-11-01"}])
+    write_json(os.path.join(res, "supplier_base_summary.json"), {   # the supplier base (33_supplier_base.py)
+        "years_present": [2010, 2011, 2012, 2013],
+        "companies_above_25k": {"first_year": 2010, "first": 1000, "last_year": 2013, "last": 800, "change": -0.2},
+        "companies_all_awards": {"first_year": 2010, "first": 3000, "last_year": 2013, "last": 2000, "change": -0.3333},
+        "new_companies_above_25k": {"years": [2013], "share_of_companies_mean": 0.35, "share_of_awards_mean": 0.13,
+                                    "share_of_dollars_mean": 0.14, "largest_gap_linked_vs_unlinked_points": 0.0, "largest_gap_year": 2013},
+        "staying_above_25k": {"next_year_mean": 0.48, "within_3_years_mean": 0.64},
+        "competition_above_25k_pooled": {"period": "FY2013-FY2013 pooled",
+                                         "single_offer_share_new": {"share": 0.215, "ci_lo": 0.213, "ci_hi": 0.217},
+                                         "single_offer_share_established": {"share": 0.263, "ci_lo": 0.262, "ci_hi": 0.264}},
+        "identifier_switch": {"years_with_link_columns": [], "years_without_link_columns": [2010, 2011, 2012, 2013], "by_year": {}}})
+    write_json(os.path.join(res, "reconciliation_summary.json"), {      # the completeness check (28_reconcile.py)
+        "years_checked": [2010, 2011, 2012], "years_not_answered": [],
+        "largest_differences": [{"fy": 2011, "diff_transactions_pct": -0.0123, "diff_obligations_pct": 0.004}],
+        "all_agencies_largest_transaction_gap_pct": 0.3456})
+    write_csv(os.path.join(res, "supplier_base_by_fy.csv"), [
+        {"fy": 2013, "sector": "all sectors", "award_scope": "above_25k", "award_kind": "all", "n_awards": 900, "n_companies": 800,
+         "new_share_companies": 0.35, "new_measures_comparable": "True", "stay_share_next_year": "", "note": ""}])
     for name in ("single_offer_history.png", "threshold_history.png"):
         open(os.path.join(fig, name), "wb").close()
     return res, ref, fig
@@ -134,15 +153,16 @@ def synthetic(root):
 class ReportBlocks(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        self.saved = (br.RESULTS, br.REFERENCE, br.FIGURES)
+        self.saved = (br.RESULTS, br.REFERENCE, br.FIGURES, br.DAILY, br.TODAY)
         root = self.tmp.name
-        br.RESULTS, br.REFERENCE, br.FIGURES = (os.path.join(root, d) for d in ("results", "reference", "figures"))
+        br.RESULTS, br.REFERENCE, br.FIGURES, br.DAILY = (os.path.join(root, d) for d in ("results", "reference", "figures", "daily"))
+        br.TODAY = br.date(2026, 11, 10)
         for d in (br.RESULTS, br.REFERENCE, br.FIGURES):
             os.makedirs(d, exist_ok=True)
         br.clear_caches()
 
     def tearDown(self):
-        br.RESULTS, br.REFERENCE, br.FIGURES = self.saved
+        br.RESULTS, br.REFERENCE, br.FIGURES, br.DAILY, br.TODAY = self.saved
         br.clear_caches()
         self.tmp.cleanup()
 
@@ -159,7 +179,9 @@ class ReportBlocks(unittest.TestCase):
             with self.subTest(block=name):
                 out = self.render(name)
                 if name in ("model-v2", "m-model-v2"):
-                    self.assertEqual(out, "")
+                    self.assertIn("version 2 is being built", out)
+                elif name in ("daily-forecasts", "m-daily-forecasts"):
+                    self.assertIn("the first batch has not been sealed yet", out)
                 elif name in ("limit-history",):
                     self.assertIn("not been built", out)
                 else:
@@ -227,7 +249,16 @@ class ReportBlocks(unittest.TestCase):
         self.assertIn("(../reference/thresholds.csv)", self.render("m-reference"))
         self.assertIn("| Agency A, purchase orders, FY2025 Q2: 40.0% → 20.0% |", self.render("m-quality"))
         self.assertIn("FY2010–FY2012", self.render("limit-history"))
-        self.assertEqual(self.render("model-v2"), "")                   # no card yet
+        self.assertIn("version 2 is being built", self.render("model-v2"))   # no card yet
+        rc = self.render("reconcile")
+        self.assertIn("FY2010–FY2012 (3 years checked) differ by at most 0.01 percent", rc)
+        self.assertIn("they hold at most 0.35 percent of a year's transactions", rc)
+        self.assertIn("(results/reconciliation.csv)", rc)
+        self.assertNotIn("results/reconciliation.csv", self.render("m-reconcile"))
+        su = self.render("supplier-base")
+        self.assertIn("In FY2010, 1,000 companies won", su)
+        self.assertIn("21.5% (95% interval 21.3–21.7%) against 26.3% (26.2–26.4%)", su)
+        self.assertIn("| FY2013 | 900 | 800 | 35.0% |", self.render("m-supplier-base"))
 
     def test_model_v2_appears_with_its_card(self):
         synthetic(self.tmp.name)
@@ -241,10 +272,103 @@ class ReportBlocks(unittest.TestCase):
         br.clear_caches()
         out = self.render("model-v2")
         self.assertTrue(out.startswith("- **Forecast model, version 2 (built November 12, 2026).**"))
+        self.assertIn("It is the model of the daily forecasts", out)
         self.assertIn("123,456 solicitations", out)
         self.assertIn("FY2009–FY2010", out)
-        self.assertIn("0.700 (0.500 for the sector-wide rate and 0.680 for version 1's features refitted)", out)
-        self.assertIn("(../results/model_v2_card.json)", self.render("m-model-v2"))
+        self.assertIn("its award history ends September 30, 2010", out)
+        self.assertIn("0.700 (0.500 for the best simple baseline, the sector-wide rate, and 0.680 for version 1's features refitted)", out)
+        self.assertIn("against 0.170 for that baseline", out)
+        self.assertIn("Version 1 (finding 3) is the earlier model, frozen", out)
+        self.assertIn("must not score live solicitations", out)          # history ends in 2010: stale on the build date
+        m = self.render("m-model-v2")
+        self.assertIn("(../results/model_v2_card.json)", m)
+        self.assertIn("Version 1 (section 5)", m)
+
+    def test_model_v2_staleness_follows_the_history_end(self):
+        synthetic(self.tmp.name)
+        card = {"built_utc": "2026-11-12T10:00:00Z", "data": {"resolved_solicitations": 10, "award_years_present": [2008, 2026]},
+                "shipped": {"name_in_evaluation": "logistic v2", "kind": "L2 logistic regression"}, "evaluation": {"test_years": [2025]}}
+        write_json(os.path.join(br.RESULTS, "model_v2_card.json"), card)
+        ev = [{"test_fy": "pooled", "sector": "all", "model": m, "auc": a, "brier": b, "cal_slope": 0.95}
+              for m, a, b in (("logistic v2", 0.70, 0.15), ("agency rate (baseline)", 0.55, 0.17), ("office history only (baseline)", 0.60, 0.18))]
+        write_csv(os.path.join(br.RESULTS, "model_v2_evaluation.csv"), ev)
+        br.clear_caches()
+        card["built_utc"] = "2027-06-29T10:00:00Z"                        # trained 9 months after September 30, 2026: still fine
+        write_json(os.path.join(br.RESULTS, "model_v2_card.json"), card)
+        br.clear_caches()
+        out = self.render("model-v2")
+        self.assertNotIn("must not score", out)
+        self.assertIn("0.600 for the best simple baseline, the buying office's past rate)", out)
+        self.assertIn("its award history ends September 30, 2026", out)
+        card["built_utc"] = "2027-07-02T10:00:00Z"                        # trained more than 9 months later: stale
+        write_json(os.path.join(br.RESULTS, "model_v2_card.json"), card)
+        br.clear_caches()
+        self.assertIn("must not score live solicitations", self.render("model-v2"))
+        br.TODAY = br.date(2030, 1, 1)                                    # the calendar alone never changes the wording
+        card["built_utc"] = "2027-06-29T10:00:00Z"
+        write_json(os.path.join(br.RESULTS, "model_v2_card.json"), card)
+        br.clear_caches()
+        self.assertNotIn("must not score", self.render("model-v2"))
+        self.assertEqual(br.stale_months(), 9)                           # read from 31_daily_forecast.py
+
+    def daily(self, ledger_text, scores=None):
+        os.makedirs(br.DAILY, exist_ok=True)
+        if ledger_text is not None:
+            with open(os.path.join(br.DAILY, "ledger.csv"), "w", encoding="utf-8", newline="") as f:
+                f.write(ledger_text)
+        if scores is not None:
+            write_json(os.path.join(br.RESULTS, "daily_forecast_scores.json"), scores)
+        br.clear_caches()
+
+    LEDGER = ("batch_id,forecast_date,made_at_utc,snapshot_date,model_version,model_sha256,n_forecasts,n_civilian_except_gsa,n_gsa,"
+              "n_defense,n_unknown,n_fresh,mean_forecast,batch_sha256" + chr(10) +
+              "PIO-D-20301102,2030-11-02,2030-11-02T11:00:00Z,2030-11-02,2,abc,4,1,0,3,0,1,,def" + chr(10) +
+              "PIO-D-20301101,2030-11-01,2030-11-01T11:00:00Z,2030-11-01,2,abc,5000,1000,10,3990,0,300,0.225,ghi" + chr(10))
+
+    def test_daily_forecasts_before_the_first_batch(self):
+        for setup in (lambda: None, lambda: self.daily("batch_id,forecast_date,n_forecasts" + chr(10)),
+                      lambda: self.daily(None, {"n_forecasts": 9, "n_resolved": 9})):   # a scores file alone does not make it live
+            setup()
+            for name in ("daily-forecasts", "m-daily-forecasts"):
+                out = self.render(name)
+                self.assertIn("the first batch has not been sealed yet", out)
+                self.assertNotIn("So far", out)
+        out = self.render("daily-forecasts")
+        self.assertIn("(docs/daily-forecasts.md)", out)
+        self.assertIn("(forecasts/daily/)", out)
+        self.assertIn("on or after the day offers were due", out)
+        self.assertIn("When it starts", out)
+
+    def test_daily_forecasts_after_the_first_batch(self):
+        self.daily(self.LEDGER)
+        out = self.render("daily-forecasts")
+        self.assertNotIn("not been sealed", out)
+        self.assertIn("So far: 2 batches holding 5,004 forecasts, the first on November 1, 2030; 301 of them fresh", out)
+        self.assertIn("No forecast has been scored yet.", out)
+        m = self.render("m-daily-forecasts")
+        self.assertTrue(m.startswith("**Daily forecasts.** So far: 2 batches"))
+        # a scores file, scores not published yet
+        self.daily(self.LEDGER, {"as_of": "2030-11-20", "n_forecasts": 5004, "n_resolved": 12, "scores_published": False, "scores": None})
+        out = self.render("daily-forecasts")
+        self.assertIn("12 of the 5,004 forecasts checked so far have resolved (as of November 20, 2030).", out)
+        self.assertIn("Scores are published once enough forecasts have resolved.", out)
+        self.assertNotIn("Brier", out)
+        # published
+        self.daily(self.LEDGER, {"as_of": "2030-12-20", "n_forecasts": 5004, "n_resolved": 40, "scores_published": True,
+                                 "scores": {"as_of": "2030-12-18", "overall": {"n_resolved": 38, "model": {"brier": 0.1512, "auc": 0.6789},
+                                                                               "agency_rate": {"brier": 0.1701, "auc": 0.6}}}})
+        out = self.render("daily-forecasts")
+        self.assertIn("Scores as of December 18, 2030, on 38 resolved forecasts: Brier score 0.151 against 0.170 for the agency's past "
+                      "rate (lower is better), AUC 0.679 against 0.600 (0.5 is a coin flip).", out)
+
+    def test_daily_forecasts_half_written_files(self):
+        self.daily("batch_id,forecast_date,n_forecasts" + chr(10) + "PIO-D-20301101,2030-11-01,7" + chr(10) + "PIO-D-20301102,2030-11-0")
+        with open(os.path.join(br.RESULTS, "daily_forecast_scores.json"), "w", encoding="utf-8") as f:
+            f.write('{"n_forecasts": ')
+        br.clear_caches()
+        out = self.render("daily-forecasts")
+        self.assertIn("So far: 1 batch holding 7 forecasts, the first on November 1, 2030.", out)   # no fresh column: not stated
+        self.assertIn("No forecast has been scored yet.", out)
 
     def test_rewriting_twice_changes_nothing(self):
         synthetic(self.tmp.name)
