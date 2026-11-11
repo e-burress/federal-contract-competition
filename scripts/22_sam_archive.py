@@ -9,7 +9,7 @@ notice, so the same facts can be built for hundreds of thousands of solicitation
 Source (public, no key, no account)
   Listing:  https://sam.gov/api/prod/fileextractservices/v1/api/listfiles?domain=Contract%20Opportunities/Archived%20Data&privacy=Public
   Files:    https://s3.amazonaws.com/falextracts/Contract%20Opportunities/Archived%20Data/FY<year>_archived_opportunities.csv
-  Each file has the same 47 columns as the active-notices file read by 14_sam_daily_snapshot.py (checked at run time).
+  Each file has the same 47 columns as the nightly active-notices file (read with sam_csv.py; checked at run time).
   The big years are about 0.5 to 1.3 GB each.  The listing gives no sizes, so --list asks S3 for each file's size.
 
 How the yearly files are defined (checked against the data, see the JSON "fiscal_year_definition" note)
@@ -68,7 +68,6 @@ Set PIO_CONTACT (a web address, never an e-mail) so the User-Agent says who is d
 import argparse
 import csv
 import glob
-import importlib.util
 import json
 import os
 import re
@@ -90,11 +89,8 @@ import pyarrow.parquet as pq
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA, UA_SAM, http_json  # noqa: E402
 
-# script 14's name starts with a digit, so it is imported by path; we reuse its reader, header check, scrub and cleaning
-_spec = importlib.util.spec_from_file_location(
-    "sam_snapshot_14", os.path.join(os.path.dirname(os.path.abspath(__file__)), "14_sam_daily_snapshot.py"))
-s14 = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(s14)
+# the reader, header check, scrub and cleaning of SAM.gov's CSV files (moved from script 14 to sam_csv.py in November 2026)
+import sam_csv as s14  # noqa: E402
 
 LIST_URL = ("https://sam.gov/api/prod/fileextractservices/v1/api/listfiles?"
             "domain=Contract%20Opportunities/Archived%20Data&privacy=Public")

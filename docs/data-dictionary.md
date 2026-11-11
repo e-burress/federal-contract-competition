@@ -168,6 +168,18 @@ Built by `scripts/28_reconcile.py` (`python run.py reconcile`) from the history 
 
 **reconciliation_summary.json**: the years checked and not answered, the largest differences, `all_agencies_largest_transaction_gap_pct` (the largest share of a year's transactions held by awarding agencies that are not downloaded), the date of each yearly table, a plain-English `verdict` and the caveats.
 
+## Result files: SAM.gov notices, day by day
+
+Built by `scripts/14_sam_daily_snapshot.py` from SAM.gov's Get Opportunities API ([`sam-api-key.md`](sam-api-key.md)). These files depend on the day they were made, so `python run.py verify` does not compare them.
+
+**sam_api_pulls.csv**: one row per pull of one posted day, in the order made. `posted_day`, `pulled_utc`, `attempt` (1 for the first pull of that day), `requests` (requests this pull made), `total_records` (SAM.gov's count of notices posted that day), `notices_received` (distinct notice ids received), `status` (`complete`; `incomplete`: cut short, pulled again in full next time; `short`: fell short twice for another reason, or needs more requests than one run may make; kept as received), `offset_mode` (how the API counts its `offset`, once known: `page` or `record`).
+
+**sam_new_notices.csv**: one row per posted day, department (as SAM.gov writes it; `(blank)` if missing) and notice type, for every finished day. `n_notices` (notices posted that day, new and amended), `n_sol_numbers` (distinct solicitation numbers among them).
+
+**sam_daily_latest.json**: the dashboard summary. Since November 11, 2026 (`"schema": 2`): the newest finished day (`through`), the 7-day window, solicitation notices posted in the window (all, civilian, Defense; notices and distinct solicitation numbers), the ten civilian departments with the most solicitations, the newest day by notice type, the store's size and first day, the requests used, and warnings. Before that it described SAM.gov's nightly file of active notices.
+
+**sam_daily_counts.csv**: open notices by department and type from SAM.gov's nightly file of active notices, November 9 and 10, 2026 only. No longer updated.
+
 ## Daily sealed forecasts
 
 Built by `scripts/31_daily_forecast.py` and `scripts/32_score_daily.py`. Guide: [`daily-forecasts.md`](daily-forecasts.md). The batches themselves are private. These files depend on the day they were made, so `python run.py verify` does not compare them.

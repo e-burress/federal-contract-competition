@@ -820,6 +820,20 @@ def main():
     sam_path = os.path.join(RES, "sam_daily_latest.json")
     if os.path.exists(sam_path):
         sd = json.load(open(sam_path, encoding="utf-8"))
+    if os.path.exists(sam_path) and sd.get("schema") == 2:          # from SAM.gov's API (14_sam_daily_snapshot.py)
+        sp, win = sd["solicitation_notices_posted"], sd["window"]
+        span = f"{nice(win['from'])} to {nice(win['to'])}"
+        part = "" if win["days_pulled"] >= win["days"] else f" ({win['days_pulled']} of the {win['days']} days collected so far)"
+        live_tiles.append(f'<div class="card kpi"><b>{sp["civilian"]["distinct_sol_numbers"]:,}</b><span>civilian solicitations '
+                          f'posted or updated on SAM.gov, {span}{part} ({sp["dod"]["distinct_sol_numbers"]:,} more at Defense)</span></div>')
+        srows = "".join(f"<tr><td>{esc(sam_name(d['department']))}</td><td data-v='{d['distinct_sol_numbers']}'>{d['distinct_sol_numbers']:,}</td></tr>"
+                        for d in sd["top10_civilian_departments"])
+        live_parts.append(f"""<h3 style="margin:22px 0 8px;font-size:1.05rem">Solicitations posted or updated (SAM.gov, {span})</h3>
+<div class="tablewrap"><table class="sortable">
+  <thead><tr><th>Civilian department</th><th>Solicitations</th></tr></thead>
+  <tbody>{srows}</tbody></table></div>
+<p class="note">Distinct solicitation numbers with a solicitation notice posted on these days, new or amended, from SAM.gov's official Get Opportunities API. Defense solicitations are public right away, even though Defense awards are published 90 days late.</p>""")
+    elif os.path.exists(sam_path):
         op = sd["open_solicitations"]
         live_tiles.append(f'<div class="card kpi"><b>{op["civilian"]["distinct_sol_numbers"]:,}</b><span>civilian solicitations open today ({op["dod"]["distinct_sol_numbers"]:,} more at Defense); {op["deadline_next_7d_civilian"]["distinct_sol_numbers"]:,} civilian ones close within 7 days</span></div>')
         srows = "".join(f"<tr><td>{esc(sam_name(d['department']))}</td><td data-v='{d['open_distinct_sol_numbers']}'>{d['open_distinct_sol_numbers']:,}</td></tr>"

@@ -2,8 +2,11 @@
 31_daily_forecast.py - every morning: forecast each NEW open solicitation's chance of getting only ONE offer, and SEAL the batch.
 
 What it does
-  1. Reads the newest daily snapshot of active SAM.gov notices (<DATA>/sam_snapshots/sam_active_<date>.parquet, written by
-     14_sam_daily_snapshot.py).  The snapshot must be at most 2 days old.
+  1. Reads the newest daily snapshot of SAM.gov notices, written by 14_sam_daily_snapshot.py: since November 2026
+     <DATA>/sam_snapshots/sam_view_<date>.parquet, the notices pulled day by day from SAM.gov's Get Opportunities API (active
+     when pulled); before that sam_active_<date>.parquet, SAM.gov's nightly list of active notices.  The snapshot must be at
+     most 2 days old.  A view whose API store began fewer than 30 days (MIN_STORE_DAYS) before it is refused, except in a
+     dry run: before then an amendment of a solicitation posted earlier looks new, with the wrong first posting date.
   2. Picks the solicitations to forecast (SELECTION_RULE below):
        - group notices by normalized solicitation number (upper case, letters and digits only); numbers shorter than 8
          characters are skipped, because the outcome rule cannot match them to awards;
@@ -113,7 +116,8 @@ PRESOL, SOURCES_SOUGHT, AWARD_NOTICE = "Presolicitation", "Sources Sought", "Awa
 MIN_LEAD = pd.Timedelta(days=1)          # the deadline must be at least this far after the forecast time
 STALE_MONTHS = 9                         # refuse when the model's newest award history is older than this
 MAX_SNAPSHOT_AGE_DAYS = 2
-MIN_CELL = 5                             # the ledger's mean forecast is left blank for a batch with fewer forecasts
+MIN_STORE_DAYS = 30                      # an API view must cover at least this many days (see the header)
+MIN_CELL = 5                            # the ledger's mean forecast is left blank for a batch with fewer forecasts
 HASH_CHARS = 16
 FRESH_DAYS = 3                           # "fresh": first posted at most this many days before the forecast
 SCHEMA_VERSION = 1
@@ -133,7 +137,8 @@ LEDGER_COLS = (["batch_id", "forecast_date", "made_at_utc", "snapshot_date", "mo
                + list(SECTOR_COLS.values()) + ["n_fresh", "mean_forecast", "batch_sha256"])
 
 SELECTION_RULE = (
-    "From the newest daily snapshot of active SAM.gov notices, group notices by normalized solicitation number (upper case, letters "
+    "From the newest daily snapshot of SAM.gov notices (since November 2026 the notices pulled day by day from SAM.gov's Get "
+    "Opportunities API, active when pulled), group notices by normalized solicitation number (upper case, letters "
     "and digits only; numbers shorter than 8 characters are skipped). Keep a number only if its newest notice is a Solicitation or a "
     "Combined Synopsis/Solicitation, no Award Notice with the number is active, the newest notice's response deadline is at least "
     "24 hours after the forecast time, and the number has not been forecast before. One forecast per solicitation, made the first "
@@ -187,13 +192,25 @@ def batch_id_for(day):
 
 
 def newest_snapshot(snap_dir):
-    """(path, date) of the newest sam_active_<YYYY-MM-DD>.parquet, or (None, None)."""
-    best = (None, None)
-    for p in glob.glob(os.path.join(snap_dir, "sam_active_*.parquet")):
-        m = re.search(r"sam_active_(\d{4}-\d{2}-\d{2})\.parquet$", p)
-        if m and (best[1] is None or m.group(1) > best[1]):
-            best = (p, m.group(1))
+    """(path, date) of the newest sam_view_<YYYY-MM-DD>.parquet (API) or sam_active_<YYYY-MM-DD>.parquet (nightly list,
+    before November 2026); on the same date the view wins.  (None, None) if there is none."""
+    best, best_rank = (None, None), None
+    for p in glob.glob(os.path.join(snap_dir, "sam_*.parquet")):
+        m = re.search(r"sam_(view|active)_(\d{4}-\d{2}-\d{2})\.parquet$", p)
+        if m:
+            rank = (m.group(2), m.group(1) == "view")
+            if best_rank is None or rank > best_rank:
+                best, best_rank = (p, m.group(2)), rank
     return best
+
+
+def store_first_day(path):
+    """first day of the API store behind a sam_view file (None for a nightly-list snapshot or an empty view)"""
+    import pyarrow.parquet as pq
+    if "store_first_day" not in pq.read_schema(path).names:
+        return None
+    s = pd.read_parquet(path, columns=["store_first_day"])["store_first_day"]
+    return None if not len(s) or pd.isna(s.min()) else pd.Timestamp(s.min())
 
 
 def read_sums(daily_dir):
@@ -653,6 +670,14 @@ def run(argv=None, paths=None, now=None):
         say(f"The newest snapshot is from {snap_date}, {age} days old (at most {MAX_SNAPSHOT_AGE_DAYS} allowed). "
             "Run 14_sam_daily_snapshot.py first. Nothing was forecast.")
         return EXIT_USAGE
+    first_day = store_first_day(snap_path)
+    if first_day is not None and not a.dry_run:
+        span = (pd.Timestamp(snap_date) - first_day).days
+        if span < MIN_STORE_DAYS:
+            say(f"REFUSED: the SAM.gov notices pulled from the API begin on {first_day.date()}, {span} days before {snap_date}; "
+                f"at least {MIN_STORE_DAYS} days are needed. With fewer, an amendment of a solicitation posted before that day "
+                "looks like a new solicitation, with the wrong first posting date. Nothing was forecast (dry runs are allowed).")
+            return EXIT_REFUSED
     if not os.path.isfile(P["model_path"]):
         if a.fetch_model:
             try:

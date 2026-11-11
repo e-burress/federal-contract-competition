@@ -283,8 +283,32 @@ def build_quality(rd, abbr_to_name):
     return res
 
 
+SAM_SOLICITATION_TYPES = ("Solicitation", "Combined Synopsis/Solicitation")
+
+
+def build_sam_api(latest, new):
+    """schema 2 (SAM.gov's API, since November 2026): solicitations posted or updated in the last 7 days, and per day"""
+    sp, win = latest.get("solicitation_notices_posted", {}), latest.get("window", {})
+    dod_label = sp.get("dod_department_label", "DEPT OF DEFENSE")
+    out = {"schema": 2, "date": latest.get("through"), "from": win.get("from"), "days": win.get("days"),
+           "days_pulled": win.get("days_pulled"),
+           "civilian": sp.get("civilian", {}).get("distinct_sol_numbers"), "dod": sp.get("dod", {}).get("distinct_sol_numbers"),
+           "departments": [[sam_name(d["department"]), d.get("distinct_sol_numbers"), d.get("notices")]
+                           for d in latest.get("top10_civilian_departments", [])]}
+    days = {}
+    for r in new or []:
+        if r.get("type") not in SAM_SOLICITATION_TYPES:
+            continue
+        day = days.setdefault(r["posted_day"], [0, 0])
+        day[1 if r.get("department") == dod_label else 0] += integer(r.get("n_notices"))
+    out["daily"] = [[d, v[0], v[1]] for d, v in sorted(days.items())]
+    return out
+
+
 def build_sam(rd):
     latest = rd.json("sam_daily_latest.json")
+    if latest and latest.get("schema") == 2:
+        return build_sam_api(latest, rd.csv("sam_new_notices.csv"))
     counts = rd.csv("sam_daily_counts.csv")
     if not (latest or counts):
         return None

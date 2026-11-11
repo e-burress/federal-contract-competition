@@ -1,85 +1,66 @@
 """
-14_sam_daily_snapshot.py - save a DAILY HISTORY of the open federal solicitations on SAM.gov.
+14_sam_daily_snapshot.py - every morning: save the SAM.gov notices posted on each new day, from SAM.gov's official API.
 
-Why: SAM.gov only shows what is active TODAY.  Once a notice is archived or amended, the earlier picture is gone.  By
-saving one snapshot per day we build the history that SAM.gov does not keep (how many solicitations were open on a given
-day, how long they stayed open, which ones disappeared without an award notice, ...).
+This script uses only SAM.gov's documented Get Opportunities Public API (version 2) with a free personal API key.  SAM.gov's
+Terms of Use (https://sam.gov/about/terms-of-use) name its APIs and the extracts on its Data Services page as the ways to get
+its data with software.  Until November 10, 2026 this step downloaded SAM.gov's nightly "Contract Opportunities Full CSV" file
+instead; see docs/sam-api-key.md.
 
-Source (public, no key, no account): the "Contract Opportunities Full CSV" that SAM.gov publishes on Amazon S3
-    https://s3.amazonaws.com/falextracts/Contract%20Opportunities/datagov/ContractOpportunitiesFullCSV.csv
-It holds the ACTIVE notices only, about 216 MB, and is rebuilt every night around 04:30 UTC.  It has 47 columns; the
-script checks the header and stops with a clear message if a column it needs has been renamed or removed.
-(The CSV carries contact names, e-mails and phone numbers, a street address of the place of performance, the awardee name
-and the full notice text.  None of those are ever written by this script - see "Privacy" below.)
+Source
+  GET https://api.sam.gov/opportunities/v2/search      documented at https://open.gsa.gov/api/get-opportunities-public-api/
+  One request returns up to 1,000 notices posted in a date range (here: one day), all notice types, in the latest active
+  version of each notice.
+
+The key
+  Read from the environment variable SAM_API_KEY (on GitHub: the repository secret SAM_API_KEY).  The API takes the key in
+  the query string, the only way GSA documents, so this script never prints, logs or saves a request URL, and it removes the
+  key from any error text before printing it.  SAM.gov's terms: do not share the key, and renew it every 90 days.  A refused
+  key stops the script with exit code 2 and says how to renew it.
+  Without a key the script says so and does nothing (exit 0), so `python run.py daily` still runs the other steps.  With
+  --require-key (the robot uses it) a missing key is an error.
+
+Daily budget
+  A personal key of a non-federal user with no role in SAM.gov allows 10 requests a day (GSA's table on open.gsa.gov).  This
+  script makes at most --max-requests (default 6) per run and leaves the rest for checks by hand.  SAM.gov posted 12 to 1,678
+  notices a day (all types) between October 20 and November 8, 2026, so one day costs 1 or 2 requests.  Run the step in ONE
+  place, the robot or your computer: both spend the same 10 requests.
 
 What it does
-  1. Reads the S3 object's Last-Modified header (UTC).  That date is the SNAPSHOT DATE (fallback: today, UTC).
-  2. Streams the file to a temporary folder OUTSIDE the repository (size cap 600 MB, 3 attempts) and deletes it at the end,
-     also when something fails.
-  3. Reads it in chunks of 20,000 rows with pandas (never the whole raw file at once, because the long Description column makes
-     the raw file much bigger than the cleaned table).  Only whitelisted columns are loaded.  The Description is used in
-     memory for two keyword flags, kw_brand and kw_sole (common.kw_flags on Title + first 300 characters of Description),
-     and then thrown away.
-  4. Writes three outputs (all written to a temp name first, then moved into place, so a crash never leaves half a file):
-       data/sam_snapshots/sam_active_<YYYY-MM-DD>.parquet   cleaned snapshot, one row per notice (git-ignored, zstd)
-       results/sam_daily_counts.csv       one row per snapshot_date x department x notice type
-       results/sam_daily_latest.json      small summary for the dashboard
-  5. With --upload only: uploads the parquet to a DRAFT GitHub release tagged sam-snapshots-<YYYY-MM> (see below).
+  1. With --sync, merges in the store of notices pulled so far from the DRAFT (not public) GitHub release sam-api-store.
+  2. Days to pull: every day not yet finished, from the first day in results/sam_api_pulls.csv (or --start, or yesterday when
+     the log is empty) through yesterday, oldest first, at most --max-days, never more than 60 days back.  "Yesterday" is
+     SAM.gov's calendar day, taken as UTC-5.  Today is never pulled: it is not over.
+  3. Each day: postedFrom = postedTo = the day, 1,000 notices per page.  A day is complete when the distinct notice ids
+     received reach the API's totalRecords.  A day cut short by the request budget is pulled again in full next time.  A day
+     that falls short for another reason twice (or that would need more requests than one run may make) is kept as "short",
+     with the shortfall recorded.
+     Paging: GSA documents offset as a page index (0, 1, 2 ...).  On the first day that needs a second page the script checks
+     this (a second page that mostly repeats the first means the offset counts records) and records the mode it found.
+  4. Keeps only the fields in FIELDS and the department, sub-tier and office names and codes.  Never kept: contacts, the
+     awardee, street addresses, the description, links.  E-mail addresses and phone numbers typed into titles are masked.  The
+     two keyword flags come from the title alone (search results do not include the description; fetching it would cost one
+     request per notice).  The forecast model was trained with the title and the first 300 characters of the description.
+  5. Writes, each to a temporary name first and then moved into place:
+       <DATA>/sam_api/notices.parquet                private: every notice pulled so far, one row per notice id (newest pull)
+       <DATA>/sam_snapshots/sam_view_<date>.parquet  private: the forecast step's input, the notices posted in the 400 days
+                                                     before <date>, where <date> is the day after the newest finished day
+                                                     (the two newest views are kept)
+       results/sam_api_pulls.csv                     public: one row per pull of a day: requests used, totalRecords, notices
+                                                     received, status
+       results/sam_new_notices.csv                   public: notices posted per day, department and notice type
+       results/sam_daily_latest.json                 public: summary for the dashboard (schema 2)
+  6. With --upload, replaces the store in the draft release sam-api-store (needs gh and GH_TOKEN).
 
-The counts file (results/sam_daily_counts.csv)
-  snapshot_date        the date above
-  department           the "Department/Ind.Agency" text as SAM writes it ("(blank)" if empty)
-  type                 the notice Type ("Solicitation", "Award Notice", ...)
-  n_active             notice rows in the file for that department and type
-  n_sol_numbers        distinct Sol# values among them (an amended solicitation keeps its older notice ids, see below)
-  n_posted_last_7d     rows whose PostedDate is on or after (snapshot_date - 7 days) at 00:00
-  n_open               solicitation types only (blank for other types): rows whose ResponseDeadLine is on or after 00:00 UTC of
-                       the snapshot date.  The file keeps solicitations after their deadline until they are archived, so
-                       n_active is about 4 times n_open for solicitation types.
-  n_deadline_next_7d   solicitation types only: rows with ResponseDeadLine in [snapshot date, +7 days) / [snapshot date, +30 days),
-  n_deadline_next_30d  compared in UTC at 00:00.  Rows with no deadline are never counted in n_open or the deadline columns.
-  Re-running for the same snapshot date REPLACES that date's rows; other dates are untouched.  Sorted by date, department, type.
-  "Solicitation types" are exactly the Type strings "Solicitation" and "Combined Synopsis/Solicitation".
+  --check makes ONE request (yesterday, first page), prints what came back (counts, how full each field is, the shape of the
+  dates and codes; no names) and writes nothing.  Use it once after setting the key.
 
-What PostedDate means (checked against the 2026-11-09 file: 70,329 active notices)
-  PostedDate is the posting time of THAT NOTICE ID, i.e. of that version of the notice.  It is neither the Sol#'s original
-  posting date nor a "last modified" stamp of the whole solicitation.  An amendment is published as a NEW notice id that
-  carries the same Sol#, and the older versions stay in the file until their own ArchiveDate.  Evidence: 10,159 Sol# values
-  (46,326 of 69,666 rows that have a Sol#) appear on several rows with different NoticeIds and different PostedDates;
-  e.g. one Sol# has seven rows posted 2026-07-30 ... 2026-10-27 whose deadlines move 08-24 -> 10-12 -> 10-20 -> 11-02 and whose
-  ArchiveDate moves with them.  So: the FIRST posting of a solicitation = the minimum PostedDate over its Sol# (only if the
-  original version is still active), the CURRENT version = the maximum.  The column latest_version marks the newest row per
-  Sol#.  n_posted_last_7d therefore counts "notices (new solicitations AND amendments) posted in the last 7 days".
-  Confidence: high that each row is one version with its own PostedDate; moderate that the minimum PostedDate is the true
-  first posting (original versions may already have been archived, which can bias it later).  A second daily snapshot will
-  confirm: a NoticeId should keep the same PostedDate from day to day.
-  PostedDate has no time zone in the file (it is stored as written); ResponseDeadLine usually carries a UTC offset and is
-  stored as a UTC timestamp (a date-only deadline counts as midnight UTC).
-
-Privacy (hard rules)
-  Never written anywhere: all PrimaryContact* / SecondaryContact* columns (names, e-mails, phones, faxes), Awardee, PopStreetAddress,
-  Description, AdditionalInfoLink, Link.  E-mail addresses and phone numbers that officers typed into a notice Title are
-  masked as [email] / [phone].  Because columns are chosen from a whitelist, a new column added by SAM later is
-  dropped automatically.
-
-Robustness
-  The real file mixes Windows cp1252 text (curly quotes, dashes) with some genuine UTF-8, so it is decoded as UTF-8 and every
-  byte that is not valid UTF-8 falls back to cp1252 (MixedTextStream below); the counts are logged.  Rows with the wrong
-  number of fields are skipped and counted, not fatal.
-
-Usage (from the repository root):
-  python -I scripts/14_sam_daily_snapshot.py                          # download, process, write outputs
-  python -I scripts/14_sam_daily_snapshot.py --upload                 # also upload the parquet to a draft release (needs `gh`)
-  python -I scripts/14_sam_daily_snapshot.py --from-file PATH.csv [--date YYYY-MM-DD]
-                                   # local testing: use an already downloaded CSV (it is NOT deleted); the date defaults
-                                   # to today (UTC) because a local file has no S3 Last-Modified header
-Set PIO_CONTACT (e.g. the repository URL, never an e-mail) so the User-Agent says who is downloading.
+Exit codes: 0 done (also when there is nothing to do, when the budget ran out part-way, or with no key and no --require-key);
+1 the API or the network failed before any day was finished; 2 the key is missing (with --require-key or --check) or refused.
 """
 import argparse
-import codecs
-import csv
-import io
+import glob
 import json
+import math
 import os
 import re
 import shutil
@@ -87,503 +68,705 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
+import urllib.parse
 import urllib.request
-import warnings
 from datetime import date, datetime, timedelta, timezone
-from email.utils import parsedate_to_datetime
 
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import DATA, RESULTS, UA_SAM, kw_flags  # noqa: E402
 
-URL = "https://s3.amazonaws.com/falextracts/Contract%20Opportunities/datagov/ContractOpportunitiesFullCSV.csv"
-MAX_BYTES = 600_000_000
-CHUNK_ROWS = 20_000
+API_URL = "https://api.sam.gov/opportunities/v2/search"
+KEY_ENV = "SAM_API_KEY"
+DAILY_LIMIT = 10                   # requests a day for a personal key of a non-federal user with no role (GSA)
+DEFAULT_BUDGET = 6                 # requests one run may make
+PAGE = 1000                        # the API's largest page
+MAX_ATTEMPTS = 2                   # pulls of a day that fall short (not for lack of budget) before it is kept as "short"
+MAX_BACK_DAYS = 60                 # never pull a day older than this
+VIEW_DAYS = 400                    # the forecast view holds notices posted in this many days
+KEEP_VIEWS = 2
+SAM_DAY_OFFSET = timedelta(hours=-5)    # SAM.gov's calendar day, taken as US Eastern standard time
+TIMEOUT = 120
+PAUSE = 1.0                        # seconds between requests
+
+STORE_DIR = os.path.join(DATA, "sam_api")
+STORE = os.path.join(STORE_DIR, "notices.parquet")
 SNAP_DIR = os.path.join(DATA, "sam_snapshots")
-COUNTS_CSV = os.path.join(RESULTS, "sam_daily_counts.csv")
+PULLS_CSV = os.path.join(RESULTS, "sam_api_pulls.csv")
+NEW_CSV = os.path.join(RESULTS, "sam_new_notices.csv")
 LATEST_JSON = os.path.join(RESULTS, "sam_daily_latest.json")
+STORE_TAG, STORE_ASSET = "sam-api-store", "notices.parquet"
 
-COUNT_COLS = ["snapshot_date", "department", "type", "n_active", "n_sol_numbers", "n_posted_last_7d", "n_open",
-              "n_deadline_next_7d", "n_deadline_next_30d"]
 SOLICITATION_TYPES = ("Solicitation", "Combined Synopsis/Solicitation")
-DOD = "DEPT OF DEFENSE"          # the exact Department/Ind.Agency text SAM uses for the Department of Defense
+DOD = "DEPT OF DEFENSE"            # the department name SAM.gov uses for the Department of Defense
+PULL_COLS = ["posted_day", "pulled_utc", "attempt", "requests", "total_records", "notices_received", "status", "offset_mode"]
+NEW_COLS = ["posted_day", "department", "type", "n_notices", "n_sol_numbers"]
+FINISHED = ("complete", "short")
+EXIT_API, EXIT_KEY = 1, 2
 
-# raw CSV column -> output column.  ONLY these are ever kept (a whitelist).
-KEEP = {
-    "NoticeId": "notice_id", "Title": "title", "Sol#": "sol_number",
-    "Department/Ind.Agency": "department", "CGAC": "cgac", "Sub-Tier": "sub_tier", "FPDS Code": "fpds_code",
-    "Office": "office", "AAC Code": "aac_code",
-    "PostedDate": "posted_date", "Type": "type", "BaseType": "base_type",
-    "ArchiveType": "archive_type", "ArchiveDate": "archive_date",
-    "SetASideCode": "set_aside_code", "SetASide": "set_aside",
-    "ResponseDeadLine": "response_deadline",
-    "NaicsCode": "naics", "ClassificationCode": "psc",
-    "PopCity": "pop_city", "PopState": "pop_state", "PopZip": "pop_zip", "PopCountry": "pop_country",
-    "AwardNumber": "award_number", "AwardDate": "award_date", "Award$": "award_amount",
-    "OrganizationType": "org_type", "State": "office_state", "City": "office_city",
-    "ZipCode": "office_zip", "CountryCode": "office_country",
-}
-CATEGORICAL = ["department", "cgac", "sub_tier", "fpds_code", "office", "aac_code", "type", "base_type", "archive_type",
-               "set_aside_code", "set_aside", "naics", "psc", "pop_state", "pop_country", "org_type", "office_state",
-               "office_country"]
-DESCRIPTION = "Description"
-USECOLS = list(KEEP) + [DESCRIPTION]
-# never to be kept, listed so the header check can say "yes, we know about these"
-KNOWN_DROPPED = {"PopStreetAddress", "Active", "Awardee", "AdditionalInfoLink", "Link", DESCRIPTION}
-
-
-# A few notice TITLES contain an e-mail address or phone number typed in by the contracting officer; mask them.
-_EMAIL = re.compile(r"[\w.+'-]+@[\w-]+(?:\.[\w-]+)+")
-_PHONE = re.compile(r"(?<!\d)(?:\+?1[-. ]?)?\(?\d{3}\)?[-. ]\d{3}[-. ]\d{4}(?!\d)")
+# output column <- path in one API record.  ONLY these (and the hierarchy fields below) are ever kept: a whitelist.
+FIELDS = [
+    ("notice_id", ("noticeId",)), ("title", ("title",)), ("sol_number", ("solicitationNumber",)),
+    ("posted_date", ("postedDate",)), ("type", ("type",)), ("base_type", ("baseType",)),
+    ("archive_type", ("archiveType",)), ("archive_date", ("archiveDate",)),
+    ("set_aside_code", ("typeOfSetAside",)), ("set_aside", ("typeOfSetAsideDescription",)),
+    ("response_deadline", ("responseDeadLine",)), ("naics", ("naicsCode",)), ("psc", ("classificationCode",)),
+    ("active", ("active",)),
+    ("pop_city", ("placeOfPerformance", "city", "name")), ("pop_state", ("placeOfPerformance", "state", "code")),
+    ("pop_zip", ("placeOfPerformance", "zip")), ("pop_country", ("placeOfPerformance", "country", "code")),
+    ("award_number", ("award", "number")), ("award_date", ("award", "date")), ("award_amount", ("award", "amount")),
+    ("org_type", ("organizationType",)), ("office_state", ("officeAddress", "state")),
+    ("office_city", ("officeAddress", "city")), ("office_zip", ("officeAddress", "zipcode")),
+    ("office_country", ("officeAddress", "countryCode")),
+]
+HIERARCHY = ["department", "cgac", "sub_tier", "fpds_code", "office", "aac_code"]
+COLUMNS = ([n for n, _ in FIELDS[:3]] + HIERARCHY + [n for n, _ in FIELDS[3:]]
+           + ["kw_brand", "kw_sole", "posted_day", "pulled_utc"])
+DATE_COLS = ["posted_date", "archive_date", "award_date"]
+STRING_COLS = [c for c in COLUMNS if c not in DATE_COLS + ["response_deadline", "award_amount", "kw_brand", "kw_sole",
+                                                          "posted_day"]]
 
 
-def scrub(text):
-    return _PHONE.sub("[phone]", _EMAIL.sub("[email]", text)) if isinstance(text, str) else text
+class KeyRefused(Exception):
+    pass
 
 
-def log(*a):
+class RateLimited(Exception):
+    pass
+
+
+class ApiError(Exception):
+    pass
+
+
+def say(*a):
     print(*a, flush=True)
 
 
 # ------------------------------------------------------------------------------------------------------------------
-# download
+# text helpers
 # ------------------------------------------------------------------------------------------------------------------
-def snapshot_date_from_headers(headers):
-    lm = headers.get("Last-Modified")
-    if lm:
-        try:
-            return parsedate_to_datetime(lm).astimezone(timezone.utc).date()
-        except Exception:
-            pass
-    return datetime.now(timezone.utc).date()
+_EMAIL = re.compile(r"[\w.+'-]+@[\w-]+(?:\.[\w-]+)+")
+_PHONE = re.compile(r"(?<!\d)(?:\+?1[-. ]?)?\(?\d{3}\)?[-. ]\d{3}[-. ]\d{4}(?!\d)")
 
 
-def head_date():
-    """Snapshot date from a HEAD request (cheap), or today UTC."""
+def scrub(s):
+    return _PHONE.sub("[phone]", _EMAIL.sub("[email]", s)) if isinstance(s, str) else s
+
+
+def text(v):
+    """a clean string, or None ("", "null" and nested objects count as missing)"""
+    if v is None or isinstance(v, (dict, list)):
+        return None
+    s = str(v).strip()
+    return None if s == "" or s.lower() in ("null", "none") else s
+
+
+def get_path(rec, path):
+    cur = rec
+    for k in path:
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(k)
+    return text(cur)
+
+
+def redact(s, key):
+    return s.replace(key, "***") if key and isinstance(s, str) else s
+
+
+# ------------------------------------------------------------------------------------------------------------------
+# one API request
+# ------------------------------------------------------------------------------------------------------------------
+def api_get(key, day, offset, timeout=TIMEOUT):
+    """Notices posted on `day` (one page).  Returns the parsed answer; 404 "No Data found" counts as an empty day.
+    The URL holds the key: it is built here and never printed or kept."""
+    q = urllib.parse.urlencode({"api_key": key, "postedFrom": f"{day:%m/%d/%Y}", "postedTo": f"{day:%m/%d/%Y}",
+                                "limit": PAGE, "offset": offset}, safe="/")
+    req = urllib.request.Request(API_URL + "?" + q, headers={"User-Agent": UA_SAM, "Accept": "application/json"})
     try:
-        req = urllib.request.Request(URL, headers={"User-Agent": UA_SAM}, method="HEAD")
-        with urllib.request.urlopen(req, timeout=60) as r:
-            return snapshot_date_from_headers(r.headers)
-    except Exception as e:
-        log("  HEAD failed, using today UTC as snapshot date:", repr(e)[:100])
-        return datetime.now(timezone.utc).date()
-
-
-def stream_download(dest, retries=3):
-    """Stream URL to dest in 1 MB pieces; stop if it gets past MAX_BYTES.  Returns (bytes, snapshot date)."""
-    last = None
-    for attempt in range(retries):
         try:
-            req = urllib.request.Request(URL, headers={"User-Agent": UA_SAM})
-            with urllib.request.urlopen(req, timeout=120) as r:
-                snap = snapshot_date_from_headers(r.headers)
-                size = int(r.headers.get("Content-Length") or 0)
-                if size > MAX_BYTES:
-                    raise RuntimeError(f"server says {size} bytes, above the {MAX_BYTES} cap")
-                got = 0
-                with open(dest, "wb") as fh:
-                    while True:
-                        buf = r.read(1 << 20)
-                        if not buf:
-                            break
-                        got += len(buf)
-                        if got > MAX_BYTES:
-                            raise RuntimeError("download exceeded the size cap")
-                        fh.write(buf)
-                if size and got != size:
-                    raise RuntimeError(f"incomplete download: {got} of {size} bytes")
-                return got, snap
-        except Exception as e:
-            last = e
-            log(f"  download attempt {attempt + 1} failed: {e!r}"[:200])
-            time.sleep(5 * (attempt + 1))
-    raise RuntimeError(f"download failed after {retries} attempts: {last!r}")
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                body = r.read()
+        finally:
+            time.sleep(PAUSE)                    # polite pacing between requests
+    except urllib.error.HTTPError as e:
+        try:
+            msg = e.read().decode("utf-8", "replace")[:400]
+        except Exception:
+            msg = ""
+        msg = redact(msg, key)
+        low = msg.lower()
+        if e.code == 404 and "no data" in low:
+            return {"totalRecords": 0, "opportunitiesData": []}
+        if e.code == 429 or "over_rate_limit" in low or "rate limit" in low:
+            raise RateLimited(f"HTTP {e.code}: {msg}") from None
+        if e.code in (401, 403) or "api_key" in low or "api key" in low:
+            raise KeyRefused(f"HTTP {e.code}: {msg}") from None
+        raise ApiError(f"HTTP {e.code}: {msg}") from None
+    except urllib.error.URLError as e:
+        raise ApiError(redact(f"network error: {e.reason}", key)) from None
+    except (TimeoutError, OSError) as e:
+        raise ApiError(redact(f"network error: {e!r}", key)) from None
+    try:
+        d = json.loads(body)
+    except ValueError:
+        raise ApiError("the answer was not JSON") from None
+    if not isinstance(d, dict) or "totalRecords" not in d:
+        msg = redact(json.dumps(d)[:300], key)
+        low = msg.lower()
+        if "over_rate_limit" in low:
+            raise RateLimited(msg)
+        if "api_key" in low or "api key" in low:
+            raise KeyRefused(msg)
+        raise ApiError("unexpected answer: " + msg)
+    return d
+
+
+class Budget:
+    def __init__(self, n):
+        self.cap, self.left, self.used = n, n, 0
+
+    def take(self):
+        self.left -= 1
+        self.used += 1
+
+
+def pull_day(key, day, budget, mode, get=None):
+    """Ask for every notice posted on `day`.  Returns (records by notice id, totalRecords or None, offset mode found or None,
+    reason the day is not complete: None, "budget", "too-big", "empty-page" or "pages-exhausted").
+    Raises KeyRefused, RateLimited or ApiError; every request is taken from `budget` before it is sent."""
+    get = get or api_get
+    recs, page, total = {}, 0, None
+    confirmed = mode if mode in ("page", "record") else None
+    use = confirmed or "page"
+    while True:
+        if budget.left <= 0:
+            return recs, total, confirmed, "budget"
+        budget.take()
+        d = get(key, day, page if use == "page" else page * PAGE)
+        total = int(d.get("totalRecords") or 0)
+        rows = [r for r in (d.get("opportunitiesData") or []) if isinstance(r, dict) and text(r.get("noticeId"))]
+        if page == 0 and math.ceil(total / PAGE) > budget.cap:
+            for r in rows:
+                recs[text(r["noticeId"])] = r
+            return recs, total, confirmed, "too-big"
+        if page > 0 and confirmed is None and rows:
+            fresh = sum(1 for r in rows if text(r["noticeId"]) not in recs)
+            if fresh * 2 < len(rows):            # mostly a repeat of what came before: the offset counts records
+                confirmed = use = "record"
+                continue                         # ask again for this page, with a record offset
+            confirmed = use
+        for r in rows:
+            recs[text(r["noticeId"])] = r
+        if len(recs) >= total:
+            return recs, total, confirmed, None
+        if not rows:
+            return recs, total, confirmed, "empty-page"
+        page += 1
+        if page > total // PAGE + 1:
+            return recs, total, confirmed, "pages-exhausted"
 
 
 # ------------------------------------------------------------------------------------------------------------------
-# encoding
+# records -> rows
 # ------------------------------------------------------------------------------------------------------------------
-# The real file is a MIX: mostly Windows cp1252 text (curly quotes 0x92/0x93/0x94, dashes 0x96/0x97, accents) with a few
-# thousand genuine UTF-8 sequences from other systems.  Neither pure "utf-8" nor pure "cp1252" is right, so we decode as
-# UTF-8 and let every byte that is not valid UTF-8 fall back to cp1252 (bytes cp1252 leaves undefined become U+FFFD).
-def _cp1252_fallback(err):
-    bad = err.object[err.start:err.end]
-    return bad.decode("cp1252", errors="replace"), err.end
-
-
-codecs.register_error("cp1252fallback", _cp1252_fallback)
-_UTF8_SEQ = re.compile(rb"[\xc2-\xdf][\x80-\xbf]|[\xe0-\xef][\x80-\xbf]{2}|[\xf0-\xf4][\x80-\xbf]{3}")
-_HIGH = re.compile(rb"[\x80-\xff]")
-
-
-class MixedTextStream(io.TextIOBase):
-    """Read-only text view of a binary file that tolerates the mixed encoding above.  Blocks are cut at a newline so a
-    multi-byte sequence is never split.  pandas reads from this like from a normal text file.
-    After reading: n_utf8 = valid multi-byte UTF-8 sequences, n_stray = bytes that were not valid UTF-8 (decoded as cp1252)."""
-
-    def __init__(self, path, block=8 << 20):
-        self._fh = open(path, "rb")
-        self._block = block
-        self._buf = ""
-        self._eof = False
-        self._first = True
-        self.n_utf8 = 0
-        self.n_stray = 0
-
-    def readable(self):
-        return True
-
-    def _fill(self):
-        raw = self._fh.read(self._block)
-        if not raw:
-            self._eof = True
-            return
-        if not raw.endswith(b"\n"):                       # extend the block to the next newline (or end of file)
-            tail = self._fh.readline()
-            raw += tail
-        if self._first:
-            self._first = False
-            if raw.startswith(codecs.BOM_UTF8):
-                raw = raw[3:]
-            if raw[:2] in (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE) or b"\x00" in raw[:200]:
-                raise RuntimeError("the file looks like UTF-16, which this script does not handle")
-        text = raw.decode("utf-8", errors="cp1252fallback")
-        if not raw.isascii():
-            seqs = _UTF8_SEQ.findall(raw)
-            self.n_utf8 += len(seqs)
-            self.n_stray += len(_HIGH.findall(raw)) - sum(len(s) for s in seqs)
-        self._buf += text
-
-    def read(self, n=-1):
-        while not self._eof and (n < 0 or len(self._buf) < n):
-            self._fill()
-        if n < 0:
-            out, self._buf = self._buf, ""
+def hierarchy(rec):
+    """Department, sub-tier and office names and codes from fullParentPathName and fullParentPathCode, e.g.
+    "GENERAL SERVICES ADMINISTRATION.FEDERAL ACQUISITION SERVICE.GSA/FAS CENTER ..." and "047.4732.47QTCA".  The codes are
+    exact: CGAC (department), FPDS code (sub-tier), AAC (office, the last level).  The names are split on "." as well; when a
+    name holds a period (e.g. "U.S. SPECIAL OPERATIONS COMMAND"), the extra pieces are given to the sub-tier name."""
+    names, codes = text(rec.get("fullParentPathName")), text(rec.get("fullParentPathCode"))
+    cs = [c.strip() for c in codes.split(".")] if codes else []
+    ns = names.split(".") if names else []
+    levels = len(cs) or len(ns)
+    out = dict.fromkeys(HIERARCHY)
+    if cs:
+        out["cgac"] = cs[0] or None
+        out["fpds_code"] = (cs[1] or None) if len(cs) >= 2 else None
+        out["aac_code"] = (cs[-1] or None) if len(cs) >= 3 else None
+    if ns:
+        if levels <= 1:
+            out["department"] = names
         else:
-            out, self._buf = self._buf[:n], self._buf[n:]
-        return out
-
-    def close(self):
-        self._fh.close()
-        super().close()
-
-
-# ------------------------------------------------------------------------------------------------------------------
-# read + clean
-# ------------------------------------------------------------------------------------------------------------------
-def check_header(path):
-    st = MixedTextStream(path, block=1 << 20)
-    head = pd.read_csv(st, nrows=0, dtype=str)
-    st.close()
-    cols = list(head.columns)
-    missing = [c for c in USECOLS if c not in cols]
-    if missing:
-        sys.exit(f"STOP: the CSV header changed; missing columns: {missing}\nheader is: {cols}")
-    extra = [c for c in cols if c not in KEEP and c not in KNOWN_DROPPED
-             and not c.startswith(("PrimaryContact", "SecondaryContact"))]
-    return cols, extra
-
-
-def clean_chunk(ch):
-    """Raw chunk (all strings) -> cleaned small frame with the two keyword flags.  The Description never leaves this function."""
-    flags = [kw_flags(t if isinstance(t, str) else "", d[:300] if isinstance(d, str) else "")
-             for t, d in zip(ch["Title"].tolist(), ch[DESCRIPTION].tolist())]
-    out = ch[list(KEEP)].rename(columns=KEEP)
-    out["title"] = out["title"].map(scrub)
-    out["kw_brand"] = pd.array([f[0] for f in flags], dtype="int8")
-    out["kw_sole"] = pd.array([f[1] for f in flags], dtype="int8")
+            out["department"] = ns[0].strip() or None
+            if levels >= 3 and len(ns) >= 3:
+                out["office"] = ns[-1].strip() or None
+                middle = ns[1:-1]
+                extra = max(len(middle) - (levels - 2), 0)
+                out["sub_tier"] = ".".join(middle[:extra + 1]).strip() or None
+            elif len(ns) >= 2:
+                out["sub_tier"] = ".".join(ns[1:]).strip() or None
+    for k, f in (("department", "department"), ("sub_tier", "subTier"), ("office", "office")):   # older answers
+        v = text(rec.get(f))
+        if v:
+            out[k] = v
     return out
 
 
-def read_snapshot(path):
-    parts, n_raw = [], 0
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always")
-        stream = MixedTextStream(path)
-        reader = pd.read_csv(stream, usecols=USECOLS, dtype=str, na_values=[""], keep_default_na=False,
-                             chunksize=CHUNK_ROWS, on_bad_lines="warn", quoting=csv.QUOTE_MINIMAL)
-        for ch in reader:
-            n_raw += len(ch)
-            parts.append(clean_chunk(ch))
-            del ch
-    stream.close()
-    n_bad = sum(1 for w in caught if "Skipping line" in str(w.message))
-    df = pd.concat(parts, ignore_index=True)
-    enc_note = (f"decoded as UTF-8 with cp1252 fallback: {stream.n_utf8:,} valid UTF-8 multi-byte sequences, "
-                f"{stream.n_stray:,} stray bytes decoded as cp1252")
-    return df, n_raw, n_bad, enc_note
+def wall_time(v):
+    """a timestamp as written (an offset, if any, is dropped), or NaT (also for a year outside 1900-2200: a typo)"""
+    if v is None:
+        return pd.NaT
+    try:
+        t = pd.Timestamp(v)
+    except (ValueError, TypeError, OverflowError):
+        return pd.NaT
+    if t is pd.NaT or not 1900 <= t.year <= 2200:
+        return pd.NaT
+    return t.tz_localize(None) if t.tzinfo is not None else t
 
 
-def finish_types(df, snap):
-    """Convert strings to real types; unparseable values become missing (counted)."""
-    notes = {}
-    n0 = len(df)
-    df = df[df["notice_id"].notna()].copy()
-    notes["rows_without_notice_id_dropped"] = n0 - len(df)
-    n1 = len(df)
-    df = df.drop_duplicates("notice_id", keep="last")
-    notes["duplicate_notice_ids_dropped"] = n1 - len(df)
-
-    def ts(col, utc):
-        s = df[col]
-        out = pd.to_datetime(s, format="ISO8601", errors="coerce", utc=utc)
-        notes[f"{col}_unparsed"] = int((out.isna() & s.notna()).sum())
-        return out
-
-    df["posted_date"] = ts("posted_date", False).astype("datetime64[s]")
-    df["response_deadline"] = ts("response_deadline", True).dt.tz_convert("UTC").astype("datetime64[s, UTC]")
-    for c in ("archive_date", "award_date"):
-        df[c] = ts(c, False).dt.normalize().astype("datetime64[s]")
-    amt = pd.to_numeric(df["award_amount"].str.replace(",", "", regex=False), errors="coerce")
-    notes["award_amount_unparsed"] = int((amt.isna() & df["award_amount"].notna()).sum())
-    df["award_amount"] = amt.astype("float64")
-    for c in CATEGORICAL:
-        df[c] = df[c].astype("category")
-    for c in df.columns:
-        if str(df[c].dtype) in ("str", "string", "object"):
-            df[c] = df[c].astype("string")
-    # One Sol# can have several active notice ids (original + amendments).  latest_version = 1 for the row with the newest
-    # PostedDate within its Sol# (rows without a Sol# count as their own latest).
-    newest = df.groupby("sol_number")["posted_date"].transform("max")
-    df["latest_version"] = ((df["posted_date"] == newest) | df["sol_number"].isna()).astype("int8")
-    df["snapshot_date"] = pd.Timestamp(snap).as_unit("s")
-    cols = ["snapshot_date"] + [c for c in df.columns if c != "snapshot_date"]
-    return df[cols].sort_values("notice_id").reset_index(drop=True), notes
+def to_frame(records, day, pulled_utc):
+    """API records -> the store's columns (a whitelist; nothing else from a record is kept)."""
+    rows = []
+    for r in records:
+        row = {name: get_path(r, path) for name, path in FIELDS}
+        if row["response_deadline"] is None:
+            row["response_deadline"] = get_path(r, ("reponseDeadLine",))     # the spelling in GSA's table
+        if row["naics"] is None and isinstance(r.get("naicsCodes"), list) and r["naicsCodes"]:
+            row["naics"] = text(r["naicsCodes"][0])
+        row.update(hierarchy(r))
+        row["kw_brand"], row["kw_sole"] = kw_flags(row["title"] or "", "")
+        row["title"] = scrub(row["title"])
+        rows.append(row)
+    df = pd.DataFrame(rows, columns=[c for c in COLUMNS if c not in ("posted_day", "pulled_utc")])
+    df["posted_day"] = pd.Timestamp(day)
+    df["pulled_utc"] = pulled_utc
+    return typed(df)
 
 
-# ------------------------------------------------------------------------------------------------------------------
-# summaries
-# ------------------------------------------------------------------------------------------------------------------
-def build_counts(df, snap):
-    """One row per department x type for this snapshot date."""
-    start = pd.Timestamp(snap, tz="UTC")
-    d7, d30 = start + pd.Timedelta(days=7), start + pd.Timedelta(days=30)
-    t = pd.DataFrame({
-        "department": df["department"].astype("string").fillna("(blank)"),
-        "type": df["type"].astype("string").fillna("(blank)"),
-        "sol": df["sol_number"].astype("string"),
-        "posted7": df["posted_date"] >= pd.Timestamp(snap) - pd.Timedelta(days=7),
-        "is_sol": df["type"].isin(SOLICITATION_TYPES),
-    })
-    dl = df["response_deadline"]
-    t["dl7"] = t["is_sol"] & (dl >= start) & (dl < d7)
-    t["dl30"] = t["is_sol"] & (dl >= start) & (dl < d30)
-    t["open"] = t["is_sol"] & (dl >= start)
-    g = t.groupby(["department", "type"], observed=True, sort=True)
-    out = g.agg(n_active=("type", "size"), n_sol_numbers=("sol", "nunique"), n_posted_last_7d=("posted7", "sum"),
-                n_open=("open", "sum"), n_deadline_next_7d=("dl7", "sum"), n_deadline_next_30d=("dl30", "sum"),
-                is_sol=("is_sol", "max")).reset_index()
-    for c in ("n_open", "n_deadline_next_7d", "n_deadline_next_30d"):
-        out[c] = out[c].astype("Int64").where(out["is_sol"])      # blank for non-solicitation types
-    out = out.drop(columns="is_sol")
-    for c in ("n_active", "n_sol_numbers", "n_posted_last_7d"):
-        out[c] = out[c].astype("int64")
-    out.insert(0, "snapshot_date", snap.isoformat())
-    out = out[COUNT_COLS]
-    return out.sort_values(["snapshot_date", "department", "type"]).reset_index(drop=True)
-
-
-def update_counts_csv(new, snap):
-    """Replace this date's rows, keep the rest, write sorted, atomically."""
-    if os.path.exists(COUNTS_CSV):
-        old = pd.read_csv(COUNTS_CSV, dtype={"snapshot_date": str, "department": str, "type": str}, keep_default_na=False,
-                          na_values=[""])
-        old = old[old["snapshot_date"] != snap.isoformat()]
-        allr = pd.concat([old, new], ignore_index=True)
+def typed(df):
+    df = df.copy()
+    for c in DATE_COLS:
+        if pd.api.types.is_datetime64_any_dtype(df[c]):                 # read back from the store
+            s = df[c].dt.tz_localize(None) if getattr(df[c].dt, "tz", None) is not None else df[c]
+        else:
+            s = pd.Series([wall_time(v) for v in df[c]], index=df.index, dtype="datetime64[ns]")
+        df[c] = (s.dt.normalize() if c != "posted_date" else s).astype("datetime64[s]")
+    if pd.api.types.is_datetime64_any_dtype(df["response_deadline"]):
+        dl = df["response_deadline"]
+        dl = dl.dt.tz_convert("UTC") if getattr(dl.dt, "tz", None) is not None else dl.dt.tz_localize("UTC")
     else:
-        allr = new
-    for c in ("n_active", "n_sol_numbers", "n_posted_last_7d", "n_open", "n_deadline_next_7d", "n_deadline_next_30d"):
-        allr[c] = allr[c].astype("Int64")
-    allr = allr.sort_values(["snapshot_date", "department", "type"]).reset_index(drop=True)
-    tmp = COUNTS_CSV + ".tmp"
-    allr.to_csv(tmp, index=False, encoding="utf-8", lineterminator="\n")
-    os.replace(tmp, COUNTS_CSV)
-    return len(allr)
+        raw = df["response_deadline"].astype(object).where(df["response_deadline"].notna(), None)
+        dl = pd.to_datetime(raw, format="ISO8601", errors="coerce", utc=True)
+        dl = dl.where((dl.dt.year >= 1900) & (dl.dt.year <= 2200))
+    df["response_deadline"] = dl.astype("datetime64[s, UTC]")
+    amt = df["award_amount"].astype("string").str.replace(",", "", regex=False)
+    df["award_amount"] = pd.to_numeric(amt, errors="coerce").astype("float64")
+    for c in ("kw_brand", "kw_sole"):
+        df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype("int8")
+    df["posted_day"] = pd.to_datetime(df["posted_day"]).astype("datetime64[s]")
+    for c in STRING_COLS:
+        df[c] = df[c].astype("string")
+    return df[COLUMNS]
 
 
-def build_latest(df, snap, meta):
-    """Small summary for the dashboard.  "Open" = a solicitation type whose response deadline is on or after 00:00 UTC of the
-    snapshot date.  The file keeps notices past their deadline until they are archived (about 3 in 4 solicitations in it
-    are past their deadline), so "active" and "open" are very different numbers; both are given.  Because an amended
-    solicitation keeps its older notice ids, each count is given as notice rows and as distinct Sol# values."""
-    start = pd.Timestamp(snap, tz="UTC")
-    sol = df[df["type"].isin(SOLICITATION_TYPES)]
-    dl = sol["response_deadline"]
-    dep = sol["department"].astype("string").fillna("(blank)")
-    is_dod = dep == DOD
-    opn = dl >= start
-    in7 = opn & (dl < start + pd.Timedelta(days=7))
-    in30 = opn & (dl < start + pd.Timedelta(days=30))
+def empty_store():
+    return typed(pd.DataFrame({c: pd.Series(dtype=object) for c in COLUMNS}))
 
-    def both(mask):
-        sub = sol[mask]
-        return {"notice_rows": int(len(sub)), "distinct_sol_numbers": int(sub["sol_number"].nunique())}
 
-    top_rows = dep[opn & ~is_dod].value_counts().head(10)
-    top = []
-    for name, n in top_rows.items():
-        sub = sol[opn & (dep == name)]
-        top.append({"department": name, "open_notice_rows": int(n), "open_distinct_sol_numbers": int(sub["sol_number"].nunique())})
-    by_type = df["type"].astype("string").fillna("(blank)").value_counts()
-    return {
-        "snapshot_date": snap.isoformat(),
-        "built_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "source": "SAM.gov Contract Opportunities Full CSV (active notices only)",
-        "total_active_notices": int(len(df)),
-        "by_type": {k: int(v) for k, v in by_type.items()},
-        "solicitation_types": list(SOLICITATION_TYPES),
-        "active_solicitations_in_file": both(slice(None)),
-        "active_solicitations_deadline_passed": both(dl < start),
-        "active_solicitations_no_deadline": both(dl.isna()),
-        "open_solicitations": {
-            "definition": "solicitation type and response deadline on or after 00:00 UTC of the snapshot date",
-            "all": both(opn),
-            "dod": both(opn & is_dod),
-            "civilian": both(opn & ~is_dod),
-            "dod_department_label": DOD,
-            "deadline_next_7d": both(in7),
-            "deadline_next_30d": both(in30),
-            "deadline_next_7d_civilian": both(in7 & ~is_dod),
-            "deadline_next_30d_civilian": both(in30 & ~is_dod),
-        },
-        "top10_civilian_departments_by_open_solicitations": top,
-        "windows": "next_7d = deadline in [start, start+7d), next_30d = [start, start+30d), start = 00:00 UTC of the snapshot date",
-        "kw_flag_counts_among_open_solicitations": {"kw_brand": int(sol.loc[opn, "kw_brand"].sum()),
-                                                    "kw_sole": int(sol.loc[opn, "kw_sole"].sum())},
-        "quality": meta,
-    }
+# ------------------------------------------------------------------------------------------------------------------
+# files
+# ------------------------------------------------------------------------------------------------------------------
+def atomic_parquet(df, path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    df.to_parquet(path + ".tmp", engine="pyarrow", compression="zstd", compression_level=9, index=False)
+    os.replace(path + ".tmp", path)
+
+
+def atomic_csv(df, path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    df.to_csv(path + ".tmp", index=False, encoding="utf-8", lineterminator="\n")
+    os.replace(path + ".tmp", path)
 
 
 def write_json(path, obj):
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path + ".tmp", "w", encoding="utf-8", newline="\n") as fh:
         json.dump(obj, fh, indent=1, ensure_ascii=False)
         fh.write("\n")
-    os.replace(tmp, path)
+    os.replace(path + ".tmp", path)
+
+
+def read_store(path=None):
+    path = path or STORE
+    if not os.path.isfile(path):
+        return empty_store()
+    df = pd.read_parquet(path)
+    for c in COLUMNS:
+        if c not in df.columns:
+            df[c] = None
+    return typed(df[COLUMNS])
+
+
+def merge_store(store, new):
+    """add `new` to `store`; a notice id that is in both keeps the copy pulled last"""
+    parts = [p for p in (store, new) if p is not None and len(p)]
+    if not parts:
+        return empty_store()
+    allr = pd.concat(parts, ignore_index=True)
+    allr = allr.sort_values("pulled_utc", kind="mergesort").drop_duplicates("notice_id", keep="last")
+    return allr.sort_values(["posted_day", "notice_id"], kind="mergesort").reset_index(drop=True)
+
+
+def read_pulls():
+    if not os.path.isfile(PULLS_CSV):
+        return pd.DataFrame(columns=PULL_COLS)
+    return pd.read_csv(PULLS_CSV, dtype=str, keep_default_na=False)
+
+
+def day_status(pulls):
+    """{day: (status of its latest pull, number of pulls)} (the log is in time order)"""
+    out = {}
+    for d, s in zip(pulls["posted_day"], pulls["status"]):
+        day = date.fromisoformat(d)
+        out[day] = (s, out.get(day, (None, 0))[1] + 1)
+    return out
+
+
+def known_mode(pulls):
+    modes = [m for m in pulls["offset_mode"] if m in ("page", "record")] if len(pulls) else []
+    return modes[-1] if modes else None
+
+
+def days_to_pull(pulls, yesterday, start=None, max_days=30):
+    """(days to pull, oldest first; True if unfinished days older than MAX_BACK_DAYS are left out)"""
+    st = day_status(pulls)
+    floor = yesterday - timedelta(days=MAX_BACK_DAYS)
+    begin = start or (min(st) if st else yesterday)
+    gap = begin < floor and any(st.get(begin + timedelta(days=i), ("", 0))[0] not in FINISHED
+                                for i in range((floor - begin).days))
+    begin = max(begin, floor)
+    out = []
+    d = begin
+    while d <= yesterday:
+        if st.get(d, ("", 0))[0] not in FINISHED:
+            out.append(d)
+        d += timedelta(days=1)
+    return out[:max_days], gap
+
+
+def update_new_csv(store, days):
+    """replace the rows of `days` in results/sam_new_notices.csv"""
+    keep = set(pd.Timestamp(d) for d in days)
+    sub = store[store["posted_day"].isin(keep)]
+    t = pd.DataFrame({"posted_day": sub["posted_day"].dt.strftime("%Y-%m-%d"),
+                      "department": sub["department"].fillna("(blank)").astype(str),
+                      "type": sub["type"].fillna("(blank)").astype(str),
+                      "sol": sub["sol_number"].astype(object)})
+    g = (t.groupby(["posted_day", "department", "type"], sort=True)
+         .agg(n_notices=("type", "size"), n_sol_numbers=("sol", "nunique")).reset_index())
+    names = {d.isoformat() for d in days}
+    if os.path.isfile(NEW_CSV):
+        old = pd.read_csv(NEW_CSV, dtype=str, keep_default_na=False)
+        old = old[~old["posted_day"].isin(names)]
+        g = pd.concat([old, g.astype(str)], ignore_index=True)
+    g = g.astype(str).sort_values(["posted_day", "department", "type"]).reset_index(drop=True)
+    atomic_csv(g[NEW_COLS], NEW_CSV)
+
+
+def write_view(store, through, first_day):
+    """the forecast step's input (31_daily_forecast.py): notices posted in the VIEW_DAYS days before as_of"""
+    as_of = through + timedelta(days=1)
+    v = store[store["posted_day"] >= pd.Timestamp(as_of - timedelta(days=VIEW_DAYS))].copy()
+    newest = v.groupby("sol_number")["posted_date"].transform("max")
+    v["latest_version"] = ((v["posted_date"] == newest).fillna(False) | v["sol_number"].isna()).astype("int8")
+    v.insert(0, "snapshot_date", pd.Series(pd.Timestamp(as_of), index=v.index).astype("datetime64[s]"))
+    v["store_first_day"] = pd.Series(pd.Timestamp(first_day), index=v.index).astype("datetime64[s]")
+    path = os.path.join(SNAP_DIR, f"sam_view_{as_of.isoformat()}.parquet")
+    atomic_parquet(v.reset_index(drop=True), path)
+    for old in sorted(glob.glob(os.path.join(SNAP_DIR, "sam_view_*.parquet")))[:-KEEP_VIEWS]:
+        os.remove(old)
+    return path
+
+
+def build_latest(store, pulls, through, warnings, used, cap):
+    st = day_status(pulls)
+    finished = sorted(d for d, (s, _) in st.items() if s in FINISHED)
+    win_from = through - timedelta(days=6)
+    w = store[(store["posted_day"] >= pd.Timestamp(win_from)) & (store["posted_day"] <= pd.Timestamp(through))]
+    sol = w[w["type"].isin(SOLICITATION_TYPES).fillna(False).to_numpy(bool)]
+    dep = sol["department"].fillna("(blank)").astype(str)
+    is_dod = (dep == DOD).to_numpy(bool)
+
+    def both(mask):
+        sub = sol[mask]
+        return {"notices": int(len(sub)), "distinct_sol_numbers": int(sub["sol_number"].nunique())}
+
+    civ = sol[~is_dod]
+    top = []
+    for name, n in civ.groupby(dep[~is_dod])["sol_number"].nunique().sort_values(ascending=False, kind="mergesort").head(10).items():
+        top.append({"department": name, "distinct_sol_numbers": int(n), "notices": int((dep[~is_dod] == name).sum())})
+    nd = store[store["posted_day"] == pd.Timestamp(through)]
+    return {
+        "schema": 2,
+        "source": "SAM.gov Get Opportunities Public API v2 (api.sam.gov), with a personal API key",
+        "built_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "through": through.isoformat(),
+        "window": {"from": win_from.isoformat(), "to": through.isoformat(), "days": 7,
+                   "days_pulled": sum(1 for d in finished if win_from <= d <= through)},
+        "solicitation_types": list(SOLICITATION_TYPES),
+        "solicitation_notices_posted": {
+            "definition": ("notices of a solicitation type posted on the days of the window (new solicitations and amendments); "
+                           "distinct_sol_numbers counts each solicitation number once"),
+            "all": both(slice(None)), "civilian": both(~is_dod), "dod": both(is_dod), "dod_department_label": DOD},
+        "top10_civilian_departments": top,
+        "newest_day": {"date": through.isoformat(), "notices_all_types": int(len(nd)),
+                       "by_type": {k: int(v) for k, v in nd["type"].fillna("(blank)").astype(str).value_counts().items()}},
+        "store": {"first_day": finished[0].isoformat() if finished else None, "days_finished": len(finished),
+                  "days_short": sorted(d.isoformat() for d, (s, _) in st.items() if s == "short"),
+                  "notices": int(len(store))},
+        "requests": {"this_run": used, "per_run_cap": cap, "daily_limit": DAILY_LIMIT},
+        "keyword_flags": "from the title only",
+        "warnings": warnings,
+    }
 
 
 # ------------------------------------------------------------------------------------------------------------------
-# optional upload to a DRAFT release
+# the draft release that keeps the store between robot runs
 # ------------------------------------------------------------------------------------------------------------------
-def upload_draft(parquet_path, snap):
-    """Upload to a draft release `sam-snapshots-YYYY-MM` with the gh CLI.  Never public: always --draft.
+def _gh(args):
+    return subprocess.run(["gh", *args], capture_output=True, text=True)
 
-    About finding drafts by tag: a draft release has no real git tag yet, so the plain "releases/tags/<tag>" API lookup
-    returns 404 for it.  Recent gh versions work around this by listing releases and matching the tag name, but listing is
-    paginated, so we list explicitly (`gh release list --json tagName,isDraft`) and decide ourselves.  GitHub also allows
-    SEVERAL drafts with the same tag name, so we must not blindly `create` twice.  Needs GH_TOKEN with contents: write."""
-    tag = f"sam-snapshots-{snap.strftime('%Y-%m')}"
+
+def need_gh(what):
     if shutil.which("gh") is None:
-        sys.exit("--upload needs the GitHub CLI (gh) on PATH")
-    lst = subprocess.run(["gh", "release", "list", "--limit", "200", "--json", "tagName,isDraft"],
-                         capture_output=True, text=True)
+        raise SystemExit(f"{what} needs the GitHub CLI (gh) on PATH and GH_TOKEN")
+
+
+def draft_exists(tag):
+    """True if a DRAFT release with this tag exists.  Listed explicitly: a draft has no git tag yet, so a lookup by tag fails."""
+    lst = _gh(["release", "list", "--limit", "200", "--json", "tagName,isDraft"])
     if lst.returncode != 0:
-        sys.exit("gh release list failed: " + lst.stderr.strip())
-    exists = any(r["tagName"] == tag and r["isDraft"] for r in json.loads(lst.stdout or "[]"))
-    if not exists:
-        log(f"creating DRAFT release {tag}")
-        c = subprocess.run(["gh", "release", "create", tag, "--draft", "--title", f"SAM daily snapshots {snap.strftime('%Y-%m')}",
-                            "--notes", "Daily cleaned snapshots of active SAM.gov notices (no contact, awardee, street address or "
-                                       "description text). Draft: not public."], capture_output=True, text=True)
+        raise RuntimeError("gh release list failed: " + lst.stderr.strip())
+    return any(r["tagName"] == tag and r["isDraft"] for r in json.loads(lst.stdout or "[]"))
+
+
+def sync_store():
+    """merge the copy kept in the draft release into the local store (nothing to do if there is none yet)"""
+    need_gh("--sync")
+    if not draft_exists(STORE_TAG):
+        say(f"no draft release {STORE_TAG} yet: starting from the local store")
+        return
+    tmp = tempfile.mkdtemp(prefix="sam_store_")
+    try:
+        d = _gh(["release", "download", STORE_TAG, "--pattern", STORE_ASSET, "--dir", tmp])
+        got = os.path.join(tmp, STORE_ASSET)
+        if d.returncode != 0 or not os.path.isfile(got):
+            if "no assets" in (d.stderr or "").lower():
+                say(f"the draft release {STORE_TAG} has no store yet")
+                return
+            raise RuntimeError("gh release download failed: " + (d.stderr or "").strip())
+        merged = merge_store(read_store(), read_store(got))
+        atomic_parquet(merged, STORE)
+        say(f"merged the store from the draft release {STORE_TAG}: {len(merged):,} notices")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def upload_store():
+    need_gh("--upload")
+    if not draft_exists(STORE_TAG):
+        say(f"creating DRAFT release {STORE_TAG}")
+        c = _gh(["release", "create", STORE_TAG, "--draft", "--title", "SAM.gov notices pulled from the API (private store)",
+                 "--notes", "Every SAM.gov notice pulled day by day from the Get Opportunities API, whitelisted fields only (no "
+                            "contacts, awardee, street address or description). Draft: not public."])
         if c.returncode != 0:
-            sys.exit("gh release create failed: " + c.stderr.strip())
-    log(f"uploading {os.path.basename(parquet_path)} to {tag} (--clobber)")
-    u = subprocess.run(["gh", "release", "upload", tag, parquet_path, "--clobber"], capture_output=True, text=True)
+            raise RuntimeError("gh release create failed: " + c.stderr.strip())
+    u = _gh(["release", "upload", STORE_TAG, STORE, "--clobber"])
     if u.returncode != 0:
-        sys.exit("gh release upload failed: " + u.stderr.strip())
-    log("  upload done")
+        raise RuntimeError("gh release upload failed: " + u.stderr.strip())
+    say(f"  uploaded the store to the draft release {STORE_TAG}")
 
 
 # ------------------------------------------------------------------------------------------------------------------
-def peak_mb():
-    """Peak memory of this process in MB (Windows or Linux), or None."""
-    try:
-        if os.name == "nt":
-            import ctypes
-            from ctypes import wintypes
-
-            class PMC(ctypes.Structure):
-                _fields_ = [("cb", wintypes.DWORD), ("PageFaultCount", wintypes.DWORD),
-                            ("PeakWorkingSetSize", ctypes.c_size_t), ("WorkingSetSize", ctypes.c_size_t),
-                            ("QuotaPeakPagedPoolUsage", ctypes.c_size_t), ("QuotaPagedPoolUsage", ctypes.c_size_t),
-                            ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t), ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-                            ("PagefileUsage", ctypes.c_size_t), ("PeakPagefileUsage", ctypes.c_size_t)]
-            k = ctypes.WinDLL("kernel32", use_last_error=True)
-            p = ctypes.WinDLL("psapi", use_last_error=True)
-            k.GetCurrentProcess.restype = wintypes.HANDLE
-            p.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(PMC), wintypes.DWORD]
-            c = PMC()
-            c.cb = ctypes.sizeof(PMC)
-            p.GetProcessMemoryInfo(k.GetCurrentProcess(), ctypes.byref(c), c.cb)
-            return c.PeakWorkingSetSize / 1e6
-        import resource
-        r = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss      # KB on Linux
-        return r / 1e3
-    except Exception:
-        return None
+# --check
+# ------------------------------------------------------------------------------------------------------------------
+def shapes(values, n=3):
+    """the most common shapes of some strings, with every digit shown as 9 and every letter as A (no names are printed)"""
+    s = pd.Series([re.sub(r"[A-Za-z]", "A", re.sub(r"\d", "9", v)) for v in values if isinstance(v, str)], dtype=object)
+    return ", ".join(f"{k} ({c})" for k, c in s.value_counts().head(n).items()) or "none"
 
 
-def main():
-    ap = argparse.ArgumentParser(description="Save today's SAM.gov active-notice snapshot (see the file header).")
-    ap.add_argument("--upload", action="store_true", help="also upload the parquet to a DRAFT GitHub release (needs gh)")
-    ap.add_argument("--from-file", help="use this local CSV instead of downloading (not deleted; for testing)")
-    ap.add_argument("--date", help="snapshot date YYYY-MM-DD (only with --from-file; default today UTC)")
-    args = ap.parse_args()
+def run_check(key, day, get):
+    say(f"Checking the SAM.gov API with your key: notices posted on {day} (one request, first page only).")
+    d = get(key, day, 0)
+    recs = [r for r in (d.get("opportunitiesData") or []) if isinstance(r, dict)]
+    say(f"OK: totalRecords {int(d.get('totalRecords') or 0):,}; {len(recs):,} notices in this page.")
+    if not recs:
+        return 0
+    df = to_frame(recs, day, "check")
+    say("How full each kept field is (share of notices with a value):")
+    for c in COLUMNS:
+        if c not in ("posted_day", "pulled_utc", "kw_brand", "kw_sole"):
+            say(f"  {c:18s} {df[c].notna().mean():6.1%}")
+    say("Shapes (9 = digit, A = letter):")
+    say("  postedDate        " + shapes([text(r.get("postedDate")) for r in recs]))
+    say("  responseDeadLine  " + shapes([text(r.get("responseDeadLine")) for r in recs]))
+    say("  fullParentPathCode levels: " + ", ".join(f"{k} levels: {v}" for k, v in sorted(
+        pd.Series([len((text(r.get("fullParentPathCode")) or "").split(".")) if text(r.get("fullParentPathCode")) else 0
+                   for r in recs]).value_counts().items())))
+    dropped = sorted({k for r in recs for k in r} - {p[0] for _, p in FIELDS} - {"fullParentPathName", "fullParentPathCode",
+                                                                                 "department", "subTier", "office",
+                                                                                 "naicsCodes", "reponseDeadLine"})
+    say("  fields in the answer that are never kept: " + ", ".join(dropped))
+    say(f"Nothing was written. This used 1 of your {DAILY_LIMIT} requests for today.")
+    return 0
 
-    t0 = time.time()
-    os.makedirs(SNAP_DIR, exist_ok=True)
-    tmpdir = None
-    try:
-        if args.from_file:
-            path = args.from_file
-            snap = date.fromisoformat(args.date) if args.date else datetime.now(timezone.utc).date()
-            log(f"using local file {path} ({os.path.getsize(path) / 1e6:,.1f} MB), snapshot date {snap}")
+
+# ------------------------------------------------------------------------------------------------------------------
+def parse_args(argv):
+    ap = argparse.ArgumentParser(prog="python -I scripts/14_sam_daily_snapshot.py",
+                                 description="Save the SAM.gov notices posted on each new day, from SAM.gov's official API.")
+    ap.add_argument("--max-requests", type=int, default=DEFAULT_BUDGET,
+                    help=f"requests this run may make (default {DEFAULT_BUDGET}; the key allows {DAILY_LIMIT} a day)")
+    ap.add_argument("--max-days", type=int, default=30, help="days this run may pull (default 30; the budget usually stops first)")
+    ap.add_argument("--start", help="first day to pull when nothing has been pulled yet (YYYY-MM-DD; default yesterday)")
+    ap.add_argument("--sync", action="store_true", help="first merge in the store kept in the draft release sam-api-store (gh)")
+    ap.add_argument("--upload", action="store_true", help="afterwards replace the store in the draft release sam-api-store (gh)")
+    ap.add_argument("--require-key", action="store_true", help="a missing SAM_API_KEY is an error (exit 2), not a skip")
+    ap.add_argument("--check", action="store_true", help="one request to check the key and the answer's shape; writes nothing")
+    a = ap.parse_args(argv)
+    if a.max_requests < 1 or a.max_requests > DAILY_LIMIT:
+        ap.error(f"--max-requests must be between 1 and {DAILY_LIMIT}")
+    return a
+
+
+KEY_HELP = ("A new key: sign in at sam.gov, open Account Details, and generate the Public API Key again (SAM.gov's terms say to "
+            "renew it every 90 days). Then update SAM_API_KEY on your computer and the SAM_API_KEY secret on GitHub. "
+            "See docs/sam-api-key.md.")
+
+
+def run(argv=None, now=None, get=None):
+    a = parse_args(sys.argv[1:] if argv is None else argv)
+    get = get or api_get
+    key = (os.environ.get(KEY_ENV) or "").strip()
+    if not key:
+        msg = f"{KEY_ENV} is not set. This step needs a free personal SAM.gov API key: see docs/sam-api-key.md."
+        if a.require_key or a.check:
+            say("ERROR: " + msg + " Nothing was downloaded.")
+            return EXIT_KEY
+        say(msg + " Step skipped; nothing was downloaded.")
+        return 0
+    now = pd.Timestamp(now or datetime.now(timezone.utc))
+    now = now.tz_localize("UTC") if now.tzinfo is None else now.tz_convert("UTC")
+    yesterday = (now.tz_localize(None) + SAM_DAY_OFFSET).date() - timedelta(days=1)
+
+    if a.check:
+        try:
+            return run_check(key, yesterday, get)
+        except KeyRefused as e:
+            say(f"SAM.gov refused the key ({redact(str(e), key)}).\n{KEY_HELP}")
+            return EXIT_KEY
+        except (RateLimited, ApiError) as e:
+            say(f"ERROR: {redact(str(e), key)}")
+            return EXIT_API
+
+    if a.sync:
+        try:
+            sync_store()
+        except RuntimeError as e:
+            say(f"ERROR: {e}")
+            return EXIT_API
+    store = read_store()
+    pulls = read_pulls()
+    start = date.fromisoformat(a.start) if a.start else None
+    days, gap = days_to_pull(pulls, yesterday, start, a.max_days)
+    warnings = []
+    if gap:
+        warnings.append(f"days more than {MAX_BACK_DAYS} days before {yesterday} were never finished and are not pulled any more")
+    if not days:
+        say(f"Nothing to pull: every day through {yesterday} is done.")
+
+    budget, mode, st = Budget(a.max_requests), known_mode(pulls), day_status(pulls)
+    frames, log_rows, finished, stop = [], [], [], None
+    for day in days:
+        attempt = st.get(day, (None, 0))[1] + 1
+        before = budget.used
+        pulled_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        recs, total, reason, err = {}, None, None, None
+        try:
+            recs, total, found, reason = pull_day(key, day, budget, mode, get)
+            mode = found or mode
+        except KeyRefused as e:
+            stop, err = "key", redact(str(e), key)
+        except RateLimited as e:
+            stop, err = "rate", redact(str(e), key)
+        except ApiError as e:
+            stop, err = "api", redact(str(e), key)
+        used = budget.used - before
+        if err is not None and used == 0:
+            break
+        if reason == "budget" and total is None:          # the budget ran out before this day started
+            stop = "budget"
+            break
+        if err is None and reason is None:
+            status = "complete"
+        elif err is None and reason == "too-big":
+            status = "short"
+        elif err is None and reason in ("empty-page", "pages-exhausted") and attempt >= MAX_ATTEMPTS:
+            status = "short"
         else:
-            tmpdir = tempfile.mkdtemp(prefix="sam_snapshot_")           # system temp, outside the repository
-            path = os.path.join(tmpdir, "ContractOpportunitiesFullCSV.csv")
-            log("downloading", URL)
-            n, snap = stream_download(path)
-            log(f"downloaded {n / 1e6:,.1f} MB in {time.time() - t0:,.0f} s; snapshot date (Last-Modified, UTC) = {snap}")
+            status = "incomplete"
+        if recs:
+            frames.append(to_frame(recs.values(), day, pulled_utc))
+        log_rows.append({"posted_day": day.isoformat(), "pulled_utc": pulled_utc, "attempt": str(attempt), "requests": str(used),
+                         "total_records": "" if total is None else str(total), "notices_received": str(len(recs)),
+                         "status": status, "offset_mode": mode or ""})
+        shortfall = "" if total is None or len(recs) >= total else f" ({total - len(recs):,} short)"
+        say(f"{day}: {len(recs):,} notices of {'?' if total is None else f'{total:,}'} in {used} request(s): {status}{shortfall}"
+            + (f" - {err}" if err else ""))
+        if status in FINISHED:
+            finished.append(day)
+        if err is not None or reason == "budget":
+            stop = stop or "budget"
+            break
 
-        cols, extra = check_header(path)
-        log(f"header ok: {len(cols)} columns; new unknown columns (ignored): {extra}")
+    if frames:
+        store = merge_store(store, pd.concat(frames, ignore_index=True))
+        atomic_parquet(store, STORE)
+        say(f"store: {len(store):,} notices ({STORE})")
+    if log_rows:
+        pulls = pd.concat([pulls, pd.DataFrame(log_rows, columns=PULL_COLS)], ignore_index=True)
+        atomic_csv(pulls[PULL_COLS], PULLS_CSV)
+    if finished:
+        update_new_csv(store, finished)
+    st = day_status(pulls)
+    done = sorted(d for d, (s, _) in st.items() if s in FINISHED)
+    if stop == "budget":
+        warnings.append("the request budget ran out before every day was pulled; the rest follows in the next runs")
+    if stop == "rate":
+        warnings.append("SAM.gov said today's request limit is used up; the rest follows tomorrow")
+    if done and (log_rows or not glob.glob(os.path.join(SNAP_DIR, f"sam_view_{(done[-1] + timedelta(days=1)).isoformat()}.parquet"))):
+        through = done[-1]
+        if log_rows:
+            write_json(LATEST_JSON, build_latest(store, pulls, through, warnings, budget.used, budget.cap))
+        path = write_view(store, through, done[0])
+        say(f"view for the forecast step: {path} (notices through {through})")
+    if a.upload and frames:
+        try:
+            upload_store()
+        except RuntimeError as e:
+            say(f"ERROR: {e}")
+            return EXIT_API
+    say(f"requests used: {budget.used} of {budget.cap} allowed this run ({DAILY_LIMIT} a day for the key)")
+    for w in warnings:
+        say("WARNING: " + w)
+    if stop == "key":
+        say(f"SAM.gov refused the key.\n{KEY_HELP}")
+        return EXIT_KEY
+    if stop == "api" and not finished:
+        say("The SAM.gov API did not answer properly; nothing new was finished. Run the step again later.")
+        return EXIT_API
+    return 0
 
-        df, n_raw, n_bad, enc_note = read_snapshot(path)
-        log(f"read {n_raw:,} raw rows; {n_bad:,} malformed rows skipped; encoding: {enc_note}")
-        if n_raw == 0:
-            sys.exit("STOP: no rows read")
-        if tmpdir:                                                       # free the disk as early as possible
-            shutil.rmtree(tmpdir, ignore_errors=True)
-            tmpdir = None
-        df, notes = finish_types(df, snap)
-        log(f"{len(df):,} notices after cleaning;", notes)
 
-        parquet = os.path.join(SNAP_DIR, f"sam_active_{snap.isoformat()}.parquet")
-        df.to_parquet(parquet + ".tmp", engine="pyarrow", compression="zstd", compression_level=9, index=False)
-        os.replace(parquet + ".tmp", parquet)
-        log(f"wrote {parquet} ({os.path.getsize(parquet) / 1e6:,.1f} MB)")
-
-        counts = build_counts(df, snap)
-        total_rows = update_counts_csv(counts, snap)
-        log(f"wrote {COUNTS_CSV}: {len(counts):,} rows for {snap}, {total_rows:,} rows in total")
-
-        meta = {"encoding": enc_note, "raw_rows_read": int(n_raw), "malformed_rows_skipped": int(n_bad),
-                "rows_kept": int(len(df)), "extra_columns_ignored": extra, **notes}
-        latest = build_latest(df, snap, meta)
-        write_json(LATEST_JSON, latest)
-        log(f"wrote {LATEST_JSON}")
-
-        if args.upload:
-            upload_draft(parquet, snap)
-        else:
-            log("(no --upload: nothing was sent anywhere)")
-        pm = peak_mb()
-        log(f"done in {time.time() - t0:,.0f} s" + (f"; peak memory {pm:,.0f} MB" if pm else ""))
-    finally:
-        if tmpdir and os.path.isdir(tmpdir):
-            shutil.rmtree(tmpdir, ignore_errors=True)
+def main(argv=None):
+    return run(argv)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

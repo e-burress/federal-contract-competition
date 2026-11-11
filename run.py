@@ -75,7 +75,7 @@ STEPS = {
     "dashboard":           ("scripts/build_dashboard.py", [], False, "the dashboard page (docs/index.html)"),
     "explorer":            ("scripts/build_explorer.py", [], False, "the data behind the interactive explorer (docs/explorer.html)"),
     "market-depth":        ("scripts/25_market_depth.py", [], True, "registered companies per industry code, from SAM.gov's public entity extract"),
-    "sam-snapshot":        ("scripts/14_sam_daily_snapshot.py", [], True, "today's SAM.gov list of open notices and the daily counts"),
+    "sam-snapshot":        ("scripts/14_sam_daily_snapshot.py", [], True, "SAM.gov notices posted each new day, from SAM.gov's API (needs SAM_API_KEY)"),
     "live":                ("scripts/15_civilian_fytd.py", [], True, "single-offer shares this fiscal year so far, every civilian agency"),
     "track-f2":            ("scripts/13_track_threshold.py", [], True, "how the sealed threshold forecast (F2) is tracking"),
     "history-atlas":       ("scripts/19_history_atlas.py", [], False, "single-offer shares FY2008 onward, civilian and Defense"),
@@ -106,8 +106,8 @@ PIPELINES = {
 }
 # results that change every day, are not rebuilt by quick/all, or are never published (office level); `verify` skips them.
 # daily_forecast_ (32_score_daily.py) and reconciliation (28_reconcile.py) depend on the day they were made and on USAspending's live totals.
-LIVE_OR_FROZEN = ("tracking_", "live_fy", "sam_daily_", "model_", "resolution_", "threshold_resolution_", "atlas_offices",
-                  "daily_forecast_", "reconciliation")
+LIVE_OR_FROZEN = ("tracking_", "live_fy", "sam_daily_", "sam_api_", "sam_new_", "model_", "resolution_", "threshold_resolution_",
+                  "atlas_offices", "daily_forecast_", "reconciliation")
 
 
 def say(msg=""):

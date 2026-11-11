@@ -30,8 +30,9 @@ You get your own copy of the dashboard that refreshes itself every morning.
 1. Sign in to GitHub and press **Fork** at the top of the repository page.
 2. In your fork, open **Settings**, then **Actions**, and turn Actions on if GitHub asks.
 3. In **Settings**, open **Pages**. Under **Source**, choose **Deploy from a branch**. Set the branch to `main` and the folder to `/docs`. Save.
-4. Open the **Actions** tab. Choose **Daily dashboard refresh** in the list on the left. Press **Run workflow**.
-5. When it finishes, your dashboard is at `https://<your-username>.github.io/<repo>/`. Replace `<your-username>` with your GitHub name and `<repo>` with the name of your fork (usually `federal-contract-competition`).
+4. Optional: to include SAM.gov's daily notices, get your own free SAM.gov API key and add it as the repository secret `SAM_API_KEY` ([`sam-api-key.md`](sam-api-key.md)). Without it that one step is skipped.
+5. Open the **Actions** tab. Choose **Daily dashboard refresh** in the list on the left. Press **Run workflow**.
+6. When it finishes, your dashboard is at `https://<your-username>.github.io/<repo>/`. Replace `<your-username>` with your GitHub name and `<repo>` with the name of your fork (usually `federal-contract-competition`).
 
 ## 4. On your own computer
 

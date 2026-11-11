@@ -4,7 +4,7 @@ This guide is for a person, not a programmer. No AI is used anywhere in these st
 
 ## What happens each morning
 
-1. The robot saves SAM.gov's list of active notices (`scripts/14_sam_daily_snapshot.py`).
+1. The robot saves the notices SAM.gov posted the day before, through SAM.gov's official API (`scripts/14_sam_daily_snapshot.py`; it needs a free personal API key, see [`sam-api-key.md`](sam-api-key.md)).
 2. It picks the **new** open solicitations (`scripts/31_daily_forecast.py`). A solicitation is picked when:
    - its newest notice is a "Solicitation" or a "Combined Synopsis/Solicitation", and no award notice for it is active;
    - its response deadline is at least one full day away;
@@ -89,7 +89,8 @@ The scores are the Brier score and log loss (lower is better) and the AUC (0.5 i
 
 ## Known limits
 
-- The snapshot holds only active notices. An earlier version of a notice that SAM.gov has already archived is missed, so "first posted" can be later than the true first posting.
+- The notices come day by day from SAM.gov's API, starting on the first day pulled. An amendment of a solicitation first posted before that day looks like a new solicitation, with a "first posted" date that is too late. So the forecast step refuses to seal a batch until the notices pulled cover at least 30 days (dry runs are allowed). After that, the problem is limited to solicitations that stay open a long time.
+- The keyword flags (brand-name and sole-source wording) now come from the title alone, because the API's search results do not include the description. The model was trained with the title and the first lines of the description; that block of the model showed no measurable gain in the out-of-time test.
 - On the first day, every open solicitation is new, so the first batch is much larger than later ones, and mostly backlog.
 - Civilian outcomes come from this fiscal year's live download. Matches found earlier are kept, but an award reported late, after a new fiscal year has started, can be missed.
 - Many solicitations never lead to an award with a matching number. They stay unresolved.

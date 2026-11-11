@@ -14,6 +14,7 @@ Sections 1 to 6 use the FY2024–FY2026 snapshot. Sections 8 to 15 use the long 
 | SAM.gov public search (the back end of sam.gov's search page) | Open solicitations (notice types *Solicitation* and *Combined Synopsis/Solicitation*) and historical notices for response windows | Free, no key, undocumented |
 | FAR history | Simplified-acquisition threshold $250K → $350K and micro-purchase threshold $10K → $15K, both effective 2025-10-01. Every FAR dollar threshold since 2006 is in `reference/thresholds.csv` (section 16) | Public |
 | USAspending.gov transaction download, one fiscal year at a time | The long history: the same 36 columns for FY2008 onward, civilian agencies (one request per quarter) and the Department of Defense (one request per month). Sections 8 to 15 | Free, no key |
+| SAM.gov Get Opportunities Public API (v2) | The notices posted on each day since November 11, 2026: the daily counts and the input of the daily forecasts (section 6b) | Free personal API key, 10 requests a day ([`sam-api-key.md`](sam-api-key.md)) |
 | SAM.gov contract-opportunity archive files | One file per fiscal year with every past notice. Training data of forecast model version 2 (section 17) | Free, no key |
 | SAM.gov entity registration extract (Public V2, monthly) | Counts of registered companies per industry code (section 16). Only counts are kept | Free, no key |
 
@@ -154,7 +155,7 @@ Shares by agency, agency and year, award type and set-aside (each with and witho
 
 ## 6b. Daily sealed forecasts
 
-Every morning `31_daily_forecast.py` forecasts each new open solicitation in SAM.gov's daily list of active notices with model version 2 (section 17), writes the day's forecasts to one private batch file and publishes its SHA-256 fingerprint, a row of counts and short hashes of the solicitation numbers in [`forecasts/daily/`](../forecasts/daily/). `32_score_daily.py` scores the sealed batches once the awards appear, with the rule written in every batch: an award counts only if it is a base action with the same normalised solicitation number dated on or after the day offers were due, competed with 1 to 998 offers. Only totals are published, with small cells hidden. The step-by-step guide is [`daily-forecasts.md`](daily-forecasts.md).
+Every morning `31_daily_forecast.py` forecasts each new open solicitation among the SAM.gov notices pulled day by day from SAM.gov's API (before November 11, 2026: SAM.gov's daily list of active notices) with model version 2 (section 17), writes the day's forecasts to one private batch file and publishes its SHA-256 fingerprint, a row of counts and short hashes of the solicitation numbers in [`forecasts/daily/`](../forecasts/daily/). `32_score_daily.py` scores the sealed batches once the awards appear, with the rule written in every batch: an award counts only if it is a base action with the same normalised solicitation number dated on or after the day offers were due, competed with 1 to 998 offers. Only totals are published, with small cells hidden. The step-by-step guide is [`daily-forecasts.md`](daily-forecasts.md).
 
 <!-- auto:m-daily-forecasts -->**Daily forecasts.** The daily series is built and tested; the first batch has not been sealed yet.<!-- /auto:m-daily-forecasts -->
 

@@ -144,6 +144,27 @@ class ExplorerDataTests(unittest.TestCase):
         self.assertEqual(sam["departments"], [["Veterans Affairs", 6, None]])
         self.assertEqual(sam["daily"], [["2026-11-09", 4, 40], ["2026-11-10", 6, 0]])
 
+    def test_sam_from_the_api(self):
+        latest = {"schema": 2, "through": "2026-11-11", "window": {"from": "2026-11-05", "to": "2026-11-11", "days": 7, "days_pulled": 2},
+                  "solicitation_notices_posted": {"civilian": {"notices": 9, "distinct_sol_numbers": 8},
+                                                  "dod": {"notices": 5, "distinct_sol_numbers": 4},
+                                                  "dod_department_label": "DEPT OF DEFENSE"},
+                  "top10_civilian_departments": [{"department": "VETERANS AFFAIRS, DEPARTMENT OF", "distinct_sol_numbers": 8,
+                                                  "notices": 9}]}
+        with open(os.path.join(self.res, "sam_daily_latest.json"), "w", encoding="utf-8") as fh:
+            json.dump(latest, fh)
+        va = "VETERANS AFFAIRS, DEPARTMENT OF"
+        write_csv(self.res, "sam_new_notices.csv", [
+            {"posted_day": "2026-11-10", "department": "DEPT OF DEFENSE", "type": "Solicitation", "n_notices": 5, "n_sol_numbers": 4},
+            {"posted_day": "2026-11-10", "department": va, "type": "Solicitation", "n_notices": 4, "n_sol_numbers": 4},
+            {"posted_day": "2026-11-11", "department": va, "type": "Combined Synopsis/Solicitation", "n_notices": 5, "n_sol_numbers": 4},
+            {"posted_day": "2026-11-11", "department": va, "type": "Award Notice", "n_notices": 3, "n_sol_numbers": 3}])
+        sam = self.build()["sam"]
+        self.assertEqual((sam["schema"], sam["date"], sam["from"], sam["days_pulled"]), (2, "2026-11-11", "2026-11-05", 2))
+        self.assertEqual((sam["civilian"], sam["dod"]), (8, 4))
+        self.assertEqual(sam["departments"], [["Veterans Affairs", 8, 9]])
+        self.assertEqual(sam["daily"], [["2026-11-10", 4, 5], ["2026-11-11", 5, 0]])    # award notices left out
+
     def test_gsa_note_numbers(self):
         g = self.build()["gsa"]
         self.assertAlmostEqual(g["award_share"], 600 / 700, places=3)

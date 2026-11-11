@@ -1,4 +1,4 @@
-# Every morning: save SAM.gov's nightly list of open notices, update the live single-offer table for every civilian agency,
+# Every morning: save the notices SAM.gov posted the day before (its official API, with the owner's key), update the live single-offer table for every civilian agency,
 # check how the sealed threshold forecast (PIO-F2) is tracking, rebuild the dashboard, and publish it.
 # After the resolution date (Feb 28, 2027) the same run produces F2's official score once.
 # The sealed forecast files are never changed. Run it by hand from the Actions tab ("Run workflow").
@@ -6,11 +6,11 @@ name: Daily dashboard refresh
 
 on:
   schedule:
-    - cron: "0 12 * * *"     # every day 12:00 UTC (7 AM Eastern in winter, 8 AM in summer); SAM.gov's file is rebuilt ~04:30 UTC
+    - cron: "0 12 * * *"     # every day 12:00 UTC (7 AM Eastern in winter, 8 AM in summer); the day before is then over in every US time zone
   workflow_dispatch:
 
 permissions:
-  contents: write            # commit the results, and keep the daily SAM.gov snapshots in draft (non-public) releases
+  contents: write            # commit the results, and keep the SAM.gov notices and other private files in draft (non-public) releases
 
 concurrency:
   group: daily-refresh
@@ -36,8 +36,13 @@ jobs:
 
       # The data steps keep going if one source is down: the dashboard still updates with what worked,
       # and the run is marked failed so GitHub sends a notification.
-      - name: Save today's SAM.gov list of open notices (snapshot kept private) and update the daily counts
-        run: python -I scripts/14_sam_daily_snapshot.py --upload
+      # SAM.gov: only its official API, with the owner's personal key (repository secret SAM_API_KEY, see docs/sam-api-key.md).
+      # Only this step gets the key. In this repository a missing key is an error; in a fork without the secret the step is
+      # skipped. The notices pulled so far are kept in the draft (non-public) release sam-api-store.
+      - name: Save the SAM.gov notices posted since the last run (official API; kept private) and update the daily counts
+        env:
+          SAM_API_KEY: ${{ secrets.SAM_API_KEY }}
+        run: python -I scripts/14_sam_daily_snapshot.py --sync --upload ${{ github.repository == 'e-burress/federal-contract-competition' && '--require-key' || '' }}
 
       - name: Live single-offer table, every civilian agency, this fiscal year so far
         if: ${{ !cancelled() }}

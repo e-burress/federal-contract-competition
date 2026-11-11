@@ -192,7 +192,7 @@ tr.sel td { background:var(--soft); }
   <li><a href="#thresholds">Dollar limits</a></li><li><a href="#scan">Every dollar limit</a></li><li><a href="#switch2018">The 2018 switch</a></li><li><a href="#split">Split purchases?</a></li><li><a href="#supplier">Who wins</a></li>
   <li class="sep" aria-hidden="true"></li>
   <li data-opt="model"><a href="#model">Forecast model</a></li><li data-opt="score"><a href="#score">Forecast scoreboard</a></li>
-  <li><a href="#quality">Data quality</a></li><li><a href="#open">Open today</a></li>
+  <li><a href="#quality">Data quality</a></li><li><a href="#open" id="nav-open">Open today</a></li>
   <li class="sep" aria-hidden="true"></li>
   <li><a href="#depth">Market depth</a></li><li><a href="#lookup">Look up a market</a></li><li><a href="#allthresholds">All thresholds</a></li><li><a href="#data">Get the data</a></li>
 </ul></nav>
@@ -424,7 +424,7 @@ tr.sel td { background:var(--soft); }
   <p class="note" id="sam-note"></p>
 </div>
 <div class="card" id="daily-card">
-  <h3>Open solicitation notices, day by day</h3>
+  <h3 id="daily-title">Open solicitation notices, day by day</h3>
   <div class="legend" id="daily-legend"></div>
   <div class="chart" id="daily-chart"></div>
   <details id="daily-details"><summary>Show the numbers</summary><div class="tablewrap" id="daily-table"></div></details>
@@ -2082,33 +2082,54 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
 (function () {
   var S = D.sam;
   if (!S) { $("sam-card").innerHTML = '<p class="empty">The daily SAM.gov file is not available yet.</p>'; $("daily-card").hidden = true; return; }
+  var api = S.schema === 2;              // since November 2026: notices posted per day, from SAM.gov's API
+  var span = api ? niceDate(S.from) + " to " + niceDate(S.date) : niceDate(S.date);
+  if (api) {
+    $("open").textContent = "New on SAM.gov";
+    $("nav-open").textContent = "New on SAM.gov";
+    $("daily-title").textContent = "Solicitation notices posted, day by day";
+  }
   var k = [];
-  if (isNum(S.civilian)) k.push('<div class="card kpi"><b>' + int(S.civilian) + "</b><span>civilian solicitations open on " + esc(niceDate(S.date)) + "</span></div>");
-  if (isNum(S.civilian_7d)) k.push('<div class="card kpi"><b>' + int(S.civilian_7d) + "</b><span>of them close within 7 days" + (isNum(S.civilian_30d) ? " (" + int(S.civilian_30d) + " within 30)" : "") + "</span></div>");
-  if (isNum(S.dod)) k.push('<div class="card kpi"><b>' + int(S.dod) + "</b><span>more are open at the Department of Defense</span></div>");
+  if (api) {
+    var part = isNum(S.days_pulled) && isNum(S.days) && S.days_pulled < S.days ? " (" + int(S.days_pulled) + " of the " + int(S.days) + " days collected so far)" : "";
+    if (isNum(S.civilian)) k.push('<div class="card kpi"><b>' + int(S.civilian) + "</b><span>civilian solicitations posted or updated, " + esc(span + part) + "</span></div>");
+    if (isNum(S.dod)) k.push('<div class="card kpi"><b>' + int(S.dod) + "</b><span>more at the Department of Defense</span></div>");
+  } else {
+    if (isNum(S.civilian)) k.push('<div class="card kpi"><b>' + int(S.civilian) + "</b><span>civilian solicitations open on " + esc(niceDate(S.date)) + "</span></div>");
+    if (isNum(S.civilian_7d)) k.push('<div class="card kpi"><b>' + int(S.civilian_7d) + "</b><span>of them close within 7 days" + (isNum(S.civilian_30d) ? " (" + int(S.civilian_30d) + " within 30)" : "") + "</span></div>");
+    if (isNum(S.dod)) k.push('<div class="card kpi"><b>' + int(S.dod) + "</b><span>more are open at the Department of Defense</span></div>");
+  }
   $("sam-kpis").innerHTML = k.join("");
   var dep = S.departments || [];
-  $("sam-title").textContent = "Open solicitation notices by civilian department, " + niceDate(S.date);
+  var what = api ? "Solicitations posted or updated by civilian department" : "Open solicitation notices by civilian department";
+  $("sam-title").textContent = what + ", " + span;
   var TOP = 12;
   onResize(function () {
-    hbarChart($("sam-chart"), { label: "Open solicitation notices by civilian department, top " + Math.min(TOP, dep.length),
-      rows: dep.slice(0, TOP).map(function (d) { return { label: d[0], v: d[1], tip: "<div>" + int(d[1]) + " open notices</div>" + (isNum(d[2]) ? "<div>" + int(d[2]) + " distinct solicitations</div>" : "") }; }) });
+    hbarChart($("sam-chart"), { label: what + ", top " + Math.min(TOP, dep.length),
+      rows: dep.slice(0, TOP).map(function (d) { return { label: d[0], v: d[1], tip: api
+        ? "<div>" + int(d[1]) + " solicitations</div>" + (isNum(d[2]) ? "<div>" + int(d[2]) + " notices</div>" : "")
+        : "<div>" + int(d[1]) + " open notices</div>" + (isNum(d[2]) ? "<div>" + int(d[2]) + " distinct solicitations</div>" : "") }; }) });
   });
-  table($("sam-table"), [
+  table($("sam-table"), api ? [
+    { label: "Civilian department", get: function (d) { return d[0]; }, fmt: function (d) { return esc(d[0]); } },
+    { label: "Solicitations", num: true, get: function (d) { return d[1]; }, fmt: function (d) { return int(d[1]); } },
+    { label: "Notices", num: true, get: function (d) { return d[2]; }, fmt: function (d) { return isNum(d[2]) ? int(d[2]) : '<span class="note">not counted</span>'; } }
+  ] : [
     { label: "Civilian department", get: function (d) { return d[0]; }, fmt: function (d) { return esc(d[0]); } },
     { label: "Open notices", num: true, get: function (d) { return d[1]; }, fmt: function (d) { return int(d[1]); } },
     { label: "Distinct solicitations", num: true, get: function (d) { return d[2]; }, fmt: function (d) { return isNum(d[2]) ? int(d[2]) : '<span class="note">not counted</span>'; } }
   ], dep, { stack: true, sortCol: 1, sortDir: -1 });
-  $("sam-note").textContent = "From SAM.gov's nightly list of active notices: solicitations whose response deadline is on or after that day. One solicitation can have several notices (for example, amendments), so notices outnumber solicitations. Distinct solicitation counts are published for the ten largest departments only. The chart shows the " + Math.min(TOP, dep.length) + " largest of " + dep.length + " departments; the table lists all of them. Defense solicitations are public right away, even though Defense awards are published 90 days late.";
+  $("sam-note").textContent = api ? "From SAM.gov's official Get Opportunities API: solicitation and combined synopsis/solicitation notices posted on these days, new solicitations and amendments alike. A solicitation counts once however many notices it has, so notices outnumber solicitations. The ten departments with the most solicitations are shown. Defense solicitations are public right away, even though Defense awards are published 90 days late." : "From SAM.gov's nightly list of active notices: solicitations whose response deadline is on or after that day. One solicitation can have several notices (for example, amendments), so notices outnumber solicitations. Distinct solicitation counts are published for the ten largest departments only. The chart shows the " + Math.min(TOP, dep.length) + " largest of " + dep.length + " departments; the table lists all of them. Defense solicitations are public right away, even though Defense awards are published 90 days late.";
   var daily = S.daily || [];
+  var unit = api ? " solicitation notices posted" : " open notices";
   if (daily.length > 1) {
     var xs = daily.map(function (d, i) { return i; });
     var series = [{ name: "Civilian", color: 0, pts: daily.map(function (d, i) { return { x: i, y: d[1] }; }) }, { name: "Defense", color: 1, pts: daily.map(function (d, i) { return { x: i, y: d[2] }; }) }];
     legend("daily-legend", series.map(function (s) { return { name: s.name, color: color(s.color) }; }));
     onResize(function () {
-      lineChart($("daily-chart"), { label: "Open solicitation notices per day, civilian and Defense", series: series, xs: xs, xLabelW: 54,
+      lineChart($("daily-chart"), { label: (api ? "Solicitation notices posted" : "Open solicitation notices") + " per day, civilian and Defense", series: series, xs: xs, xLabelW: 54,
         xFmt: function (i) { var p = daily[i][0].split("-"); return MONTHS[+p[1] - 1] + " " + (+p[2]); }, xTip: function (i) { return niceDate(daily[i][0]); },
-        yFmt: function (v) { return v >= 1000 ? (v / 1000) + "K" : String(v); }, yTip: function (p) { return int(p.y) + " open notices"; } });
+        yFmt: function (v) { return v >= 1000 ? (v / 1000) + "K" : String(v); }, yTip: function (p) { return int(p.y) + unit; } });
     });
     table($("daily-table"), [
       { label: "Day", get: function (d) { return d[0]; }, fmt: function (d) { return esc(niceDate(d[0])); } },
@@ -2117,7 +2138,7 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
     ], daily, { sortCol: 0, sortDir: -1 });
   } else {
     $("daily-chart").innerHTML = '<p class="empty">The day-by-day chart appears once there is more than one day of data. The first day collected is ' + esc(niceDate(daily.length ? daily[0][0] : S.date)) +
-      (daily.length ? ": " + int(daily[0][1]) + " open civilian notices and " + int(daily[0][2]) + " at Defense." : ".") + "</p>";
+      (daily.length ? ": " + int(daily[0][1]) + (api ? " civilian solicitation notices posted" : " open civilian notices") + " and " + int(daily[0][2]) + " at Defense." : ".") + "</p>";
     $("daily-details").hidden = true;
   }
 })();
@@ -2327,7 +2348,9 @@ function changeDate(s) { return /^\d{4}-\d\d-\d\d$/.test(s || "") ? niceDate(s) 
     "forecasts/daily/ledger.csv": "daily sealed forecasts: one row of counts per batch",
     "quality_flags.csv": "every data-quality flag",
     "quality_summary.json": "flag counts and the rules used",
-    "sam_daily_counts.csv": "SAM.gov notices by day, department and type",
+    "sam_new_notices.csv": "SAM.gov notices posted per day, department and type (from SAM.gov's API)",
+    "sam_api_pulls.csv": "SAM.gov API log: one row per day pulled, with requests used and completeness",
+    "sam_daily_counts.csv": "SAM.gov open notices by day, department and type (nightly list, November 9 and 10, 2026 only)",
     "sam_daily_latest.json": "today's SAM.gov summary",
     "live_fy2027_by_agency.csv": "this fiscal year so far, by agency",
     "live_fy2027_totals.json": "this fiscal year so far, totals",
