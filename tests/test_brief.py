@@ -82,9 +82,8 @@ def synthetic(root, readme=True):
         {"threshold": 250000, "ratio_pre": 1.81, "ratio_post": 1.22, "diff": -0.59, "diff_lo": -0.8, "diff_hi": -0.3},
         {"threshold": 350000, "ratio_pre": 0.93, "ratio_post": 2.47, "diff": 1.54, "diff_lo": 1.0, "diff_hi": 2.0},
         {"threshold": 200000, "ratio_pre": 1.4, "ratio_post": 1.3, "diff": -0.1, "diff_lo": -0.4, "diff_hi": 0.2}])
-    write_csv(os.path.join(res, "model_out_of_time.csv"), [
-        {"model": "agency-wide rate (naive baseline)", "n": 10, "auc": 0.611, "brier": 0.1, "logloss": 0.4},
-        {"model": "logistic regression (this model)", "n": 10, "auc": 0.788, "brier": 0.1, "logloss": 0.3}])
+    write_json(os.path.join(res, "model_v2_card.json"), {"shipped": {"name_in_evaluation": "logistic v2"}, "evaluation": {"pooled": [
+        {"sector": "all", "model": "agency rate (baseline)", "auc": 0.611}, {"sector": "all", "model": "logistic v2", "auc": 0.788}]}})
     hist = []
     for i, y in enumerate(range(2020, 2026)):
         for sector, base, n in (("civilian except GSA", 0.45, 1000), ("Department of Defense", 0.35, 2000), ("GSA", 0.25, 300)):
@@ -161,7 +160,7 @@ class BriefTest(unittest.TestCase):
     def test_numbers_match_files(self):
         page, _ = self.build()
         for s in ("31.4%", "12,345", "0.93 → 2.47", "1.81 to 1.22", "0.93 to 2.47", "0.79", "0.61", "5.1% (AAA)", "49.9% (BBB)",
-                  "24.7% of 54,321", "FY2028 to FY2030", "41 competed awards", "17 agency quarters", "77 open solicitations",
+                  "24.7% of 54,321", "FY2028 to FY2030", "41 competed awards", "17 agency quarters",
                   "2.11 (80% range 1.33 to 2.89)", "1.44", "Nov 9, 2030", "45.0% in FY2020 to 40.0% in FY2025",
                   "35.0% in FY2020 to 30.0% in FY2025"):
             self.assertIn(s, page)
@@ -177,12 +176,12 @@ class BriefTest(unittest.TestCase):
 
     def test_missing_files(self):
         os.remove(os.path.join(self.root, "results", "threshold_staggered.csv"))
-        os.remove(os.path.join(self.root, "results", "model_out_of_time.csv"))
+        os.remove(os.path.join(self.root, "results", "model_v2_card.json"))
         page, notes = self.build()
         self.assertNotIn("agency by agency", page)
         self.assertEqual(page.count("<svg"), 2)
         self.assertTrue(any("threshold_staggered.csv" in x for x in notes))
-        self.assertTrue(any("model_out_of_time.csv" in x for x in notes))
+        self.assertTrue(any("model_v2_card.json" in x for x in notes))
         self.assertNotIn("0.79", page)
 
     def test_everything_missing(self):
@@ -260,7 +259,7 @@ class RealResultsTest(unittest.TestCase):
 
 
 class ModelTileTest(unittest.TestCase):
-    """the forecast tile shows version 2 (the model of the daily forecasts) when its card exists, version 1 otherwise"""
+    """the forecast tile shows model version 2 (the model of the daily forecasts), and is left out without a usable card"""
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
         self.root = synthetic(os.path.join(self.tmp, "proj"))
@@ -296,17 +295,18 @@ class ModelTileTest(unittest.TestCase):
         page, _ = bb.build(self.root, today=date(2030, 11, 10))
         self.assertIn("<b>0.69</b><span>forecast score (AUC) of model version 2", page)     # no name: the fallback row
 
-    def test_falls_back_to_version_1(self):
-        page, notes = bb.build(self.root, today=date(2030, 11, 10))      # no card
-        self.assertIn("<b>0.79</b>", page)
-        self.assertFalse(any("model_v2_card.json" in x for x in notes))
+    def test_no_usable_card_leaves_the_tile_out(self):
+        os.remove(os.path.join(self.root, "results", "model_v2_card.json"))
+        page, notes = bb.build(self.root, today=date(2030, 11, 10))
+        self.assertNotIn("forecast score (AUC)", page)
+        self.assertTrue(any("model_v2_card.json" in x for x in notes))
         self.card([{"sector": "all", "model": "logistic v2", "auc": 0.69}])   # no baseline row: not usable
         page, _ = bb.build(self.root, today=date(2030, 11, 10))
-        self.assertIn("<b>0.79</b>", page)
+        self.assertNotIn("forecast score (AUC)", page)
         with open(os.path.join(self.root, "results", "model_v2_card.json"), "w", encoding="utf-8") as f:
             f.write('{"shipped": ')                                     # half written
         page, _ = bb.build(self.root, today=date(2030, 11, 10))
-        self.assertIn("<b>0.79</b>", page)
+        self.assertNotIn("forecast score (AUC)", page)
 
 
 if __name__ == "__main__":

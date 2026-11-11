@@ -1,7 +1,8 @@
 """
-09_resolve_forecast.py - SCORE the pre-registered single-offer forecast (PIO-F1) once USAspending has posted the awards.
+09_resolve_forecast.py - the outcome rule and the publication rules for sealed single-offer forecasts.
 
-Run it with no AI help:   python run.py score-f1 [path to the private forecast file]
+32_score_daily.py (the daily sealed forecasts) uses this file's rules.  The sealed forecast PIO-F1 that this script was
+written for was withdrawn and is not scored.
 
 Safety first
   The forecast file is private (it names buying offices), but its SHA-256 fingerprint is public in forecasts/SHA256SUMS.txt.
@@ -454,7 +455,7 @@ def summary_text(s):
 # main
 # ---------------------------------------------------------------------------------------------------------------------
 def parse_args(argv):
-    ap = argparse.ArgumentParser(prog="python run.py score-f1", description="Score the sealed single-offer forecast PIO-F1.")
+    ap = argparse.ArgumentParser(prog="python -I scripts/09_resolve_forecast.py", description="Score the sealed single-offer forecast PIO-F1.")
     ap.add_argument("forecast", nargs="?", help="path to the private forecast file (default: look in forecasts/ for the id in config.toml)")
     ap.add_argument("snapshot_date", nargs="?", help="same as --date")
     ap.add_argument("--date", help="as-of date YYYY-MM-DD (default: today, UTC)")
@@ -477,7 +478,7 @@ def run(argv):
         if a.forecast:
             raise ScoreError(EXIT_USAGE, f"The forecast file '{a.forecast}' does not exist.")
         raise ScoreError(EXIT_USAGE, f"Could not find the private forecast file.\n  Put '{f1_id()}.json' in:\n    {FORECASTS}\n"
-                                     f"  (or in {os.path.join(DATA, 'private')}), or give its path:  python run.py score-f1 <path to the file>")
+                                     f"  (or in {os.path.join(DATA, 'private')}), or give its path:  python -I scripts/09_resolve_forecast.py <path to the file>")
     print(f"Forecast file: {os.path.basename(path)}")
     fc, sha = load_checked_forecast(path, os.path.join(FORECASTS, SUMS_NAME))
     print("Fingerprint check passed: the file is the sealed forecast.")

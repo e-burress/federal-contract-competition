@@ -37,12 +37,6 @@ class KwFlagsTests(unittest.TestCase):
         self.assertIs(type(b), int)
         self.assertEqual(common.kw_flags("sole source", "brand name"), (1, 1))
 
-    def test_flatten_stores_flags_not_text(self):
-        r = {"title": "Brand name chairs", "descriptions": [{"content": "this is a sole source buy"}], "_id": "x1"}
-        out = common.flatten(r)
-        self.assertEqual((out["kw_brand"], out["kw_sole"]), (1, 1))
-        self.assertEqual(out["notice_id"], "x1")
-        self.assertNotIn("sole source", json.dumps(out))
 
 
 class ConfigTests(unittest.TestCase):

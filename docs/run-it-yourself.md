@@ -126,9 +126,7 @@ Start with `check`, then `quick`, then `verify`.
 
 ## 6. What cannot be re-run, and why
 
-- **The sealed forecasts in `forecasts/`.** They were written once, before the answers were known, and fingerprinted so nobody can change them later. They are never re-created. Scripts 10 and 10b refuse to overwrite them.
-- **The F1 forecast file.** It names individual buying offices, so it stays private until it is scored. Its fingerprint is public, so it cannot be changed in the meantime.
-- **The forecast model's October 2026 training inputs.** They came from SAM.gov lookups that were not kept. The results of that first model (version 1) are frozen. Version 2 is trained on SAM.gov's official archive files (`python run.py model`).
+- **The sealed forecasts in `forecasts/`.** They were written once, before the answers were known, and fingerprinted so nobody can change them later. They are never re-created. Script 10b refuses to overwrite PIO-F2.
 - **The daily forecast batches.** They name solicitations and buying offices, so they stay private; only their fingerprints and counts are public in `forecasts/daily/`. Without the private model file, `daily-forecast` cannot run, and without the batch files, `score-daily` cannot score.
 
 Everything else can be rebuilt.

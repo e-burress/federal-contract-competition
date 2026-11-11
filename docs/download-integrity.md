@@ -67,7 +67,7 @@ If the count service cannot be reached, the file is not verified. What happens n
 | `17_history_download.py` (long history) | split and retry; fail if still wrong | fail; run again later |
 | `12_resolve_threshold.py` (the sealed F2 score) | split and retry; stop and score nothing if still wrong | stop and score nothing |
 | `13_track_threshold.py` (F2 tracking) | as 12 | as 12 |
-| `09_resolve_forecast.py` (the sealed F1 score) | split and retry; stop and score nothing if still wrong | stop and score nothing |
+| `09_resolve_forecast.py` (forecast scoring rules) | split and retry; stop and score nothing if still wrong | stop and score nothing |
 | `32_score_daily.py --defense` | split and retry; stop and write nothing if still wrong | stop and write nothing |
 | `15_civilian_fytd.py` (daily live table) | split and retry; stop and write nothing if still wrong | write the table, marked `"verified": false` |
 | `01`, `01b`, `01c` (snapshot downloads) | split and retry; report failed windows | report failed windows; the file is kept and checked on the next run |

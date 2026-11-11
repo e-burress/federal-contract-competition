@@ -14,11 +14,10 @@ extract date.  The idea: if few companies are registered in an industry, a solic
 
 ## Source
 
-SAM.gov Entity Registration "Public V2" monthly extract, file `SAM_PUBLIC_UTF-8_MONTHLY_V2_20261101.ZIP`, extract date **2026-11-01**.  Public, no key and no account:
-file listing at `https://sam.gov/api/prod/fileextractservices/v1/api/listfiles?domain=Entity%20Registration/Public%20V2&privacy=Public`,
-download through `https://sam.gov/api/prod/fileextractservices/v1/api/download/<key>?privacy=Public`.  The layout is GSA's
+SAM.gov Entity Registration "Public V2" monthly extract from SAM.gov's Data Services (also available through its Extracts Download
+API), file `SAM_PUBLIC_UTF-8_MONTHLY_V2_20261101.ZIP`, extract date **2026-11-01**.  The layout is GSA's
 "SAM Master Extract Mapping v6.0 Public File V2 Layout" (https://open.gsa.gov/api/sam-entity-extracts-api/).  The file lists
-911,820 registration lines.  The raw file is downloaded to a temporary folder outside the repository, read once, and deleted.
+911,820 registration lines.  The raw file is read once and never published.
 It contains business names and addresses (including sole proprietors).  Only counts are published here.
 
 ## Definitions

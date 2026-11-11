@@ -10,8 +10,8 @@ What it does
      (modification 0) with the same normalized solicitation number and an action date on or after the record's deadline_date
      (the date offers were due, as posted when the forecast was made; ties: larger base-and-all-options value); resolved only
      if competed (A, D, E, F, CDO) with 1 to 998 offers; outcome = 1 if exactly one offer.  The date floor is applied here;
-     then 09_resolve_forecast.resolve is used as it is.  This differs from PIO-F1 (script 09), which counts awards from its
-     forecast date on: offers were due at least a day after each daily forecast, so an earlier award under the same number
+     then 09_resolve_forecast.resolve is used as it is.  Why the date floor:
+     offers were due at least a day after each daily forecast, so an earlier award under the same number
      cannot come from them.  Award transactions come from:
        civilian  <DATA>/usaspending_live/*.zip, filled every morning by 15_civilian_fytd.py (this fiscal year so far; the files
                  carry solicitation_identifier and modification_number).  Used only when 15's record of the download

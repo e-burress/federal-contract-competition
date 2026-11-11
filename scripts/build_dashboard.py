@@ -53,6 +53,20 @@ def short_name(name):
     return re.sub(r"^Department of (the )?", "", name)
 
 
+def model_v2_headline():
+    """(pooled out-of-time AUC of the shipped forecast model version 2, AUC of its best simple baseline), or None"""
+    if not os.path.exists(os.path.join(RES, "model_v2_card.json")):
+        return None
+    card = json.load(open(os.path.join(RES, "model_v2_card.json"), encoding="utf-8"))
+    by = {r["model"]: r for r in rows("model_v2_evaluation.csv") if r.get("test_fy") == "pooled" and r.get("sector") == "all"}
+    ours = by.get((card.get("shipped") or {}).get("name_in_evaluation")) or by.get("logistic v2")
+    bases = [float(by[b]["auc"]) for b in ("sector rate (baseline)", "agency rate (baseline)", "office history only (baseline)")
+             if b in by and by[b].get("auc")]
+    if not ours or not ours.get("auc") or not bases:
+        return None
+    return float(ours["auc"]), max(bases)
+
+
 def nice(d):
     return date.fromisoformat(d).strftime("%b %d, %Y").replace(" 0", " ")
 
@@ -691,7 +705,7 @@ def scope_text(present):
     """the page's scope line: what the FY2024-FY2026 sections cover and, once the long-history sections are on the page, what they cover"""
     t = ("How often do competed federal contracts get only one bid, and do purchases bunch under dollar limits? "
          "The FY2024 to FY2026 sections cover civilian agencies only; the Department of Defense is not in them. "
-         "The threshold test and the agency table cover every civilian agency. The in-depth single-bid analysis and the forecasts cover "
+         "The threshold test and the agency table cover every civilian agency. The in-depth single-bid analysis covers "
          "five departments: VA, HHS, DHS, Interior and USDA.")
     if present:
         t += (" The long-history sections, FY2008 onward, also cover the Department of Defense, whose data are published 90 days late.")
@@ -720,7 +734,7 @@ def main():
     kind = rows("atlas_by_kind.csv")
     setaside = sorted(rows("atlas_by_setaside.csv"), key=lambda r: -float(r["share"]))
     moved = {int(float(r["threshold"])): r for r in rows("threshold_sat_moved.csv")}
-    model = {r["model"]: r for r in rows("model_out_of_time.csv")}
+    model_auc = model_v2_headline()
     total_k = sum(int(r["k_single"]) for r in agency)
     total_n = sum(int(r["n_eval"]) for r in agency)
     f2 = json.load(open(os.path.join(ROOT, F2["file"]), encoding="utf-8"))
@@ -730,8 +744,8 @@ def main():
         if len(parts) >= 2:
             hashes[parts[1]] = parts[0]
 
-    ours = next(v for k, v in model.items() if k.startswith("logistic"))
-    base = next(v for k, v in model.items() if k.startswith("agency-wide"))
+    model_tile = (f'<div class="card kpi"><b>{model_auc[0]:.2f}</b><span>forecast score (AUC) of the single-offer model on years it '
+                  f'never saw, vs. {model_auc[1]:.2f} for its best simple baseline (0.5 = coin flip)</span></div>') if model_auc else ""
 
     # ---- every civilian agency (03b_atlas_civilian.py); the section is left out until those results exist -------
     CIV_MIN = 200
@@ -950,8 +964,7 @@ footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
   <div class="card kpi"><b>{pct(total_k / total_n)}</b><span>of {total_n:,} competed awards in five departments got only one offer</span></div>
   {civ_kpi}
   <div class="card kpi"><b>{float(m350['ratio_pre']):.2f} → {float(m350['ratio_post']):.2f}</b><span>pile-up just under the new $350K line, before vs. after it took effect (1.0 = none)</span></div>
-  <div class="card kpi"><b>{float(ours['auc']):.2f}</b><span>accuracy (AUC) of the single-bid forecast on unseen data, vs. {float(base['auc']):.2f} for a simple baseline</span></div>
-  <div class="card kpi"><b>{F1["n_solicitations"]}</b><span>open solicitations with sealed single-bid forecasts, scored by {nice(F1["checks"][-1])}</span></div>
+  {model_tile}
 </div>
 
 {live_html}
@@ -992,10 +1005,10 @@ footer {{ margin-top:40px; color:var(--muted); font-size:.88rem; }}
 <div class="card"><div class="tablewrap"><table class="wrapcells">
   <thead><tr><th>Forecast</th><th>What it predicts</th><th>Resolves</th><th>Result</th></tr></thead>
   <tbody>
-  <tr><td>PIO-F1</td><td>Chance of a single offer for each of {F1["n_solicitations"]} open civilian solicitations</td><td>{", ".join(nice(d) for d in F1["checks"])}</td><td><span class="pill">Pending</span></td></tr>
+  <tr><td>PIO-F1</td><td>Chance of a single offer for each of {F1["n_solicitations"]} open civilian solicitations</td><td>—</td><td><span class="pill">Withdrawn</span></td></tr>
   <tr><td>PIO-F2</td><td>FY2027 Q1 pile-up under $350K: {q350['forecast']:.2f} (80% range {q350['interval80'][0]:.2f}–{q350['interval80'][1]:.2f}); under $250K: {q250['forecast']:.2f} ({q250['interval80'][0]:.2f}–{q250['interval80'][1]:.2f})</td><td>Feb 28, 2027</td><td>{f2_result}</td></tr>
   </tbody></table></div>
-  <p class="note">Both forecasts were sealed on {nice(F1["sealed"])}, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>{f1_hash}</code> · PIO-F2 <code>{f2_hash}</code>. PIO-F2 is <a href="{REPO}/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 will be posted unchanged when it is scored.</p>
+  <p class="note">Both forecasts were sealed on {nice(F1["sealed"])}, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>{f1_hash}</code> · PIO-F2 <code>{f2_hash}</code>. PIO-F2 is <a href="{REPO}/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 was withdrawn and will not be scored.</p>
 </div>
 {daily_html}
 {track_html}

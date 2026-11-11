@@ -1,7 +1,7 @@
 """
 30_model_v2.py - forecast model version 2: the chance that a solicitation's competed award receives exactly ONE offer.
 
-Version 1 (08_model_forecast.py) was trained on 1,802 solicitations from five departments and its inputs were not kept.
+Version 1 was trained on 1,802 solicitations from five departments; it was retired in November 2026.
 Version 2 is trained on every solicitation in SAM.gov's archive files (22_sam_archive.py) that can be matched to a competed
 award in the history tables (18_history_build.py), for every agency, and every step can be rerun.
 

@@ -6,9 +6,9 @@ An open, reproducible look at how competitive US federal contracting is. It test
 
 Everything here is built from free public data (USAspending.gov and SAM.gov), runs on a laptop, and can be rerun from the scripts in this repository. Every number in this README is written by `scripts/build_report.py` from the result files.
 
-<!-- auto:status -->> **Status (November 9, 2026):** every result was rebuilt from one public data snapshot, [`data-2026-11-09`](https://github.com/e-burress/federal-contract-competition/releases/tag/data-2026-11-09), downloaded from USAspending on November 9, 2026. `python run.py quick` downloads it and rebuilds everything. The first release (October 24, 2026) used an earlier download that was not kept. Rebuilt from this snapshot, single-offer shares moved by at most 0.05 percentage points (five departments: 97,643 → 97,672 awards, still 22.8%) and bunching ratios by at most 0.02 ($350K after the change: 1.95 → 1.96). The first forecast model (version 1) and the sealed forecasts PIO-F1 and PIO-F2 are from October 24, 2026 and are unchanged.
+<!-- auto:status -->> **Status (November 9, 2026):** every result was rebuilt from one public data snapshot, [`data-2026-11-09`](https://github.com/e-burress/federal-contract-competition/releases/tag/data-2026-11-09), downloaded from USAspending on November 9, 2026. `python run.py quick` downloads it and rebuilds everything. The first release (October 24, 2026) used an earlier download that was not kept. Rebuilt from this snapshot, single-offer shares moved by at most 0.05 percentage points (five departments: 97,643 → 97,672 awards, still 22.8%) and bunching ratios by at most 0.02 ($350K after the change: 1.95 → 1.96). The sealed threshold forecast PIO-F2 is from October 24, 2026 and is unchanged.
 >
-> The in-depth analysis and the forecasts cover five civilian departments (VA, HHS, DHS, Interior and USDA) for FY2024–FY2026. Single-offer shares cover every civilian agency, and the threshold test is civilian-wide. These FY2024–FY2026 tables leave out Defense because of DoD's 90-day reporting delay.
+> The in-depth analysis covers five civilian departments (VA, HHS, DHS, Interior and USDA) for FY2024–FY2026. Single-offer shares cover every civilian agency, and the threshold test is civilian-wide. These FY2024–FY2026 tables leave out Defense because of DoD's 90-day reporting delay.
 >
 > **Long history, in progress:** findings 4 to 11 add civilian agencies and Defense from FY2008 on. The single-offer history now uses FY2008–FY2026. Each finding names the fiscal years it uses, which can differ while the history is being built.<!-- /auto:status -->
 
@@ -82,17 +82,18 @@ Pile-ups under a threshold are a well-known risk indicator. They can mean contra
 
 The 44 smaller agencies together: 31.8% of 1,588 awards. Full tables: [`results/atlas_civilian_by_agency.csv`](results/atlas_civilian_by_agency.csv) and the other `atlas_civilian_*` files.<!-- /auto:civilian-table -->
 
-### 3. A forecast of which open solicitations will get only one offer
+### 3. A forecast of which solicitations will get only one offer
 
-A transparent logistic-regression model uses only information known when a solicitation is posted: department, product and service codes, industry, set-aside type, notice type, response window, and the buying office's past single-offer rate. It was trained on awards through September 2025 and tested on FY2026 awards it had never seen. This is version 1, the earlier model: its results are from the October 24, 2026 build and are frozen. Version 2, trained on SAM.gov's official archive files, is described under *Limits* below.
+A transparent logistic-regression model uses only information known when a solicitation is posted: agency, the buying office's past single-offer rate, product and industry codes, set-aside type, notice type, response window, time of year, brand-name or sole-source wording, earlier notices, and how many companies are registered in the industry. It is trained on every solicitation in SAM.gov's archive files that could be matched to a competed award, for every agency from FY2008 on.
 
 <!-- auto:model-table -->| Model | AUC | Brier score |
 |---|---|---|
-| Department-wide rate (baseline) | 0.62 | 0.120 |
-| Office history only | 0.65 | 0.122 |
-| **This model** | **0.75** | **0.112** |<!-- /auto:model-table -->
+| Sector-wide rate (baseline) | 0.52 | 0.179 |
+| Agency's past rate (baseline) | 0.54 | 0.178 |
+| Buying office's past rate (baseline) | 0.59 | 0.181 |
+| **This model** | **0.71** | **0.159** |<!-- /auto:model-table -->
 
-<!-- auto:model-applied -->The model was then applied to **150 currently open solicitations** with response deadlines between Nov 1 and Dec 15, 2026. Those forecasts are sealed below.<!-- /auto:model-applied -->
+<!-- auto:model-applied -->Out of time: each fiscal year was forecast by a model trained only on earlier years. Pooled over FY2009–FY2026 (918,594 solicitations). AUC 0.5 is a coin flip; a lower Brier score is better. This is the model of the daily sealed forecasts (see *Pre-registered forecasts*).<!-- /auto:model-applied -->
 
 ### 4. Single-offer shares since FY2008: civilian agencies, GSA and Defense
 
@@ -192,12 +193,12 @@ Market research is the first step of a federal purchase. A buyer asks: in this i
 
 | ID | What it forecasts | Resolves | SHA-256 |
 |---|---|---|---|
-| PIO-F1 | Probability of a single offer for each of 150 open civilian solicitations | 2027-03-31 (checks Jan 31 and Feb 28) | `a8d1bb3319bf2fc1439550ee99c971742408a99a4772db426b26dec15f0657d2` |
+| PIO-F1 | Probability of a single offer for each of 150 open civilian solicitations | Withdrawn, not scored | `a8d1bb3319bf2fc1439550ee99c971742408a99a4772db426b26dec15f0657d2` |
 | PIO-F2 | FY2027 Q1 bunching ratios under $350K (2.03; 80% interval 1.40–2.66) and $250K (1.23; 0.88–1.58), plus the micro-purchase reporting share | 2027-02-28 | `5a7009ba0f17e953bd1fea32d2b7fe9241a849b85222266506c5312e4790c43b` |<!-- /auto:forecasts -->
 
 - The IDs start with "PIO" from the project's earlier working name (Procurement Integrity Observatory). The sealed files keep that name unchanged so their fingerprints still match.
 - **PIO-F2** is published in full.
-- **PIO-F1** includes office-level details, so only its fingerprint is published for now. The full file will be posted with the scoring. Anyone can then check it against the fingerprint above.
+- **PIO-F1** was withdrawn and will not be scored. Its fingerprint stays in `forecasts/SHA256SUMS.txt`, unchanged.
 
 To verify a published forecast file:
 
@@ -225,9 +226,8 @@ One download serves every FY2024–FY2026 analysis, and the long history (findin
 | tool | `check_counts_sql.py` | Independent recount of the headline counts with SQLite and Python's csv module, no pandas |
 | tool | `make_figures.py` | The charts in this README |
 | tool | `build_report.py` | Writes every number in this README and in `docs/methodology.md` from the result files |
-| 5–8, 11 | `05_sam_open_pull.py`, `06_sam_open_details.py`, `07_sam_train_lookup.py`, `08_model_forecast.py`, `11_resolution_backtest.py` | The forecast model, frozen from the October 24, 2026 build: open solicitations and response windows from SAM.gov, training, out-of-time test, live probabilities, resolution backtest. Its SAM.gov inputs were not kept, so these are not rerun |
-| 10, 10b | `10_preregister.py`, `10b_preregister_threshold.py` | Created the sealed forecasts. Never rerun; they refuse to overwrite the sealed files |
-| 9, 12, 13 | `09_resolve_forecast.py`, `12_resolve_threshold.py`, `13_track_threshold.py` | Scoring of PIO-F1 and PIO-F2 after they resolve, and a daily provisional check of PIO-F2 against the FY2027 Q1 data so far |
+| 10b | `10b_preregister_threshold.py` | Created the sealed threshold forecast PIO-F2. Never rerun; it refuses to overwrite the sealed file |
+| 9, 12, 13 | `09_resolve_forecast.py`, `12_resolve_threshold.py`, `13_track_threshold.py` | The outcome and publication rules of the single-offer forecasts (used by the daily scorer, 32), the scoring of PIO-F2 after it resolves, and a daily provisional check of PIO-F2 against the FY2027 Q1 data so far |
 | 14 | `14_sam_daily_snapshot.py` | Saves the notices SAM.gov posted each day, through SAM.gov's official API with a free personal key (see [`docs/sam-api-key.md`](docs/sam-api-key.md); contacts are never kept), and updates the daily counts |
 | 15 | `15_civilian_fytd.py` | Live single-offer table for every civilian agency, this fiscal year so far |
 | 16 | `16_quality_monitor.py` | Flags quarters where an agency suddenly changed how it records offers, competition or award counts |
@@ -249,9 +249,9 @@ One download serves every FY2024–FY2026 analysis, and the long history (findin
 
 **Data behind the long history.** The yearly tables (`base_actions_FY<year>.parquet` and `award_year_FY<year>.parquet`) are published as a public release of this repository; `python run.py history` downloads them and rebuilds findings 4 to 11. The SAM.gov archive tables (from `22_sam_archive.py`) hold solicitation numbers, dates, codes and two keyword flags, never titles, descriptions, names or contacts. The reference files (`reference/`) are described under *Data quality and reference files* above.
 
-**Scoring the sealed forecasts.** [`docs/scoring-forecasts.md`](docs/scoring-forecasts.md) explains, for a person and not a programmer, how PIO-F1 is scored with `python run.py score-f1` and how the daily job scores PIO-F2. No AI is needed or used.
+**Scoring the sealed forecasts.** [`docs/scoring-forecasts.md`](docs/scoring-forecasts.md) explains, for a person and not a programmer, how the daily job scores PIO-F2. No AI is needed or used.
 
-A GitHub Actions job (`.github/workflows/daily-refresh.yml`) runs steps 14, 15 and 13 and the dashboard build every morning and publishes the result. It checks the sealed PIO-F2 fingerprint on every run and never changes the forecast files. The full daily SAM.gov snapshots are kept in draft (non-public) releases of this repository; the daily counts in `results/sam_daily_counts.csv` are public.
+A GitHub Actions job (`.github/workflows/daily-refresh.yml`) runs steps 14, 15 and 13 and the dashboard build every morning and publishes the result. It checks the sealed PIO-F2 fingerprint on every run and never changes the forecast files. The SAM.gov notices pulled through SAM.gov's API are kept in a draft (non-public) release of this repository; the daily counts in `results/sam_new_notices.csv` are public.
 
 Details, definitions and data-quality notes are in [`docs/methodology.md`](docs/methodology.md).
 
@@ -275,7 +275,6 @@ With [uv](https://docs.astral.sh/uv/), one line installs the right Python and pa
 | `python run.py test` | Runs the offline tests |
 | `python run.py daily` | The morning refresh: SAM.gov snapshot, this fiscal year so far, forecast tracking, dashboard |
 | `python run.py history` | Downloads the yearly tables of the long history (FY2008 onward) and rebuilds findings 4 to 11. Then `python run.py report` writes their numbers into this README |
-| `python run.py score-f1` | Scores the sealed single-offer forecast (PIO-F1) once its private file is posted. See [`docs/scoring-forecasts.md`](docs/scoring-forecasts.md) |
 | `python run.py reconcile` | Compares our yearly totals with USAspending's own totals (needs the history tables and the internet) |
 | `python run.py brief` | Rebuilds the one-page brief (`docs/brief.html`) |
 | `python run.py daily-forecast` | Forecasts and seals the day's new open solicitations. Needs the private model file; add `--dry-run` to write nothing public. See [`docs/daily-forecasts.md`](docs/daily-forecasts.md) |
@@ -283,7 +282,7 @@ With [uv](https://docs.astral.sh/uv/), one line installs the right Python and pa
 
 No coding needed: open the project in GitHub Codespaces with the button at the top and type `python run.py quick`. Step-by-step instructions for every route (Codespaces, your own self-refreshing copy, double-click launchers) are in [`docs/run-it-yourself.md`](docs/run-it-yourself.md).
 
-The scripts that created the sealed forecasts (10 and 10b) and the frozen forecast model (05–08 and 11) are never part of any command.
+The script that created the sealed threshold forecast (10b) is never part of any command.
 
 ---
 
@@ -292,14 +291,13 @@ The scripts that created the sealed forecasts (10 and 10b) and the frozen foreca
 - **No unit prices.** Federal award data records dollar values, not quantities or unit prices, so the price premium of single-offer awards can't be measured directly. <!-- auto:limit-premium -->A preliminary check found single-offer awards are 27% *smaller* within comparable categories, and found only small differences, in both directions, in dollars obligated after award relative to the initial value.<!-- /auto:limit-premium -->
 - **Offer counts are entered by staff.** In the five departments, <!-- auto:limit-999 -->760 competed awards<!-- /auto:limit-999 --> carry a "999" placeholder and were excluded.
 - **FY2026 is unusual.** It saw a government shutdown, a reporting-system move and staffing changes. <!-- auto:limit-fy2026 -->HHS and VA competed-award counts fell 34–50% from FY2024 to FY2026.<!-- /auto:limit-fy2026 -->
-- **SAM.gov's public search endpoint is undocumented.** This project uses it politely, at about one request per second. The documented alternatives are SAM's API (key required) and its daily CSV extract.
-- **Coverage:** every civilian agency for single-offer shares; five departments for the deeper analysis and the forecasts. DoD is left out of the FY2024–FY2026 tables and included in the long history (findings 4 to 11).
+- **Coverage:** every civilian agency for single-offer shares; five departments for the deeper analysis (finding 2). DoD is left out of the FY2024–FY2026 tables and included in the long history (findings 4 to 11).
 - **GSA's supply orders** dominate civilian award counts and changed how they record offers, so civilian-wide figures are also given without GSA.
 - **Defense data arrive 90 days late.** The newest Defense year is incomplete until its last quarter is published. Scripts that need a full year leave an incomplete Defense year out and say so.
 - **The history tables are still being filled in.** <!-- auto:limit-history -->The single-offer history uses FY2008–FY2026 so far.<!-- /auto:limit-history --> Each of findings 4 to 11 names the years it uses. Agencies change how they record offers and competition (see *Data quality*), so a change over time can be a change in recording.
 - **Company codes are not anonymous.** The history tables carry a short company code made from each company's public identifier (UEI or DUNS), so the same company can be followed across awards. Anyone with the identifier can compute the same code, contract numbers are kept, and the underlying records are public on USAspending.gov. A company that switched from DUNS to UEI in 2022 can have two codes. Published results are at agency level or coarser.
 - **After award, not prices.** The after-award comparison (finding 8) measures obligations, scope changes, terminations and options, not prices. Extra obligations and scope changes are often legitimate.
-<!-- auto:model-v2 -->- **Forecast model, version 2 (built November 10, 2026).** It is the model of the daily forecasts (see *Pre-registered forecasts*). Trained on 930,423 solicitations from SAM.gov's archive that were matched to a competed award (award years FY2008–FY2026; its award history ends September 30, 2026). Tested out of time on FY2009–FY2026, the shipped L2 logistic regression ranks solicitations with an AUC of 0.714 (0.590 for the best simple baseline, the buying office's past rate, and 0.701 for version 1's features refitted), with a Brier score of 0.159 against 0.181 for that baseline and a calibration slope of 0.98 (1.00 is ideal). How it was chosen: by a rule written down before fitting (lowest out-of-time log loss over the last five test years; among candidates within 0.5% of the best, the one closest to the earlier model). The rule picked "logistic v2, half-life 3 years"; "logistic v2, half-life 3 years, correction by sector" is shipped instead, because the simpler pick left forecasts miscalibrated by sector. That choice was made after the results were known; the card records it with the numbers (`selection.amendment`). Version 1 (finding 3) is the earlier model, frozen since the October 24, 2026 build. Both are risk indicators about markets, not statements about anyone's conduct. Details: [`results/model_v2_card.json`](results/model_v2_card.json).<!-- /auto:model-v2 -->
+<!-- auto:model-v2 -->- **Forecast model, version 2 (built November 10, 2026).** It is the model of the daily forecasts (see *Pre-registered forecasts*). Trained on 930,423 solicitations from SAM.gov's archive that were matched to a competed award (award years FY2008–FY2026; its award history ends September 30, 2026). Tested out of time on FY2009–FY2026, the shipped L2 logistic regression ranks solicitations with an AUC of 0.714 (0.590 for the best simple baseline, the buying office's past rate, and 0.701 for the original, smaller feature set refitted), with a Brier score of 0.159 against 0.181 for that baseline and a calibration slope of 0.98 (1.00 is ideal). How it was chosen: by a rule written down before fitting (lowest out-of-time log loss over the last five test years; among candidates within 0.5% of the best, the one closest to the earlier model). The rule picked "logistic v2, half-life 3 years"; "logistic v2, half-life 3 years, correction by sector" is shipped instead, because the simpler pick left forecasts miscalibrated by sector. That choice was made after the results were known; the card records it with the numbers (`selection.amendment`). It is a risk indicator about markets, not a statement about anyone's conduct. Details: [`results/model_v2_card.json`](results/model_v2_card.json).<!-- /auto:model-v2 -->
 
 ## Responsible use
 

@@ -1,5 +1,5 @@
 """Offline tests for scripts/22_sam_archive.py on small synthetic CSV files: version chains, Sol# normalising, has_presol,
-privacy of the outputs, the partial-download trim and the merge across fiscal years."""
+privacy of the outputs and the merge across fiscal years."""
 import csv
 import importlib.util
 import io
@@ -144,18 +144,6 @@ class YearTests(Base):
         self.assertIn("QQ-1 [email]", nt["sol_number"].tolist())                  # e-mail inside a Sol# is masked
         self.assertNotIn("PWR OFFICE NAME", nt.astype("string").to_csv())         # office name dropped, code kept
         self.assertEqual(nt["aac_code"].astype("string").unique().tolist(), ["140P20"])
-
-
-class TrimTests(Base):
-    def test_partial_last_row_is_dropped(self):
-        data = csv_bytes(self.year_rows()[:3])
-        cut = data.index(b"secret description text\nwith", data.index(f"{3:032x}".encode())) + 10   # inside a quoted line break
-        p = self.write("part.csv", data[:cut])
-        dropped = arc.trim_partial(p)
-        self.assertGreater(dropped, 0)
-        nt, _, q = arc.process_file(p, 2024)
-        self.assertEqual(nt["notice_id"].tolist(), [f"{1:032x}", f"{2:032x}"])
-        self.assertEqual(q["reading"]["malformed_rows_skipped"], 0)
 
 
 class MergeTests(Base):

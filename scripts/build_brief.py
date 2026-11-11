@@ -284,24 +284,12 @@ def tile_history(src):
     return (big_count(total), f"competed awards in the long history, {fy_text(years)}, civilian agencies and Defense")
 
 
-def model_rows(src):
-    rows = src.csv("model_out_of_time.csv")
-    if not rows:
-        return None
-    ours = next(r for r in rows if r["model"].startswith("logistic"))
-    base = next(r for r in rows if r["model"].startswith("agency-wide"))
-    return ours, base
-
-
 V2_SHIPPED_FALLBACK = "logistic v2"       # used when the card names no shipped model (or one with no pooled row)
 V2_BASELINES = ("sector rate (baseline)", "agency rate (baseline)", "office history only (baseline)")
 
 
 def model_v2_rows(src):
-    """(shipped model row, best simple baseline row) from the pooled out-of-time test in results/model_v2_card.json, or None.
-    The card is optional: when it is missing, nothing is noted as missing (the tile falls back to version 1)."""
-    if not os.path.exists(os.path.join(src.res, "model_v2_card.json")):
-        return None
+    """(shipped model row, best simple baseline row) from the pooled out-of-time test in results/model_v2_card.json, or None"""
     card = src.json("model_v2_card.json") or {}
     pooled = {r.get("model"): r for r in (card.get("evaluation") or {}).get("pooled") or [] if r.get("sector") == "all"}
     ours = pooled.get((card.get("shipped") or {}).get("name_in_evaluation")) or pooled.get(V2_SHIPPED_FALLBACK)
@@ -313,16 +301,11 @@ def model_v2_rows(src):
 
 def tile_model(src):
     v2 = model_v2_rows(src)
-    if v2:
-        ours, base = v2
-        return (r2(ours["auc"]), f"forecast score (AUC) of model version 2, the model of the daily forecasts, on years it never saw, "
-                f"vs. {r2(base['auc'])} for its best simple baseline (0.5 = coin flip)")
-    m = model_rows(src)
-    if not m:
+    if not v2:
         return None
-    ours, base = m
-    return (r2(ours["auc"]), f"forecast score (AUC) on awards the model never saw, vs. {r2(base['auc'])} for a department-wide "
-            f"baseline (0.5 = coin flip)")
+    ours, base = v2
+    return (r2(ours["auc"]), f"forecast score (AUC) of model version 2, the model of the daily forecasts, on years it never saw, "
+            f"vs. {r2(base['auc'])} for its best simple baseline (0.5 = coin flip)")
 
 
 # ---- findings: (title, finding sentence(s), why-it-matters or caveat, chart svg or "") ---------------------------------------
@@ -585,21 +568,18 @@ def nice(iso):
 
 def forecasts_text(src):
     fc = src.cfg.get("forecasts") or {}
-    f1, f2 = fc.get("F1") or {}, fc.get("F2") or {}
-    if not f1 and not f2:
+    f2 = fc.get("F2") or {}
+    if not f2:
         return ""
-    sealed = f1.get("sealed") or f2.get("sealed")
-    t = (f"<b>Sealed forecasts.</b> Two forecasts were sealed{' on ' + nice(sealed) if sealed else ''}, before any outcome existed, and "
+    sealed = f2.get("sealed")
+    t = (f"<b>Sealed forecast.</b> A forecast was sealed{' on ' + nice(sealed) if sealed else ''}, before any outcome existed, and "
          f"fingerprinted (SHA-256), so any later change would show.")
-    if f1.get("n_solicitations"):
-        t += (f" One gives the chance of a single offer for {f1['n_solicitations']} open solicitations, scored against a "
-              f"department-wide baseline" + (f" by {nice(f1['checks'][-1])}" if f1.get("checks") else "") + ".")
     q = None
     if f2.get("file"):
         f2j = src.json(os.path.basename(f2["file"]), os.path.dirname(f2["file"]))
         q = next((x for x in (f2j or {}).get("quantities", []) if x.get("name") == f"bunching_ratio_{SAT_NOW // 1000}K"), None)
         if q:
-            t += (f" The other puts the FY2027 Q1 pile-up under {money(SAT_NOW)} at {float(q['forecast']):.2f} (80% range "
+            t += (f" It puts the FY2027 Q1 pile-up under {money(SAT_NOW)} at {float(q['forecast']):.2f} (80% range "
                   f"{float(q['interval80'][0]):.2f} to {float(q['interval80'][1]):.2f}), scored"
                   + (f" on {nice(f2j['resolution_date'])}" if f2j.get("resolution_date") else "") + " by whether the result falls in that range.")
     if q and f2.get("id"):

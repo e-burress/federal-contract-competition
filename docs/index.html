@@ -47,7 +47,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
 <body><div class="wrap">
 <button class="theme" id="theme" type="button">Theme</button>
 <h1>Federal Contract Competition: Findings &amp; Forecasts</h1>
-<p class="sub">How often do competed federal contracts get only one bid, and do purchases bunch under dollar limits? The FY2024 to FY2026 sections cover civilian agencies only; the Department of Defense is not in them. The threshold test and the agency table cover every civilian agency. The in-depth single-bid analysis and the forecasts cover five departments: VA, HHS, DHS, Interior and USDA. The long-history sections, FY2008 onward, also cover the Department of Defense, whose data are published 90 days late.</p>
+<p class="sub">How often do competed federal contracts get only one bid, and do purchases bunch under dollar limits? The FY2024 to FY2026 sections cover civilian agencies only; the Department of Defense is not in them. The threshold test and the agency table cover every civilian agency. The in-depth single-bid analysis covers five departments: VA, HHS, DHS, Interior and USDA. The long-history sections, FY2008 onward, also cover the Department of Defense, whose data are published 90 days late.</p>
 <p class="sub">By <a href="https://github.com/e-burress">Ellie Burress</a> · data through Sep 30, 2026 · <a href="explorer.html"><b>explore the data</b></a> · <a href="brief.html">one-page brief</a> · <a href="https://github.com/e-burress/federal-contract-competition">code and data</a> · <a href="methodology">methodology</a></p>
 <p class="new"><b>What's new:</b> the long history, FY2008 onward, with Defense shown separately: <a href="#history">Since 2008</a> · <a href="#limits">Pile-ups by year</a> · <a href="#scan">Every dollar limit</a> · <a href="#drivers">Why only one bid?</a> · <a href="#outcomes">After award</a> · <a href="#split">Split purchases?</a> · <a href="#supplier">Who wins</a> · <a href="#quality">Data quality</a></p>
 
@@ -55,8 +55,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   <div class="card kpi"><b>22.8%</b><span>of 97,672 competed awards in five departments got only one offer</span></div>
   <div class="card kpi"><b>25.5%</b><span>of 170,687 competed awards across 63 civilian agencies (all except GSA) got only one offer</span></div>
   <div class="card kpi"><b>0.97 → 1.96</b><span>pile-up just under the new $350K line, before vs. after it took effect (1.0 = none)</span></div>
-  <div class="card kpi"><b>0.75</b><span>accuracy (AUC) of the single-bid forecast on unseen data, vs. 0.62 for a simple baseline</span></div>
-  <div class="card kpi"><b>150</b><span>open solicitations with sealed single-bid forecasts, scored by Mar 31, 2027</span></div>
+  <div class="card kpi"><b>0.71</b><span>forecast score (AUC) of the single-offer model on years it never saw, vs. 0.59 for its best simple baseline (0.5 = coin flip)</span></div>
 </div>
 
 
@@ -131,10 +130,10 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
 <div class="card"><div class="tablewrap"><table class="wrapcells">
   <thead><tr><th>Forecast</th><th>What it predicts</th><th>Resolves</th><th>Result</th></tr></thead>
   <tbody>
-  <tr><td>PIO-F1</td><td>Chance of a single offer for each of 150 open civilian solicitations</td><td>Jan 31, 2027, Feb 28, 2027, Mar 31, 2027</td><td><span class="pill">Pending</span></td></tr>
+  <tr><td>PIO-F1</td><td>Chance of a single offer for each of 150 open civilian solicitations</td><td>—</td><td><span class="pill">Withdrawn</span></td></tr>
   <tr><td>PIO-F2</td><td>FY2027 Q1 pile-up under $350K: 2.03 (80% range 1.40–2.66); under $250K: 1.23 (0.88–1.58)</td><td>Feb 28, 2027</td><td><span class='pill'>Pending</span> <a href='#tracking'>see progress</a></td></tr>
   </tbody></table></div>
-  <p class="note">Both forecasts were sealed on Oct 24, 2026, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>a8d1bb3319bf2fc1439550ee99c971742408a99a4772db426b26dec15f0657d2</code> · PIO-F2 <code>5a7009ba0f17e953bd1fea32d2b7fe9241a849b85222266506c5312e4790c43b</code>. PIO-F2 is <a href="https://github.com/e-burress/federal-contract-competition/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 will be posted unchanged when it is scored.</p>
+  <p class="note">Both forecasts were sealed on Oct 24, 2026, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>a8d1bb3319bf2fc1439550ee99c971742408a99a4772db426b26dec15f0657d2</code> · PIO-F2 <code>5a7009ba0f17e953bd1fea32d2b7fe9241a849b85222266506c5312e4790c43b</code>. PIO-F2 is <a href="https://github.com/e-burress/federal-contract-competition/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 was withdrawn and will not be scored.</p>
 </div>
 <div class="card" style="margin-top:12px"><p class="note" style="margin:0"><b>Daily forecasts.</b> A daily series of sealed forecasts, one for each new open solicitation, is built and tested; the first batch has not been sealed yet (<a href="https://github.com/e-burress/federal-contract-competition/blob/main/docs/daily-forecasts.md">how it works</a>).</p></div>
 
@@ -150,7 +149,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   These are signals about markets and buying patterns, not about people. A single bid or a pile-up under a threshold can have ordinary explanations, and none of these numbers shows wrongdoing. Award data has no unit prices, so this does not measure whether single-bid contracts cost more. Offer counts are entered by contracting staff and can contain errors. FY2026 included a government shutdown and reporting changes.
 </div>
 
-<footer>Built by Ellie Burress with AI assistance (Claude Code). Data: <a href="https://www.usaspending.gov">USAspending.gov</a> and <a href="https://sam.gov">SAM.gov</a> (public). Code MIT; text and figures CC BY 4.0. Found an error? <a href="https://github.com/e-burress/federal-contract-competition/issues">Open an issue</a>. Page built Nov 10, 2026.</footer>
+<footer>Built by Ellie Burress with AI assistance (Claude Code). Data: <a href="https://www.usaspending.gov">USAspending.gov</a> and <a href="https://sam.gov">SAM.gov</a> (public). Code MIT; text and figures CC BY 4.0. Found an error? <a href="https://github.com/e-burress/federal-contract-competition/issues">Open an issue</a>. Page built Nov 11, 2026.</footer>
 </div>
 <script>
 document.querySelectorAll("table.sortable").forEach(function (t) {

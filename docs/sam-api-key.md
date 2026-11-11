@@ -5,8 +5,8 @@ day before (`scripts/14_sam_daily_snapshot.py`, `python run.py sam-snapshot`). N
 says so and skips itself, and every other step runs as before.
 
 **Why a key.** SAM.gov's [Terms of Use](https://sam.gov/about/terms-of-use) name its APIs and the files on its
-[Data Services](https://sam.gov/data-services) page as the ways to get its data with software, and they prohibit automated
-gathering through the website itself. The daily step therefore uses only SAM.gov's documented
+[Data Services](https://sam.gov/data-services) page as the ways to get its data with software. The daily step
+therefore uses only SAM.gov's documented
 [Get Opportunities Public API](https://open.gsa.gov/api/get-opportunities-public-api/), which needs a key.
 
 ## 1. Get a key

@@ -90,7 +90,6 @@ STEPS = {
     "model-build":         ("scripts/30_model_v2.py", ["--build-training"], False, "forecast model v2: the labeled training table (needs the history and SAM archive tables)"),
     "model-evaluate":      ("scripts/30_model_v2.py", ["--evaluate"], False, "forecast model v2: out-of-time evaluation against baselines"),
     "model-train":         ("scripts/30_model_v2.py", ["--train"], False, "forecast model v2: final fit, private model file and public model card"),
-    "score-f1":            ("scripts/09_resolve_forecast.py", [], True, "score the sealed single-offer forecast F1 (optional: path to the private file)"),
     "reconcile":           ("scripts/28_reconcile.py", [], True, "compare our yearly totals with USAspending's own totals"),
     "brief":               ("scripts/build_brief.py", [], False, "the one-page brief (docs/brief.html)"),
     "daily-forecast":      ("scripts/31_daily_forecast.py", [], True, "forecast today's new open solicitations and seal them (batch private, fingerprint public)"),

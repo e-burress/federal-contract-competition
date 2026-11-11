@@ -304,13 +304,13 @@ class ReportBlocks(unittest.TestCase):
         self.assertIn("123,456 solicitations", out)
         self.assertIn("FY2009–FY2010", out)
         self.assertIn("its award history ends September 30, 2010", out)
-        self.assertIn("0.700 (0.500 for the best simple baseline, the sector-wide rate, and 0.680 for version 1's features refitted)", out)
+        self.assertIn("0.700 (0.500 for the best simple baseline, the sector-wide rate, and 0.680 for the original, smaller feature set refitted)", out)
         self.assertIn("against 0.170 for that baseline", out)
-        self.assertIn("Version 1 (finding 3) is the earlier model, frozen", out)
+        self.assertNotIn("Version 1", out)
         self.assertIn("must not score live solicitations", out)          # history ends in 2010: stale on the build date
         m = self.render("m-model-v2")
         self.assertIn("(../results/model_v2_card.json)", m)
-        self.assertIn("Version 1 (section 5)", m)
+        self.assertNotIn("Version 1", m)
 
     def test_model_v2_reads_the_shipped_name_from_the_card(self):
         synthetic(self.tmp.name)

@@ -5,7 +5,7 @@ These forecasts were made on **2026-10-24 (UTC)**, before their outcomes existed
 | File | Published | Resolves |
 |---|---|---|
 | `PIO-F2-threshold-fy2027q1-20261024.json` | In full, here | From 2027-02-15 (final 2027-02-28) |
-| `PIO-F1-open-solicitations-single-offer-20261024.json` | **Fingerprint only** for now (it includes office-level details). The full file will be posted with the scoring, unchanged. | 2027-01-31, 2027-02-28 and 2027-03-31 |
+| `PIO-F1-open-solicitations-single-offer-20261024.json` | Fingerprint only. **Withdrawn**: it will not be scored or posted. | — |
 
 To check a file against its fingerprint:
 

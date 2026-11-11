@@ -6,11 +6,12 @@ first posted, its response deadline, whether a presolicitation came first, wheth
 up one notice at a time gave only 1,802 solicitations.  SAM.gov publishes one archive file per fiscal year with every past
 notice, so the same facts can be built for hundreds of thousands of solicitations.
 
-Source (public, no key, no account)
-  Listing:  https://sam.gov/api/prod/fileextractservices/v1/api/listfiles?domain=Contract%20Opportunities/Archived%20Data&privacy=Public
-  Files:    https://s3.amazonaws.com/falextracts/Contract%20Opportunities/Archived%20Data/FY<year>_archived_opportunities.csv
+Source
+  SAM.gov's Data Services page (https://sam.gov/data-services): Contract Opportunities, Archived Data, one file per fiscal
+  year named FY<year>_archived_opportunities.csv.  Download the files by hand, signed in to SAM.gov, and save them in
+  <DATA>/sam_archive/downloads/.  This script reads them and downloads nothing.
   Each file has the same 47 columns as the nightly active-notices file (read with sam_csv.py; checked at run time).
-  The big years are about 0.5 to 1.3 GB each.  The listing gives no sizes, so --list asks S3 for each file's size.
+  The big years are about 0.5 to 1.3 GB each.
 
 How the yearly files are defined (checked against the data, see the JSON "fiscal_year_definition" note)
   A notice sits in the file of the federal fiscal year (October to September) of its PostedDate, not of its ArchiveDate.
@@ -19,9 +20,8 @@ How the yearly files are defined (checked against the data, see the JSON "fiscal
   solicitation's versions can sit in two yearly files.  Use --merge to join the years.
 
 What it does for one fiscal year
-  1. Streams the file to a temporary folder OUTSIDE the repository (size cap 8 GB, 4 attempts; a broken download resumes
-     where it stopped with an HTTP Range request).  The file is deleted at the end, also when something fails.
-  2. Reads it in chunks of 10,000 rows with the mixed-encoding reader of script 14.  Only whitelisted columns are loaded.
+  1. Finds the file: --from-file PATH, or <DATA>/sam_archive/downloads/FY<fy>_archived_opportunities.csv.  It is never deleted.
+  2. Reads it in chunks of 10,000 rows with the mixed-encoding reader (sam_csv.py).  Only whitelisted columns are loaded.
      The Description is used in memory for the two keyword flags (common.kw_flags) and then thrown away.
   3. Writes to <DATA>/sam_archive/ (temp name first, then moved into place):
        notices_FY<fy>.parquet        one row per notice version (no title text, no names, no contacts)
@@ -56,14 +56,9 @@ Memory
   hash of sol_norm into 16 parts on disk and builds one part at a time.
 
 Usage (from the repository root)
-  python -I scripts/22_sam_archive.py --list                    # every archive file with its size
-  python -I scripts/22_sam_archive.py 2024                      # build the FY2024 tables
-  python -I scripts/22_sam_archive.py 2024 --max-bytes 150000000
-        # TESTING ONLY: read just the first N bytes (an HTTP Range request) and drop the last partial row.  The file is sorted
-        # newest first, so this gives the notices posted at the END of the fiscal year.  The JSON says "partial": true.
-  python -I scripts/22_sam_archive.py 2024 --from-file PATH.csv # use a local CSV (not deleted)
+  python -I scripts/22_sam_archive.py 2024                      # build the FY2024 tables from the downloaded file
+  python -I scripts/22_sam_archive.py 2024 --from-file PATH.csv # a file saved somewhere else (it is not deleted)
   python -I scripts/22_sam_archive.py --merge                   # all notices_FY*.parquet -> solicitations_all.parquet
-Set PIO_CONTACT (a web address, never an e-mail) so the User-Agent says who is downloading.
 """
 import argparse
 import csv
@@ -75,9 +70,6 @@ import shutil
 import sys
 import tempfile
 import time
-import urllib.error
-import urllib.parse
-import urllib.request
 import warnings
 from datetime import date, datetime, timezone
 
@@ -87,18 +79,15 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import DATA, UA_SAM, http_json  # noqa: E402
+from common import DATA  # noqa: E402
 
 # the reader, header check, scrub and cleaning of SAM.gov's CSV files (moved from script 14 to sam_csv.py in November 2026)
 import sam_csv as s14  # noqa: E402
 
-LIST_URL = ("https://sam.gov/api/prod/fileextractservices/v1/api/listfiles?"
-            "domain=Contract%20Opportunities/Archived%20Data&privacy=Public")
-S3 = "https://s3.amazonaws.com/falextracts/"
-KEY = "Contract Opportunities/Archived Data/FY{fy}_archived_opportunities.csv"
-MAX_BYTES = 8_000_000_000
+FILE_NAME = "FY{fy}_archived_opportunities.csv"
 CHUNK_ROWS = 10_000
 OUT_DIR = os.path.join(DATA, "sam_archive")
+DOWNLOADS = os.path.join(OUT_DIR, "downloads")     # where the files downloaded by hand go
 N_PARTS = 16
 
 SOLICITATION_TYPES = s14.SOLICITATION_TYPES            # ("Solicitation", "Combined Synopsis/Solicitation")
@@ -129,10 +118,6 @@ log = s14.log
 # ------------------------------------------------------------------------------------------------------------------
 # small helpers
 # ------------------------------------------------------------------------------------------------------------------
-def file_url(fy):
-    return S3 + urllib.parse.quote(KEY.format(fy=fy))
-
-
 def norm_sol(s):
     """Sol# -> upper-case letters and digits only (W912NW-26-q-a027 -> W912NW26QA027).  Empty results become missing."""
     s = pd.Series(s, dtype="string").str.upper().str.replace(r"[^A-Z0-9]+", "", regex=True)
@@ -161,104 +146,6 @@ def share(mask):
 
 def iso(x):
     return None if x is None or pd.isna(x) else pd.Timestamp(x).isoformat()
-
-
-# ------------------------------------------------------------------------------------------------------------------
-# listing and download
-# ------------------------------------------------------------------------------------------------------------------
-def head(url):
-    """(size in bytes, Last-Modified text) of one S3 object, or (None, None) if it is missing."""
-    req = urllib.request.Request(url, headers={"User-Agent": UA_SAM}, method="HEAD")
-    try:
-        with urllib.request.urlopen(req, timeout=60) as r:
-            return int(r.headers.get("Content-Length") or 0), r.headers.get("Last-Modified")
-    except urllib.error.HTTPError as e:
-        if e.code in (403, 404):
-            return None, None
-        raise
-
-
-def list_files():
-    d = http_json(LIST_URL, ua=UA_SAM, headers={"Accept": "*/*"})
-    if not d:
-        sys.exit("STOP: the SAM.gov listing API did not answer")
-    rows = []
-    for x in d.get("_embedded", {}).get("customS3ObjectSummaryList", []):
-        size, lm = head(S3 + urllib.parse.quote(x["key"]))
-        rows.append((x["displayKey"], size, lm))
-        time.sleep(0.2)                                          # polite pacing
-    log(f"{'file':40s} {'MB':>10s}  last modified")
-    for name, size, lm in rows:
-        log(f"{name:40s} {(size or 0) / 1e6:10,.1f}  {lm}")
-    log(f"{len(rows)} files, {sum(r[1] or 0 for r in rows) / 1e9:,.2f} GB in total")
-    return rows
-
-
-_RECORD_START = re.compile(rb'\n"[0-9a-f]{32}","')
-
-
-def trim_partial(path):
-    """After a partial (Range) download, cut the file after the last COMPLETE row.  A row may hold line breaks inside quoted
-    text, so we look for the start of a row (newline, quote, 32 hex digits NoticeId, quote, comma) instead of a newline."""
-    size = os.path.getsize(path)
-    look = 4 << 20
-    while True:
-        start = max(0, size - look)
-        with open(path, "rb") as fh:
-            fh.seek(start)
-            tail = fh.read()
-        hits = list(_RECORD_START.finditer(tail))
-        if hits:
-            cut = start + hits[-1].start() + 1                      # keep the newline that ends the last full row
-            with open(path, "r+b") as fh:
-                fh.truncate(cut)
-            return size - cut
-        if start == 0:
-            raise RuntimeError("no complete row in the partial download")
-        look *= 4
-
-
-def stream_download(url, dest, max_bytes=None, cap=MAX_BYTES, retries=4):
-    """Stream url to dest in 1 MB pieces.  On a broken connection, resume with a Range request.
-    max_bytes (testing): read only the first max_bytes bytes, then drop the last partial row.
-    Returns (bytes kept, total size of the remote file, Last-Modified text)."""
-    total, last_mod = head(url)
-    if total is None:
-        sys.exit(f"STOP: no such file on S3: {url}")
-    want = min(total, max_bytes) if max_bytes else total
-    if want > cap:
-        raise RuntimeError(f"file is {total:,} bytes, above the {cap:,} cap")
-    got, last = 0, None
-    open(dest, "wb").close()
-    for attempt in range(retries):
-        try:
-            hdrs = {"User-Agent": UA_SAM}
-            if got or want < total:
-                hdrs["Range"] = f"bytes={got}-{want - 1}"
-            with urllib.request.urlopen(urllib.request.Request(url, headers=hdrs), timeout=120) as r:
-                if "Range" in hdrs and r.status != 206:              # the server ignored the range: start over
-                    got = 0
-                    open(dest, "wb").close()
-                with open(dest, "ab") as fh:
-                    while got < want:
-                        buf = r.read(min(1 << 20, want - got))
-                        if not buf:
-                            break
-                        fh.write(buf)
-                        got += len(buf)
-            if got >= want:
-                break
-            raise RuntimeError(f"connection ended at {got:,} of {want:,} bytes")
-        except Exception as e:
-            last = e
-            log(f"  download attempt {attempt + 1} stopped at {got / 1e6:,.1f} MB: {e!r}"[:200])
-            time.sleep(5 * (attempt + 1))
-    if got < want:
-        raise RuntimeError(f"download failed after {retries} attempts: {last!r}")
-    if want < total:
-        dropped = trim_partial(dest)
-        log(f"  partial read: kept {os.path.getsize(dest) / 1e6:,.1f} MB, dropped a {dropped:,}-byte partial row")
-    return os.path.getsize(dest), total, last_mod
 
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -441,59 +328,45 @@ def process_file(path, fy):
     return nt, sol, q
 
 
-def run_year(fy, from_file=None, max_bytes=None, out_dir=OUT_DIR):
+def run_year(fy, from_file=None, out_dir=OUT_DIR, downloads=DOWNLOADS):
     t0 = time.time()
     os.makedirs(out_dir, exist_ok=True)
-    tmpdir, total, last_mod = None, None, None
-    try:
-        if from_file:
-            path = from_file
-            log(f"using local file {path} ({os.path.getsize(path) / 1e6:,.1f} MB)")
-        else:
-            tmpdir = tempfile.mkdtemp(prefix="sam_archive_")            # system temp, outside the repository
-            path = os.path.join(tmpdir, f"FY{fy}.csv")
-            url = file_url(fy)
-            log("downloading", url, f"(first {max_bytes:,} bytes only)" if max_bytes else "")
-            n, total, last_mod = stream_download(url, path, max_bytes=max_bytes)
-            log(f"downloaded {n / 1e6:,.1f} MB of {total / 1e6:,.1f} MB in {time.time() - t0:,.0f} s")
-        t1 = time.time()
-        nt, sol, q = process_file(path, fy)
-        if tmpdir:
-            shutil.rmtree(tmpdir, ignore_errors=True)
-            tmpdir = None
-        log(f"{len(nt):,} notices, {len(sol):,} solicitations; processing took {time.time() - t1:,.0f} s")
-        p_n = os.path.join(out_dir, f"notices_FY{fy}.parquet")
-        p_s = os.path.join(out_dir, f"solicitations_FY{fy}.parquet")
-        write_parquet(nt, p_n)
-        write_parquet(sol, p_s)
-        pm = s14.peak_mb()
-        meta = {
-            "fiscal_year": fy,
-            "built_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "source": from_file and "local file" or file_url(fy),
-            "source_last_modified": last_mod,
-            "source_bytes": total,
-            "partial": bool(max_bytes and total and max_bytes < total),
-            "partial_note": ("TEST RUN: only the first bytes were read; the file is sorted newest first, so this covers the "
-                             "end of the fiscal year only") if (max_bytes and total and max_bytes < total) else None,
-            "bytes_read": os.path.getsize(path) if from_file else None,
-            "seconds": round(time.time() - t0, 1),
-            "peak_memory_mb": round(pm) if pm else None,
-            **q,
-            "files": {os.path.basename(p): os.path.getsize(p) for p in (p_n, p_s)},
-        }
-        if not from_file:
-            meta["bytes_read"] = n
-        write_json(os.path.join(out_dir, f"sam_archive_FY{fy}.json"), meta)
-        log(f"wrote {p_n} ({os.path.getsize(p_n) / 1e6:,.1f} MB), {p_s} ({os.path.getsize(p_s) / 1e6:,.1f} MB) and the JSON")
-        sq = q["solicitations"]
-        log(f"usable response window (first deadline): {sq.get('share_usable_window_first')}; "
-            f"fiscal year: {q['notices']['fiscal_year_definition']['conclusion']}")
-        log(f"done in {time.time() - t0:,.0f} s" + (f"; peak memory {pm:,.0f} MB" if pm else ""))
-        return meta
-    finally:
-        if tmpdir and os.path.isdir(tmpdir):
-            shutil.rmtree(tmpdir, ignore_errors=True)
+    path = from_file or os.path.join(downloads, FILE_NAME.format(fy=fy))
+    if not os.path.isfile(path):
+        sys.exit(f"STOP: {path} not found.  Download {FILE_NAME.format(fy=fy)} by hand from SAM.gov's Data Services page "
+                 "(https://sam.gov/data-services: Contract Opportunities, Archived Data), signed in to SAM.gov, and save it there, "
+                 "or give its path with --from-file.")
+    size = os.path.getsize(path)
+    log(f"using {path} ({size / 1e6:,.1f} MB)")
+    t1 = time.time()
+    nt, sol, q = process_file(path, fy)
+    log(f"{len(nt):,} notices, {len(sol):,} solicitations; processing took {time.time() - t1:,.0f} s")
+    p_n = os.path.join(out_dir, f"notices_FY{fy}.parquet")
+    p_s = os.path.join(out_dir, f"solicitations_FY{fy}.parquet")
+    write_parquet(nt, p_n)
+    write_parquet(sol, p_s)
+    pm = s14.peak_mb()
+    meta = {
+        "fiscal_year": fy,
+        "built_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "source": os.path.basename(path),
+        "source_last_modified": datetime.fromtimestamp(os.path.getmtime(path), timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "source_bytes": size,
+        "partial": False,
+        "partial_note": None,
+        "bytes_read": size,
+        "seconds": round(time.time() - t0, 1),
+        "peak_memory_mb": round(pm) if pm else None,
+        **q,
+        "files": {os.path.basename(p): os.path.getsize(p) for p in (p_n, p_s)},
+    }
+    write_json(os.path.join(out_dir, f"sam_archive_FY{fy}.json"), meta)
+    log(f"wrote {p_n} ({os.path.getsize(p_n) / 1e6:,.1f} MB), {p_s} ({os.path.getsize(p_s) / 1e6:,.1f} MB) and the JSON")
+    sq = q["solicitations"]
+    log(f"usable response window (first deadline): {sq.get('share_usable_window_first')}; "
+        f"fiscal year: {q['notices']['fiscal_year_definition']['conclusion']}")
+    log(f"done in {time.time() - t0:,.0f} s" + (f"; peak memory {pm:,.0f} MB" if pm else ""))
+    return meta
 
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -584,20 +457,16 @@ def merge(in_dir=OUT_DIR, out_path=None, n_parts=N_PARTS):
 def main():
     ap = argparse.ArgumentParser(description="Build public tables from SAM.gov's yearly archive files (see the file header).")
     ap.add_argument("fy", nargs="?", type=int, help="fiscal year of the archive file, e.g. 2024")
-    ap.add_argument("--list", action="store_true", help="print every archive file with its size")
     ap.add_argument("--merge", action="store_true", help="join all notices_FY*.parquet into solicitations_all.parquet")
-    ap.add_argument("--max-bytes", type=int, help="TESTING: read only the first N bytes of the file (HTTP Range request)")
-    ap.add_argument("--from-file", help="use this local CSV instead of downloading (not deleted)")
+    ap.add_argument("--from-file", help="the archive CSV, if it is not in the downloads folder (it is not deleted)")
     ap.add_argument("--out-dir", default=OUT_DIR, help=f"output folder (default {OUT_DIR})")
     args = ap.parse_args()
-    if args.list:
-        list_files()
-    elif args.merge:
+    if args.merge:
         merge(args.out_dir)
     elif args.fy:
-        run_year(args.fy, from_file=args.from_file, max_bytes=args.max_bytes, out_dir=args.out_dir)
+        run_year(args.fy, from_file=args.from_file, out_dir=args.out_dir)
     else:
-        ap.error("give a fiscal year, --list or --merge")
+        ap.error("give a fiscal year or --merge")
 
 
 if __name__ == "__main__":

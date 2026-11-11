@@ -105,49 +105,9 @@ def download_file(url, dest, ua=UA_USASPENDING, timeout=120, max_bytes=25_000_00
     return None
 
 
-def flatten(r):
-    """Reduce one search result to the non-personal fields we need."""
-    org = r.get("organizationHierarchy") or []
-    by_level = {o.get("level"): o for o in org}
-    dept = (by_level.get(1) or {}).get("name")
-    agency = (by_level.get(2) or {}).get("name")
-    deeper = [o for o in org if (o.get("level") or 0) >= 3]
-    office_chain = " > ".join(o.get("name") or "" for o in deeper)
-    # the deepest organisation level that carries a code is the contracting office code (AAC-like)
-    office_code = None
-    for o in sorted(org, key=lambda o: o.get("level") or 0, reverse=True):
-        if o.get("code"):
-            office_code = o["code"]
-            break
-    desc = r.get("descriptions") or []
-    snippet = (desc[0].get("content") if desc and isinstance(desc[0], dict) else "") or ""
-    kw_brand, kw_sole = kw_flags(r.get("title"), snippet)
-    return {
-        "kw_brand": kw_brand,
-        "kw_sole": kw_sole,
-        "notice_id": r.get("_id"),
-        "sol": (r.get("solicitationNumber") or "").strip(),
-        "type_code": (r.get("type") or {}).get("code"),
-        "type": (r.get("type") or {}).get("value"),
-        "publish": r.get("publishDate"),
-        "response": r.get("responseDate"),
-        "response_tz": r.get("responseTimeZone"),
-        "modified": r.get("modifiedDate"),
-        "title": r.get("title"),
-        "canceled": r.get("isCanceled"),
-        "active": r.get("isActive"),
-        "n_mods": (r.get("modifications") or {}).get("count"),
-        "parent_notice": r.get("parentNoticeId"),
-        "dept": dept,
-        "agency": agency,
-        "office_chain": office_chain,
-        "office_code": office_code,
-    }
-
-
 # ---- text flags -------------------------------------------------------------------------------------
-# Two transparent keyword flags computed from the notice TITLE and the first ~300 characters of its description (as returned by the
-# search endpoint).  Only the 0/1 flags are stored - never the text, which can contain names and e-mail addresses.
+# Two transparent keyword flags computed from a notice's TITLE and, where available, the first ~300 characters of its description.
+# Only the 0/1 flags are stored - never the text, which can contain names and e-mail addresses.
 #   kw_brand : "brand name" (brand-name-or-equal requirements often have only one qualifying source)
 #   kw_sole  : sole source / single source / only one responsible source / limited source / proprietary
 _BRAND = re.compile(r"brand[\s-]*name", re.I)

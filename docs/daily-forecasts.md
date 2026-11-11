@@ -66,7 +66,6 @@ The rule is written into every batch before any outcome exists.
 
 - Look for the first ("base") action of a contract on USAspending with the same solicitation number (capital letters and digits only), dated **on or after the day offers were due**. That day is the response deadline posted when the forecast was made, recorded in the batch.
 - Why: we only forecast solicitations whose offers are due at least a day later. An award dated before that day cannot come from those offers. It is an earlier award under the same number, for example under a rolling solicitation.
-- This differs from the rule of the first sealed forecast, PIO-F1 ([`scoring-forecasts.md`](scoring-forecasts.md)), which counts awards from its forecast date on.
 - If the deadline is later moved earlier and the award is dated before the recorded day, the forecast stays unresolved.
 - The snapshot keeps deadlines in UTC, not in the notice's own time zone. So the recorded day is the UTC date. For a US deadline late in the evening it can be one day later than the local date.
 - If several match, the earliest wins (ties: the larger value).

@@ -151,7 +151,7 @@ RESOLUTION_RULE = (
     "award under the same number). If several match, use the earliest (ties: the larger base-and-all-options value). The "
     "forecast is RESOLVED only if that award was competed (extent competed A, D, E, F or CDO) and its number of offers is 1 to "
     "998; outcome = 1 if exactly one offer, else 0. Everything else stays unresolved (no award yet, not competed, offers blank "
-    "or 999) and is not scored. This differs from the sealed forecast PIO-F1, which counts awards from its forecast date on.")
+    "or 999) and is not scored.")
 FRESH_RULE = (f"fresh = first posted (the earliest active solicitation notice in the snapshot) at most {FRESH_DAYS} days before "
               "made_at_utc; otherwise backlog (a missing posting date counts as backlog).")
 RECOMPUTE = ("forecast_lib.build_features(the MODEL_INPUTS columns of the records, model['history'], as_of=as_of), then "

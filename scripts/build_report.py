@@ -8,8 +8,7 @@ What it does
   markers.  Text outside the markers is never touched.  A block whose markers sit on their own lines is a block of whole
   lines (a paragraph, a list or a table); a block inside a line is replaced inline.  Running it twice changes nothing.
 
-Input : results/*.csv, results/*.json, results/threshold_summary.txt,
-        results/model_summary.txt (frozen, from the October 2026 model build), forecasts/SHA256SUMS.txt,
+Input : results/*.csv, results/*.json, results/threshold_summary.txt, forecasts/SHA256SUMS.txt,
         forecasts/PIO-F2-threshold-fy2027q1-20261024.json, forecasts/daily/ledger.csv (once the daily series has started),
         config.toml.  No downloads, no pandas.
 Output: README.md and docs/methodology.md, rewritten in place (only the marked blocks).
@@ -279,13 +278,6 @@ def premium_pct(x):
     return (math.exp(float(x)) - 1) * 100
 
 
-def model_rows():
-    return {r["model"]: r for r in rows("model_out_of_time.csv")}
-
-
-BASELINE, OFFICE, MODEL = "agency-wide rate (naive baseline)", "office history only", "logistic regression (this model)"
-
-
 def f1():
     return CONFIG["forecasts"]["F1"]
 
@@ -304,20 +296,14 @@ def hashes():
     return out
 
 
-def registered():
-    m = grab(r"registered set: (\d+) of (\d+) eligible \(allocation (\{.*?\})\)", "model_summary.txt")
-    return int(m[1]), int(m[2]), ast.literal_eval(m[3])
-
-
 # ---- README blocks ------------------------------------------------------------------------------
 def r_status():
     snap_day = long_date(snapshot_date())
     five = ", ".join(SHORT[a] for a in ["VA", "HHS", "DHS", "DOI"]) + " and USDA"
     return (f"> **Status ({snap_day}):** every result was rebuilt from one public data snapshot, {snapshot_link()}, "
             f"downloaded from USAspending on {snap_day}. `python run.py quick` downloads it and rebuilds everything. "
-            f"{first_release_sentence()} The first forecast model (version 1) and the sealed forecasts PIO-F1 and PIO-F2 are from {long_date(FIRST_RELEASE['date'])} "
-            f"and are unchanged.\n>\n"
-            f"> The in-depth analysis and the forecasts cover five civilian departments ({five}) for {fy_span()}. "
+            f"{first_release_sentence()} The sealed threshold forecast PIO-F2 is from {long_date(FIRST_RELEASE['date'])} and is unchanged.\n>\n"
+            f"> The in-depth analysis covers five civilian departments ({five}) for {fy_span()}. "
             f"Single-offer shares cover every civilian agency, and the threshold test is civilian-wide. "
             f"These {fy_span()} tables leave out Defense because of DoD's 90-day reporting delay.\n>\n"
             f"> {history_status()}")
@@ -422,28 +408,45 @@ def r_civilian_table():
     return "\n".join(out)
 
 
+def v2_pooled():
+    """(card, {model name: pooled out-of-time row for all sectors}) of forecast model version 2, or (None, {})"""
+    card = opt_json("model_v2_card.json")
+    if not card:
+        return None, {}
+    return card, {r["model"]: r for r in opt_rows("model_v2_evaluation.csv") if r.get("test_fy") == "pooled" and r.get("sector") == "all"}
+
+
+def v2_shipped(card, by):
+    return by.get((card.get("shipped") or {}).get("name_in_evaluation")) or by.get(V2_SHIPPED_FALLBACK)
+
+
 def r_model_table():
-    m = model_rows()
+    card, by = v2_pooled()
+    m = v2_shipped(card, by) if card else None
+    if not m:
+        return not_yet("forecast model version 2 (`results/model_v2_card.json`, `results/model_v2_evaluation.csv`) has not been built.")
     out = ["| Model | AUC | Brier score |", "|---|---|---|"]
-    for key, label, bold in ((BASELINE, "Department-wide rate (baseline)", False), (OFFICE, "Office history only", False),
-                             (MODEL, "This model", True)):
-        cells = [label, num(m[key]["auc"]), num(m[key]["brier"], 3)]
-        out.append("| " + " | ".join(f"**{c}**" if bold else c for c in cells) + " |")
+    for key, label in BASELINE_ROWS:
+        if key in by and fl(by[key].get("auc")) is not None:
+            out.append(f"| {label} | {num(by[key]['auc'])} | {num(by[key]['brier'], 3)} |")
+    out.append(f"| **This model** | **{num(m['auc'])}** | **{num(m['brier'], 3)}** |")
     return "\n".join(out)
 
 
 def r_model_applied():
-    a, b = f1()["deadlines"]
-    return (f"The model was then applied to **{f1()['n_solicitations']} currently open solicitations** with response deadlines "
-            f"between {short_date(a)} and {short_date(b)}, {b[:4]}. Those forecasts are sealed below.")
+    card, by = v2_pooled()
+    m = v2_shipped(card, by) if card else None
+    if not m:
+        return ""
+    return (f"Out of time: each fiscal year was forecast by a model trained only on earlier years. Pooled over "
+            f"{fy_text(card['evaluation']['test_years'])} ({n(m['n'])} solicitations). AUC 0.5 is a coin flip; a lower Brier score "
+            f"is better. This is the model of the daily sealed forecasts (see *Pre-registered forecasts*).")
 
 
 def r_forecasts():
     F1, F2 = f1(), CONFIG["forecasts"]["F2"]
     j, h = f2_json(), hashes()
     q = {x["threshold"]: x for x in j["quantities"] if x["kind"] == "bunching_ratio"}
-    checks = F1["checks"]
-    check_words = " and ".join(short_date(c) for c in checks[:-1])
     a, b = q[350000], q[250000]
     f2_text = (f"{fiscal_quarter(j['period']['start'])} bunching ratios under $350K ({num(a['forecast'])}; 80% interval "
                f"{num(a['interval80'][0])}–{num(a['interval80'][1])}) and $250K ({num(b['forecast'])}; "
@@ -456,7 +459,7 @@ def r_forecasts():
         "| ID | What it forecasts | Resolves | SHA-256 |",
         "|---|---|---|---|",
         f"| {short1} | Probability of a single offer for each of {F1['n_solicitations']} open civilian solicitations | "
-        f"{checks[-1]} (checks {check_words}) | `{h[F1['id'] + '.json']}` |",
+        f"Withdrawn, not scored | `{h[F1['id'] + '.json']}` |",
         f"| {short2} | {f2_text} | {j['resolution_date']} | `{h[F2['id'] + '.json']}` |"])
 
 
@@ -696,81 +699,11 @@ def m_did():
     return f"The result was {sgn(did * 100)} percentage points ({sgn(lo, 1)} to {sgn(hi, 1)}): {verdict}."
 
 
-def m_model_frozen():
-    return (f"These results are from the {long_date(FIRST_RELEASE['date'])} build and are frozen. Its SAM.gov training inputs "
-            f"were not kept, so `run.py` does not rebuild them (scripts 05–08 and 11); the model will be rebuilt on SAM.gov's "
-            f"official archive files. The files are `results/model_*` and `results/resolution_backtest_summary.csv`.")
 
 
-def m_model_pop():
-    card = res_json("model_card.json")
-    pop = grab(r"Population P: ([\d,]+) solicitations .*?single-offer share ([\d.]+)", "model_summary.txt")
-    look = grab(r"SAM lookups: ([\d,]+) solicitations looked up \| found a Solicitation/Combined Synopsis notice: ([\d,]+) "
-                r"\(([\d.]+)%\)", "model_summary.txt")
-    return "\n".join([
-        f"- **Population:** {n(card['n_population'])} competed solicitations (one per solicitation number, {fy_span()}) with a "
-        f"single-offer share of {pct(pop[2])}.",
-        f"- **Response windows:** looked up in SAM.gov for a random sample. {look[1]} solicitation numbers were looked up and "
-        f"{look[2]} found ({look[3]}%). After dropping missing, negative or extreme windows, {n(card['n_sample_L'])} were usable.",
-        f"- **Model:** L2 logistic regression (C = {card['C']}, chosen by 5-fold cross-validation inside the training period)."])
 
 
-def m_oot():
-    card, m = res_json("model_card.json"), model_rows()
-    t = grab(r"train on solicitations whose award came on/before (\d{4}-\d\d-\d\d)", "model_summary.txt")
-    test = grab(r"test ([\d,]+) \(share ([\d.]+)\)", "model_summary.txt")
-    # calibration rows look like "(0.1, 0.2]  272  0.142  0.140": bin, n, mean forecast, observed
-    cal_lines = {mm[1]: mm for mm in re.finditer(r"^\((\d\.\d), \d\.\d\]\s+(\d+)\s+([\d.]+)\s+([\d.]+)", text("model_summary.txt"), re.M)}
-    lo_bin, hi_bin = cal_lines["0.1"], cal_lines["0.2"]
-    mod, base = m[MODEL], m[BASELINE]
-    skill = 1 - float(mod["brier"]) / float(base["brier"])
-    return "\n".join([
-        f"**Out-of-time test** (train on awards through {t[1]}, n = {n(card['n_train_oot'])}; test on FY2026 awards, "
-        f"n = {n(card['n_test_oot'])}, {pct(test[2])} single-offer):",
-        f"- AUC {num(mod['auc'], 3)} (95% interval {num(card['oot_auc_ci'][0], 3)}–{num(card['oot_auc_ci'][1], 3)}), against "
-        f"{num(base['auc'], 3)} for the department-wide baseline.",
-        f"- Brier score {num(mod['brier'], 4)} against {num(base['brier'], 4)} ({pct(skill)} skill).",
-        f"- Calibration is good below 0.2 ({lo_bin[3]} forecast vs {lo_bin[4]} observed in the 0.1–0.2 bin). The 0.2–0.3 bin "
-        f"was under-forecast ({hi_bin[3]} vs {hi_bin[4]}, n = {hi_bin[2]})."])
 
-
-def m_effects():
-    co = {r["feature"]: float(r["odds_ratio"]) for r in rows("model_coefficients.csv")}
-    items = [("cat__setaside_none", "no set-aside", ""), ("num__office_rate", "buying-office history", " per standard deviation"),
-             ("cat__psc2_65", "medical-supply product codes", ""), ("cat__setaside_small business", "small-business set-aside", ""),
-             ("cat__setaside_SDVOSB", "service-disabled-veteran set-aside", ""),
-             ("num__wl", "longer response window", " per standard deviation")]
-    return "\n".join(["**Largest effects** (odds ratios):"] + [f"- {label} {num(co[k])}{unit}" for k, label, unit in items])
-
-
-def m_open():
-    m = grab(r"OPEN SOLICITATIONS: (\d+) candidates in the five agencies \| [^:]*: (\d+) \| excluded by the date-plausibility "
-             r"rule: (\d+) \| ELIGIBLE: (\d+)", "model_summary.txt")
-    a, b = f1()["deadlines"]
-    return (f"**Open solicitations** (pulled {f1()['sealed']}): {n(m[1])} candidate notices in the five modeled departments, "
-            f"{n(m[2])} of them open, not canceled, of an eligible type and with a deadline between {a} and {b}.")
-
-
-def m_registered():
-    m = grab(r"excluded by the date-plausibility rule: (\d+) \| ELIGIBLE: (\d+)", "model_summary.txt")
-    k, elig, alloc = registered()
-    parts = ", ".join(f"{SHORT[a]} {c}" for a, c in sorted(alloc.items(), key=lambda kv: -kv[1]))
-    return "\n".join([
-        f"- {n(m[2])} notices met the rule. {n(m[1])} were excluded by the date-plausibility check, mostly for typo'd deadlines.",
-        f"- **{k} were registered**, by stratified random sample (seed 20261023): {parts}."])
-
-
-def m_backtest():
-    bt = rows("resolution_backtest_summary.csv")
-    tot = sum(int(r["n_notices"]) for r in bt)
-    matched = sum(int(r["n_matched"]) for r in bt) / tot
-    resolv = sum(int(r["n_resolvable"]) for r in bt) / tot
-    k = f1()["n_solicitations"]
-    expect = round(k * resolv / 10) * 10
-    return (f"**Expected resolution rate.** A backtest on {n(tot)} solicitations with March–April 2026 deadlines found that "
-            f"{pct(matched)} matched an award and {pct(resolv)} were scoreable. Expect about {expect} of the {k} forecasts to "
-            f"resolve by {f1()['checks'][-1]}. Single-offer events among them will be few, so the first batch will measure "
-            f"calibration roughly, not skill.")
 
 
 def m_f2():
@@ -1395,6 +1328,8 @@ def m_reference():
 
 
 # -- the forecast model, version 2 (30_model_v2.py).  Before its card exists, a line saying it is being built.
+BASELINE_ROWS = (("sector rate (baseline)", "Sector-wide rate (baseline)"), ("agency rate (baseline)", "Agency's past rate (baseline)"),
+                 ("office history only (baseline)", "Buying office's past rate (baseline)"))
 BASELINE_NAME = {"sector rate (baseline)": "the sector-wide rate", "agency rate (baseline)": "the agency's past rate",
                  "office history only (baseline)": "the buying office's past rate"}
 TODAY = None            # the build date (date.today()); the tests set it
@@ -1451,18 +1386,17 @@ def best_baseline(by):
 V2_SHIPPED_FALLBACK = "logistic v2"       # used when the card names no shipped model (or one with no pooled row)
 
 
-def model_v2_text(prefix, v1_where):
+def model_v2_text(prefix):
     card = opt_json("model_v2_card.json")
     if not card:
-        return (f"- **Forecast model version 2 is being built** on SAM.gov's archive files (`22_sam_archive.py`, `30_model_v2.py`). "
-                f"Until it is finished, the frozen version 1 ({v1_where}) is the published model.")
+        return "- **Forecast model version 2 is being built** on SAM.gov's archive files (`22_sam_archive.py`, `30_model_v2.py`)."
     try:
         by = {r["model"]: r for r in opt_rows("model_v2_evaluation.csv") if r.get("test_fy") == "pooled" and r.get("sector") == "all"}
         m = by.get((card.get("shipped") or {}).get("name_in_evaluation")) or by[V2_SHIPPED_FALLBACK]
         bname, base = best_baseline(by)
         refit = by.get("version 1 feature set (refit)")
         cmp_ = series([f"{num(base['auc'], 3)} for the best simple baseline, {BASELINE_NAME[bname]}," if base else "",
-                       f"{num(refit['auc'], 3)} for version 1's features refitted" if refit else ""]).rstrip(",")
+                       f"{num(refit['auc'], 3)} for the original, smaller feature set refitted" if refit else ""]).rstrip(",")
         data = card.get("data") or {}
         built = card.get("built_utc", "")[:10]
         end = model_v2_history_end(card)
@@ -1486,19 +1420,18 @@ def model_v2_text(prefix, v1_where):
                 txt += (f" The rule picked \"{sel['rule_pick']}\"; \"{sel['shipped']}\" is shipped instead, because the simpler "
                         "pick left forecasts miscalibrated by sector. That choice was made after the results were known; the card "
                         "records it with the numbers (`selection.amendment`).")
-        return (txt + f" Version 1 ({v1_where}) is the earlier model, frozen since the {long_date(FIRST_RELEASE['date'])} build. "
-                f"Both are risk indicators about markets, not statements about anyone's conduct. "
+        return (txt + " It is a risk indicator about markets, not a statement about anyone's conduct. "
                 f"Details: [`results/model_v2_card.json`]({prefix}results/model_v2_card.json).")
     except (KeyError, TypeError, ValueError, IndexError):
         return ""
 
 
 def r_model_v2():
-    return model_v2_text("", "finding 3")
+    return model_v2_text("")
 
 
 def m_model_v2():
-    return model_v2_text("../", "section 5")
+    return model_v2_text("../")
 
 
 # -- the daily sealed forecasts (31_daily_forecast.py, 32_score_daily.py).  True before the first batch and after it: the series is
@@ -2092,9 +2025,7 @@ BLOCKS = {
     "m-five-table": m_five_table, "m-other-cuts": m_other_cuts, "m-premium": m_premium, "m-offices": m_offices,
     "m-civ-data": m_civ_data, "m-civ-check": m_civ_check, "m-gsa": m_gsa, "m-civ-table": m_civ_table,
     "m-civ-trend": m_civ_trend, "m-threshold-data": m_threshold_data, "m-threshold-table": m_threshold_table,
-    "m-threshold-quarters": m_threshold_quarters, "m-micro": m_micro, "m-did": m_did, "m-model-frozen": m_model_frozen,
-    "m-model-pop": m_model_pop, "m-oot": m_oot, "m-effects": m_effects, "m-open": m_open, "m-registered": m_registered,
-    "m-backtest": m_backtest, "m-f2": m_f2, "m-limit-fy2026": m_limit_fy2026,
+    "m-threshold-quarters": m_threshold_quarters, "m-micro": m_micro, "m-did": m_did, "m-f2": m_f2, "m-limit-fy2026": m_limit_fy2026,
     # docs/methodology.md, the newer analyses (optional files)
     "m-quality": m_quality, "m-history": m_history, "m-threshold-history": m_threshold_history, "m-staggered": m_staggered,
     "m-scan": m_scan, "m-drivers": m_drivers, "m-outcomes": m_outcomes, "m-split": m_split, "m-reference": m_reference,

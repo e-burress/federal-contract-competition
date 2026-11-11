@@ -4,10 +4,12 @@
 Why: a "thin" market (very few registered companies in an industry) may explain why some competed solicitations get only one offer.
 This script measures the depth of each market with a simple count of registrations.  A registration is NOT a capable bidder.
 
-Source (public, no key, no account): SAM.gov's Entity Registration "Public V2" monthly extract.
-    listing:   https://sam.gov/api/prod/fileextractservices/v1/api/listfiles?domain=Entity%20Registration/Public%20V2&privacy=Public
-    download:  https://sam.gov/api/prod/fileextractservices/v1/api/download/<key>?privacy=Public   (answers with a short-lived public link)
-The script picks the newest file named SAM_PUBLIC_UTF-8_MONTHLY_V2_<YYYYMMDD>.ZIP (about 150 MB).  It is a ZIP that holds another ZIP
+Source: SAM.gov's Entity Registration "Public V2" monthly extract, from SAM.gov's Data Services.  The script downloads the newest
+public monthly file with SAM.gov's Extracts Download API (https://open.gsa.gov/api/sam-entity-extracts-api/), which needs a free
+personal API key in the environment variable SAM_API_KEY (see docs/sam-api-key.md) and costs one of the key's 10 requests a day.
+Without a key, download the file by hand from https://sam.gov/data-services (Entity Registration, Public V2), signed in to SAM.gov,
+and run with --from-file.  The key is never printed or saved; the request URL holds it, so no URL is printed.
+The file is SAM_PUBLIC_UTF-8_MONTHLY_V2_<YYYYMMDD>.ZIP (about 150 MB).  It is a ZIP that holds another ZIP
 that holds one pipe-delimited .dat file (about 580 MB, 142 fields per line, about 910,000 lines).  The layout is the GSA document
 "SAM Master Extract Mapping v6.0 Public File V2 Layout" (https://open.gsa.gov/api/sam-entity-extracts-api/); the field positions
 used below were checked against the real file.  The first line is "BOF PUBLIC V2 00000000 <extract date> ..." and the last is "EOF ...".
@@ -52,9 +54,8 @@ Privacy (hard rules)
   that reach an output are NAICS codes, two-letter state codes and numbers.
 
 Usage (from the repository root):
-  python -I scripts/25_market_depth.py                        # download the newest file, write the three outputs
+  python -I scripts/25_market_depth.py                        # download the newest file (needs SAM_API_KEY), write the outputs
   python -I scripts/25_market_depth.py --from-file PATH.zip   # local file (ZIP, ZIP in ZIP, or plain .dat); it is NOT deleted
-Set PIO_CONTACT (a web address, never an e-mail) so the User-Agent says who is downloading.
 """
 import argparse
 import csv
@@ -64,6 +65,7 @@ import shutil
 import sys
 import tempfile
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
@@ -71,10 +73,10 @@ from collections import Counter
 from datetime import date
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import PROJECT, UA_SAM, http_json  # noqa: E402
+from common import PROJECT, UA_SAM  # noqa: E402
 
-LIST_URL = "https://sam.gov/api/prod/fileextractservices/v1/api/listfiles?domain=Entity%20Registration/Public%20V2&privacy=Public"
-DOWNLOAD_URL = "https://sam.gov/api/prod/fileextractservices/v1/api/download/{key}?privacy=Public"
+EXTRACTS_URL = "https://api.sam.gov/data-services/v1/extracts"     # SAM.gov's Extracts Download API
+KEY_ENV = "SAM_API_KEY"
 MAX_BYTES = 1_000_000_000            # download size cap
 MAX_UNPACKED = 3_000_000_000         # refuse to unpack more than this
 STATE_FILE_MAX = 3_000_000           # bytes; above this the state file switches to 3-digit NAICS
@@ -207,47 +209,55 @@ class Tally:
 # ------------------------------------------------------------------------------------------------------------------
 # download and unpack
 # ------------------------------------------------------------------------------------------------------------------
-def newest_file(listing):
-    """Pick the newest monthly file from the listing.  UTF-8 version preferred.  Returns (key, YYYYMMDD) or None."""
-    best = None
-    for item in ((listing or {}).get("_embedded") or {}).get("customS3ObjectSummaryList") or []:
-        key = item.get("key") or ""
-        m = FILE_RE.search(key)
-        if m:
-            rank = (m.group(2), 1 if m.group(1) else 0)
-            if best is None or rank > best[0]:
-                best = (rank, key)
-    return (best[1], best[0][0]) if best else None
+def redact(text, key):
+    return text.replace(key, "***") if key and isinstance(text, str) else text
 
 
-def stream_download(url, dest, retries=3):
-    """Stream url to dest in 1 MB pieces; stop at MAX_BYTES.  Returns the number of bytes."""
-    last = None
-    for attempt in range(retries):
+def filename_from(content_disposition):
+    """the file name in a Content-Disposition header, or None"""
+    m = re.search(r"filename\*?=(?:UTF-8'')?\"?([^\";]+)\"?", content_disposition or "", re.I)
+    return os.path.basename(urllib.parse.unquote(m.group(1)).strip()) if m else None
+
+
+def download_extract(key, dest, opener=None):
+    """ONE request to SAM.gov's Extracts Download API for the newest public monthly entity file (UTF-8): stream it to dest.
+    Returns (bytes, file name or None).  No retry: every request counts against the key's 10 a day.  The URL holds the key, so it
+    is never printed, and the key is removed from any error text."""
+    opener = opener or urllib.request.urlopen
+    q = urllib.parse.urlencode({"api_key": key, "fileType": "ENTITY", "sensitivity": "PUBLIC", "frequency": "MONTHLY",
+                                "charset": "UTF8"})
+    req = urllib.request.Request(EXTRACTS_URL + "?" + q, headers={"User-Agent": UA_SAM})
+    try:
+        with opener(req, timeout=300) as r:
+            ctype = (r.headers.get("Content-Type") or "").lower()
+            name = filename_from(r.headers.get("Content-Disposition"))
+            if "json" in ctype or ctype.startswith("text/"):
+                body = r.read(2000).decode("utf-8", "replace")
+                raise RuntimeError("SAM.gov answered with a message instead of the file: " + redact(body, key)[:400])
+            size = int(r.headers.get("Content-Length") or 0)
+            if size > MAX_BYTES:
+                raise RuntimeError(f"SAM.gov says the file is {size} bytes, above the {MAX_BYTES} cap")
+            got = 0
+            with open(dest, "wb") as fh:
+                while True:
+                    buf = r.read(1 << 20)
+                    if not buf:
+                        break
+                    got += len(buf)
+                    if got > MAX_BYTES:
+                        raise RuntimeError("the download went past the size cap")
+                    fh.write(buf)
+            if size and got != size:
+                raise RuntimeError(f"incomplete download: {got} of {size} bytes")
+            return got, name
+    except urllib.error.HTTPError as e:
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA_SAM})
-            with urllib.request.urlopen(req, timeout=120) as r:
-                size = int(r.headers.get("Content-Length") or 0)
-                if size > MAX_BYTES:
-                    raise RuntimeError(f"server says {size} bytes, above the {MAX_BYTES} cap")
-                got = 0
-                with open(dest, "wb") as fh:
-                    while True:
-                        buf = r.read(1 << 20)
-                        if not buf:
-                            break
-                        got += len(buf)
-                        if got > MAX_BYTES:
-                            raise RuntimeError("download exceeded the size cap")
-                        fh.write(buf)
-                if size and got != size:
-                    raise RuntimeError(f"incomplete download: {got} of {size} bytes")
-                return got
-        except Exception as e:
-            last = e
-            log(f"  download attempt {attempt + 1} failed: {e!r}"[:200])
-            time.sleep(5 * (attempt + 1))
-    raise RuntimeError(f"download failed after {retries} attempts: {last!r}")
+            msg = e.read().decode("utf-8", "replace")[:300]
+        except Exception:
+            msg = ""
+        raise RuntimeError(f"SAM.gov refused the request (HTTP {e.code}): {redact(msg, key)}") from None
+    except urllib.error.URLError as e:
+        raise RuntimeError(redact(f"network error: {e.reason}", key)) from None
 
 
 def iter_lines(path, workdir, depth=0):
@@ -383,11 +393,10 @@ extract date.  The idea: if few companies are registered in an industry, a solic
 
 ## Source
 
-SAM.gov Entity Registration "Public V2" monthly extract, file `{source_name}`, extract date **{iso(ext)}**.  Public, no key and no account:
-file listing at `https://sam.gov/api/prod/fileextractservices/v1/api/listfiles?domain=Entity%20Registration/Public%20V2&privacy=Public`,
-download through `https://sam.gov/api/prod/fileextractservices/v1/api/download/<key>?privacy=Public`.  The layout is GSA's
+SAM.gov Entity Registration "Public V2" monthly extract from SAM.gov's Data Services (also available through its Extracts Download
+API), file `{source_name}`, extract date **{iso(ext)}**.  The layout is GSA's
 "SAM Master Extract Mapping v6.0 Public File V2 Layout" (https://open.gsa.gov/api/sam-entity-extracts-api/).  The file lists
-{tally.lines:,} registration lines.  The raw file is downloaded to a temporary folder outside the repository, read once, and deleted.
+{tally.lines:,} registration lines.  The raw file is read once and never published.
 It contains business names and addresses (including sole proprietors).  Only counts are published here.
 
 ## Definitions
@@ -490,16 +499,22 @@ def main():
             fallback = m.group(2) if m else None
             log(f"using local file {path} ({os.path.getsize(path) / 1e6:,.1f} MB)")
         else:
-            found = newest_file(http_json(LIST_URL, ua=UA_SAM))
-            if not found:
-                sys.exit("STOP: no SAM_PUBLIC_*_MONTHLY_V2_<date>.ZIP file in the listing (it may have moved or may now need a key)")
-            key, fallback = found
-            source_name = key.rsplit("/", 1)[-1]
-            url = DOWNLOAD_URL.format(key=urllib.parse.quote(key))
+            key = (os.environ.get(KEY_ENV) or "").strip()
+            if not key:
+                sys.exit("STOP: SAM_API_KEY is not set.  This script downloads the monthly file with SAM.gov's Extracts Download API and a "
+                         "free personal key (docs/sam-api-key.md).  Or download SAM_PUBLIC_UTF-8_MONTHLY_V2_<date>.ZIP by hand from "
+                         "https://sam.gov/data-services (Entity Registration, Public V2), signed in, and run with --from-file.")
             path = os.path.join(tmpdir, "download.zip")
-            log("downloading", source_name)
-            n = stream_download(url, path)
-            log(f"downloaded {n / 1e6:,.1f} MB in {time.time() - t0:,.0f} s")
+            log("downloading the newest public monthly entity file with SAM.gov's Extracts Download API (one request)")
+            try:
+                n, name = download_extract(key, path)
+            except RuntimeError as e:
+                sys.exit(f"STOP: {e}\nNothing was written.  If the key was refused, renew it (docs/sam-api-key.md); or download the file "
+                         "by hand and run with --from-file.")
+            source_name = name or "SAM_PUBLIC_UTF-8_MONTHLY_V2 (newest)"
+            m = FILE_RE.search(source_name)
+            fallback = m.group(2) if m else None
+            log(f"downloaded {n / 1e6:,.1f} MB in {time.time() - t0:,.0f} s ({source_name})")
 
         tally, ext = read_file(path, tmpdir, fallback)
         log(f"read {tally.lines:,} lines, extract date {ext}; active entities {tally.active:,}; counted (Z2 with NAICS) {tally.counted:,}")

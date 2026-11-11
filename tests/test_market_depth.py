@@ -185,16 +185,41 @@ class SkipTests(unittest.TestCase):
         self.assertEqual(t.any["541511"], 4)                    # still in the NAICS counts
 
 
+class FakeAnswer(io.BytesIO):
+    def __init__(self, body, headers):
+        super().__init__(body)
+        self.headers = headers
+
+
 class PickFileTests(unittest.TestCase):
-    def test_newest_utf8_file(self):
-        def item(name):
-            return {"key": "Entity Registration/Public V2/" + name}
-        listing = {"_embedded": {"customS3ObjectSummaryList": [
-            item("SAM_PUBLIC_MONTHLY_V2_20261101.ZIP"), item("SAM_PUBLIC_UTF-8_MONTHLY_V2_20261101.ZIP"),
-            item("SAM_PUBLIC_UTF-8_MONTHLY_V2_20261005.ZIP"), item("readme.txt")]}}
-        self.assertEqual(md.newest_file(listing), ("Entity Registration/Public V2/SAM_PUBLIC_UTF-8_MONTHLY_V2_20261101.ZIP", "20261101"))
-        self.assertIsNone(md.newest_file({}))
-        self.assertIsNone(md.newest_file(None))
+    def test_file_name_from_the_answer(self):
+        self.assertEqual(md.filename_from('attachment; filename="SAM_PUBLIC_UTF-8_MONTHLY_V2_20261101.ZIP"'),
+                         "SAM_PUBLIC_UTF-8_MONTHLY_V2_20261101.ZIP")
+        self.assertEqual(md.filename_from("attachment; filename*=UTF-8''SAM_PUBLIC_MONTHLY_V2_20261005.ZIP"),
+                         "SAM_PUBLIC_MONTHLY_V2_20261005.ZIP")
+        self.assertIsNone(md.filename_from(None))
+
+    def test_one_request_with_the_key_and_the_key_never_in_errors(self):
+        key, seen = "SECRETKEY123", []
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+
+        def zip_answer(req, timeout):
+            seen.append(req.full_url)
+            return FakeAnswer(b"PK fake zip", {"Content-Type": "application/zip", "Content-Length": "11",
+                                               "Content-Disposition": 'attachment; filename="SAM_PUBLIC_UTF-8_MONTHLY_V2_20261101.ZIP"'})
+        n, name = md.download_extract(key, os.path.join(tmp, "x.zip"), opener=zip_answer)
+        self.assertEqual((n, name, len(seen)), (11, "SAM_PUBLIC_UTF-8_MONTHLY_V2_20261101.ZIP", 1))
+        self.assertIn("fileType=ENTITY", seen[0])
+        self.assertIn("sensitivity=PUBLIC", seen[0])
+        self.assertTrue(seen[0].startswith(md.EXTRACTS_URL + "?"))
+
+        def message_answer(req, timeout):
+            return FakeAnswer(f'{{"message": "bad api_key {key}"}}'.encode(), {"Content-Type": "application/json"})
+        with self.assertRaises(RuntimeError) as cm:
+            md.download_extract(key, os.path.join(tmp, "y.zip"), opener=message_answer)
+        self.assertNotIn(key, str(cm.exception))
+        self.assertIn("***", str(cm.exception))
 
     def test_header_date(self):
         self.assertEqual(md.header_date(b"BOF PUBLIC V2 00000000 20261101 0911820 0008387\n"), "20261101")
