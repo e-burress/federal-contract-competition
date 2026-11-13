@@ -88,7 +88,7 @@ The scores are the Brier score and log loss (lower is better) and the AUC (0.5 i
 
 ## Known limits
 
-- The notices come day by day from SAM.gov's API, starting on the first day pulled. An amendment of a solicitation first posted before that day looks like a new solicitation, with a "first posted" date that is too late. So the forecast step refuses to seal a batch until the notices pulled cover at least 30 days (dry runs are allowed). After that, the problem is limited to solicitations that stay open a long time.
+- The notices come day by day from SAM.gov's API, starting on the first day pulled. An amendment of a solicitation first posted before that day looks like a new solicitation, with a "first posted" date that is too late. So the forecast step waits until the notices pulled cover at least 30 days: it says from which day the first batch can be sealed and changes nothing (dry runs still forecast). After that, the problem is limited to solicitations that stay open a long time.
 - The keyword flags (brand-name and sole-source wording) now come from the title alone, because the API's search results do not include the description. The model was trained with the title and the first lines of the description; that block of the model showed no measurable gain in the out-of-time test.
 - On the first day, every open solicitation is new, so the first batch is much larger than later ones, and mostly backlog.
 - Civilian outcomes come from this fiscal year's live download. Matches found earlier are kept, but an award reported late, after a new fiscal year has started, can be missed.

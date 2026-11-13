@@ -307,8 +307,10 @@ class ViewForTheForecastStep(Paths):
                  "dryrun_dir": os.path.join(self.tmp, "dry")}
         with contextlib.redirect_stdout(out), mock.patch.dict(os.environ, {"GITHUB_ACTIONS": ""}):
             code = f31.run([], paths=paths, now=NOW)
-        self.assertEqual(code, f31.EXIT_REFUSED)
-        self.assertIn("at least 30 days are needed", out.getvalue())
+        self.assertEqual(code, 0)                                            # waits without failing the robot
+        self.assertIn("WAITING", out.getvalue())
+        self.assertIn("the first batch can be sealed from 2026-12-11", out.getvalue())
+        self.assertFalse(os.path.exists(paths["batch_dir"]))                 # nothing was sealed
 
 
 if __name__ == "__main__":

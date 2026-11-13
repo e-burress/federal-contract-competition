@@ -1,7 +1,11 @@
-# Every morning: save the notices SAM.gov posted the day before (its official API, with the owner's key), update the live single-offer table for every civilian agency,
-# check how the sealed threshold forecast (PIO-F2) is tracking, rebuild the dashboard, and publish it.
+# Every morning: save the notices SAM.gov posted the day before (its official API, with the owner's key), forecast each NEW open solicitation's chance of getting only one
+# offer and seal the day's forecasts (the forecasts stay private; their fingerprint is published), update the live single-offer
+# table for every civilian agency, score the earlier daily forecasts whose awards are now known (totals only), check how the
+# sealed threshold forecast (PIO-F2) is tracking, rebuild the pages, and publish.
 # After the resolution date (Feb 28, 2027) the same run produces F2's official score once.
 # The sealed forecast files are never changed. Run it by hand from the Actions tab ("Run workflow").
+# The daily forecasts need the private model file (a draft release named model-v2). Without it, in a fork for example,
+# the forecast step says so and stops, and the rest of the run goes on.  See docs/daily-forecasts.md.
 name: Daily dashboard refresh
 
 on:
@@ -19,7 +23,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     env:
       PIO_CONTACT: https://github.com/${{ github.repository }}     # in a fork, the fork's own address
       GH_TOKEN: ${{ github.token }}
@@ -42,11 +46,24 @@ jobs:
       - name: Save the SAM.gov notices posted since the last run (official API; kept private) and update the daily counts
         env:
           SAM_API_KEY: ${{ secrets.SAM_API_KEY }}
+        id: sam
         run: python -I scripts/14_sam_daily_snapshot.py --sync --upload ${{ github.repository == 'e-burress/federal-contract-competition' && '--require-key' || '' }}
+
+      - name: Forecast today's new open solicitations and seal them (forecasts private, fingerprint public)
+        id: forecast
+        if: ${{ !cancelled() && steps.sam.outcome == 'success' }}
+        run: python run.py daily-forecast --fetch-model --upload
 
       - name: Live single-offer table, every civilian agency, this fiscal year so far
         if: ${{ !cancelled() }}
         run: python run.py live
+
+      - name: Score the sealed daily forecasts (totals only; Defense awards are added on Sundays)
+        if: ${{ !cancelled() }}
+        run: |
+          EXTRA=""
+          if [ "$(date -u +%u)" = "7" ]; then EXTRA="--defense"; fi
+          python run.py score-daily --download --upload $EXTRA
 
       - name: Check the threshold forecast (and score it after the resolution date)
         if: ${{ !cancelled() }}
@@ -60,12 +77,22 @@ jobs:
         if: ${{ !cancelled() }}
         run: python run.py explorer
 
-      - name: Check the sealed forecast is unchanged
+      - name: Rebuild the one-page brief
+        if: ${{ !cancelled() }}
+        run: python run.py brief
+
+      - name: Check the sealed forecasts are unchanged
         id: seal
         if: ${{ !cancelled() }}
         run: |
           cd forecasts
           grep PIO-F2 SHA256SUMS.txt | awk '{print $1"  "$2}' | sha256sum -c -
+          cd ..
+          # the daily seal files only ever grow: no earlier line may be changed or removed
+          if git diff -U0 HEAD -- forecasts/daily/SHA256SUMS.txt forecasts/daily/ledger.csv forecasts/daily/seen.txt | grep -q '^-[^-]'; then
+            echo "an earlier line of the daily seal files was changed or removed: nothing is published"
+            exit 1
+          fi
 
       - name: Publish
         if: ${{ !cancelled() && steps.seal.outcome == 'success' }}
@@ -73,6 +100,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add results docs
+          # today's seal is published only if the forecast step finished; otherwise its partial files are dropped
+          if [ "${{ steps.forecast.outcome }}" = "success" ]; then
+            git add forecasts/daily
+          else
+            git checkout -- forecasts/daily 2> /dev/null || true
+            git clean -fdq forecasts/daily
+          fi
           if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
           git commit -m "Daily refresh: $(date -u +%Y-%m-%d)"
           # main may have moved during the run: put this commit on top of it and push, up to 5 tries

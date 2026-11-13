@@ -5,8 +5,9 @@ What it does
   1. Reads the newest daily snapshot of SAM.gov notices, written by 14_sam_daily_snapshot.py: since November 2026
      <DATA>/sam_snapshots/sam_view_<date>.parquet, the notices pulled day by day from SAM.gov's Get Opportunities API (active
      when pulled); before that sam_active_<date>.parquet, SAM.gov's nightly list of active notices.  The snapshot must be at
-     most 2 days old.  A view whose API store began fewer than 30 days (MIN_STORE_DAYS) before it is refused, except in a
-     dry run: before then an amendment of a solicitation posted earlier looks new, with the wrong first posting date.
+     most 2 days old.  While the API store behind a view covers fewer than 30 days (MIN_STORE_DAYS), nothing is forecast:
+     the script says from which day the first batch can be sealed and exits 0 (a dry run still forecasts).  Before then
+     an amendment of a solicitation posted earlier looks new, with the wrong first posting date.
   2. Picks the solicitations to forecast (SELECTION_RULE below):
        - group notices by normalized solicitation number (upper case, letters and digits only); numbers shorter than 8
          characters are skipped, because the outcome rule cannot match them to awards;
@@ -674,10 +675,12 @@ def run(argv=None, paths=None, now=None):
     if first_day is not None and not a.dry_run:
         span = (pd.Timestamp(snap_date) - first_day).days
         if span < MIN_STORE_DAYS:
-            say(f"REFUSED: the SAM.gov notices pulled from the API begin on {first_day.date()}, {span} days before {snap_date}; "
-                f"at least {MIN_STORE_DAYS} days are needed. With fewer, an amendment of a solicitation posted before that day "
-                "looks like a new solicitation, with the wrong first posting date. Nothing was forecast (dry runs are allowed).")
-            return EXIT_REFUSED
+            ready = (first_day + pd.Timedelta(days=MIN_STORE_DAYS)).date()
+            say(f"WAITING: the SAM.gov notices pulled from the API begin on {first_day.date()}, {span} days before {snap_date}; "
+                f"{MIN_STORE_DAYS} days are needed, so the first batch can be sealed from {ready}. With fewer, an amendment of a "
+                "solicitation posted before the first day looks like a new solicitation, with the wrong first posting date. "
+                "Nothing was forecast today (dry runs are allowed).")
+            return 0
     if not os.path.isfile(P["model_path"]):
         if a.fetch_model:
             try:
