@@ -1,0 +1,72 @@
+{
+ "built_utc": "2026-11-13T15:36:09Z",
+ "as_of": "2026-11-13",
+ "what_is_forecast": "p_single_offer: the model's probability that the solicitation's competed award receives exactly one offer, given that it ends in a competed award with a usable offer count. A risk indicator about the market for a requirement, not a statement about anyone's conduct. Baselines: p_sector_rate, p_agency_rate (training-period rates) and p_office_history (the office's shrunk past rate).",
+ "outcome_rule": "For each forecast solicitation number S: look at USAspending base actions (modification 0) of purchase orders, definitive contracts and contract vehicles whose normalized solicitation_identifier equals S and whose action date is on or after the record's deadline_date: the calendar date (UTC) of the response deadline posted when the forecast was made. Offers were due at least a day after the forecast, so an award dated before that day cannot come from those offers (it is an earlier award under the same number). If several match, use the earliest (ties: the larger base-and-all-options value). The forecast is RESOLVED only if that award was competed (extent competed A, D, E, F or CDO) and its number of offers is 1 to 998; outcome = 1 if exactly one offer, else 0. Everything else stays unresolved (no award yet, not competed, offers blank or 999) and is not scored.",
+ "publication_rule": "Scores are published only when at least 20 forecasts have resolved. Calibration bands and sector, month or freshness rows with fewer than 5 resolved forecasts are hidden, and then the next smallest rows too, until at least two rows with at least 5 resolved forecasts together are hidden. A whole table is hidden if combining the shown sector, month and freshness rows would single out fewer than 5 resolved forecasts. The scores are recomputed only when the number of resolved forecasts has changed by at least 5. So no single forecast can be read from this file or from the difference between two days' files.",
+ "award_data": {
+  "civilian": {
+   "source": "USAspending live download of this fiscal year so far (15_civilian_fytd.py)",
+   "files": 1,
+   "matching_base_actions": 0,
+   "action_dates": null
+  },
+  "defense": {
+   "source": "USAspending download of Department of Defense transactions (published 90 days late)",
+   "last_download": null
+  }
+ },
+ "batches": {
+  "sealed": 0,
+  "scored": 0,
+  "missing": 0,
+  "refused": 0,
+  "first_forecast_date": null,
+  "last_forecast_date": null
+ },
+ "n_forecasts": 0,
+ "n_resolved": 0,
+ "resolved_share": null,
+ "unresolved": {
+  "no_matching_award_yet": 0,
+  "award_not_competed": 0,
+  "offers_blank_or_999": 0
+ },
+ "counts_by_sector": [
+  {
+   "sector": "civilian except GSA",
+   "n_forecasts": 0,
+   "n_resolved": 0
+  },
+  {
+   "sector": "GSA",
+   "n_forecasts": 0,
+   "n_resolved": 0
+  },
+  {
+   "sector": "Department of Defense",
+   "n_forecasts": 0,
+   "n_resolved": 0
+  },
+  {
+   "sector": "unknown",
+   "n_forecasts": 0,
+   "n_resolved": 0
+  }
+ ],
+ "counts_by_freshness": [
+  {
+   "group": "fresh",
+   "n_forecasts": 0,
+   "n_resolved": 0
+  },
+  {
+   "group": "backlog",
+   "n_forecasts": 0,
+   "n_resolved": 0
+  }
+ ],
+ "scores_published": false,
+ "scores_note": "0 of 0 forecasts have resolved. Scores are published once at least 20 have resolved (20 more).",
+ "scores": null
+}
