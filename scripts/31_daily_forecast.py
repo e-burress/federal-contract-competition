@@ -676,7 +676,8 @@ def run(argv=None, paths=None, now=None):
         span = (pd.Timestamp(snap_date) - first_day).days
         if span < MIN_STORE_DAYS:
             ready = (first_day + pd.Timedelta(days=MIN_STORE_DAYS)).date()
-            say(f"WAITING: the SAM.gov notices pulled from the API begin on {first_day.date()}, {span} days before {snap_date}; "
+            say(f"WAITING: the SAM.gov notices pulled from the API begin on {first_day.date()}, {span} day{'' if span == 1 else 's'} "
+                f"before {snap_date}; "
                 f"{MIN_STORE_DAYS} days are needed, so the first batch can be sealed from {ready}. With fewer, an amendment of a "
                 "solicitation posted before the first day looks like a new solicitation, with the wrong first posting date. "
                 "Nothing was forecast today (dry runs are allowed).")
