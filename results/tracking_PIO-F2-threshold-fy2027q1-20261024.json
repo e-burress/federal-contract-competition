@@ -1,38 +1,38 @@
 {
  "forecast_id": "PIO-F2-threshold-fy2027q1-20261024",
- "as_of": "2026-11-13",
+ "as_of": "2026-11-14",
  "data_from": "2026-10-01",
- "data_to": "2026-11-12",
+ "data_to": "2026-11-13",
  "period": {
   "start": "2026-10-01",
   "end": "2026-12-31"
  },
  "provisional": true,
- "n_base_actions": 24962,
- "n_values_used": 24962,
+ "n_base_actions": 32002,
+ "n_values_used": 32002,
  "quantities": [
   {
    "name": "bunching_ratio_350K",
    "threshold": 350000,
-   "so_far": 1.548028278550623,
+   "so_far": 1.297919968172256,
    "so_far_95ci": [
-    0.7504995128986975,
-    3.8349190348817843
+    0.5918357168895932,
+    3.137941480095917
    ],
    "forecast": 2.027,
    "interval80": [
     1.395,
     2.659
    ],
-   "inside_interval80_so_far": true
+   "inside_interval80_so_far": false
   },
   {
    "name": "bunching_ratio_250K",
    "threshold": 250000,
-   "so_far": 1.7141037245191157,
+   "so_far": 1.730231089312965,
    "so_far_95ci": [
-    1.1271422856777196,
-    2.5891468840288097
+    1.1370047026667207,
+    2.70599769550367
    ],
    "forecast": 1.229,
    "interval80": [
@@ -44,10 +44,10 @@
   {
    "name": "po_share_10_15K",
    "threshold": 15000,
-   "so_far": 0.34132581100141046,
+   "so_far": 0.3592105263157895,
    "so_far_95ci": [
-    0.307475317348378,
-    0.375916784203103
+    0.33026315789473687,
+    0.3914802631578947
    ],
    "forecast": 0.3607,
    "interval80": [
@@ -60,16 +60,16 @@
  "download_verification": {
   "verified": true,
   "rule": "each file's CSV rows must be within max(5 rows, 0.05 percent) of USAspending's count (search/spending_by_transaction_count) for the same filters and dates",
-  "expected_rows": 37623,
-  "received_rows": 37618,
+  "expected_rows": 45059,
+  "received_rows": 45054,
   "windows": [
    {
     "window": "F2",
     "start": "2026-10-01",
-    "end": "2026-11-12",
+    "end": "2026-11-13",
     "file": "CIVILIAN__F2.zip",
-    "expected_rows": 37623,
-    "received_rows": 37618,
+    "expected_rows": 45059,
+    "received_rows": 45054,
     "verified": true
    }
   ]
