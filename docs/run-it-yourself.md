@@ -6,7 +6,7 @@ You do not need to know how to code. Pick the way that fits you. They go from ea
 
 The dashboard is here: https://e-burress.github.io/federal-contract-competition/
 
-It is updated every morning. Nothing to install.
+It is updated once a day. Nothing to install.
 
 ## 2. One click in your browser (GitHub Codespaces)
 
@@ -25,7 +25,7 @@ GitHub gives personal accounts some free Codespaces hours each month. A quick ru
 
 ## 3. Your own automatic copy (Fork)
 
-You get your own copy of the dashboard that refreshes itself every morning.
+You get your own copy of the dashboard. It refreshes when you start it from the Actions tab (below). To have GitHub run it every day by itself, add a schedule as the comment at the top of `.github/workflows/daily-refresh.yml` explains.
 
 1. Sign in to GitHub and press **Fork** at the top of the repository page.
 2. In your fork, open **Settings**, then **Actions**, and turn Actions on if GitHub asks.

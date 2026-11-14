@@ -810,7 +810,7 @@ def main():
     off_path = os.path.join(RES, f"threshold_resolution_{f2['id']}.json")
     off = json.load(open(off_path, encoding="utf-8")) if os.path.exists(off_path) else None
 
-    # ---- live, refreshed every morning: this fiscal year so far (15_civilian_fytd.py) and today's open solicitations
+    # ---- live, refreshed once a day: this fiscal year so far (15_civilian_fytd.py) and today's open solicitations
     # (14_sam_daily_snapshot.py); each part is left out until its results exist ---------------------------------------
     LIVE_MIN = 50
     live_parts, live_tiles = [], []
@@ -860,7 +860,7 @@ def main():
     live_html = ""
     if live_parts:
         live_html = f"""
-<h2 id="live">Live: updated every morning</h2>
+<h2 id="live">Live: updated once a day</h2>
 <div class="kpis" style="margin-top:0">{''.join(live_tiles)}</div>
 <div class="card" style="margin-top:12px">{''.join(live_parts)}</div>"""
 

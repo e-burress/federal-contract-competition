@@ -596,8 +596,8 @@ def made_items(src):
     if tot and tot[0].get("snapshot"):
         snap = f" Results from one data snapshot, downloaded {nice(tot[0]['snapshot'])}."
     items = [
-        "<b>Data.</b> USAspending.gov (contract awards) and SAM.gov (solicitations): public and free, no key or account needed." + snap,
-        "<b>Reruns by itself.</b> A scheduled job refreshes the daily parts every morning: open solicitations, this fiscal year so "
+        "<b>Data.</b> USAspending.gov (contract awards) and SAM.gov (solicitations): public and free. SAM.gov's daily notices come through its official API, with a free personal key." + snap,
+        "<b>Reruns by itself.</b> A robot refreshes the daily parts once a day: new solicitations, this fiscal year so "
         "far, forecast tracking and the dashboard.",
         "<b>Anyone can rerun it.</b> One command downloads the published data and rebuilds every result, chart and page: "
         "<code>python run.py quick</code>.",

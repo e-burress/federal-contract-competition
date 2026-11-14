@@ -206,7 +206,7 @@ To verify a published forecast file:
 sha256sum forecasts/PIO-F2-threshold-fy2027q1-20261024.json
 ```
 
-<!-- auto:daily-forecasts -->**Daily forecasts.** The daily series is built and tested; the first batch has not been sealed yet. When it starts, a robot will forecast each morning every new open solicitation on SAM.gov: the chance that its competed award gets only one offer, with forecast model version 2. A day's forecasts form one batch. The batch stays private, because it names solicitations and buying offices. Its SHA-256 fingerprint, a row of counts and short hashes of the solicitation numbers are made public in [`forecasts/daily/`](forecasts/daily/) the same morning, before any outcome exists. An award counts only if it is dated on or after the day offers were due. Scores are published as totals only. How it works: [`docs/daily-forecasts.md`](docs/daily-forecasts.md).<!-- /auto:daily-forecasts -->
+<!-- auto:daily-forecasts -->**Daily forecasts.** The daily series is built and tested; the first batch has not been sealed yet. When it starts, a robot will forecast each day every new open solicitation on SAM.gov: the chance that its competed award gets only one offer, with forecast model version 2. A day's forecasts form one batch. The batch stays private, because it names solicitations and buying offices. Its SHA-256 fingerprint, a row of counts and short hashes of the solicitation numbers are made public in [`forecasts/daily/`](forecasts/daily/) the same morning, before any outcome exists. An award counts only if it is dated on or after the day offers were due. Scores are published as totals only. How it works: [`docs/daily-forecasts.md`](docs/daily-forecasts.md).<!-- /auto:daily-forecasts -->
 
 ---
 
@@ -242,7 +242,7 @@ One download serves every FY2024–FY2026 analysis, and the long history (findin
 | 27 | `27_threshold_scan.py` | Pile-ups under every FAR dollar limit, with placebo values and a before-and-after test of each change |
 | 28 | `28_reconcile.py` | Compares our yearly transaction counts and dollars with USAspending's own totals for the same filters |
 | 30 | `30_model_v2.py` | Forecast model version 2, trained on SAM.gov's archive: the model of the daily forecasts |
-| 31, 32 | `31_daily_forecast.py`, `32_score_daily.py` | The daily sealed forecasts: each morning, forecast the new open solicitations and seal the batch (batch private, fingerprint public); later, score them (totals only). See [`docs/daily-forecasts.md`](docs/daily-forecasts.md) |
+| 31, 32 | `31_daily_forecast.py`, `32_score_daily.py` | The daily sealed forecasts: each day, forecast the new open solicitations and seal the batch (batch private, fingerprint public); later, score them (totals only). See [`docs/daily-forecasts.md`](docs/daily-forecasts.md) |
 | 33 | `33_supplier_base.py` | Who wins the awards: companies, new companies, staying and concentration (counts and shares only) |
 | tool | `build_dashboard.py`, `build_explorer.py`, `build_brief.py` | The [public dashboard](https://e-burress.github.io/federal-contract-competition/) (`docs/index.html`), the data behind the explorer (`docs/explorer.html`) and the [one-page brief](https://e-burress.github.io/federal-contract-competition/brief.html) (`docs/brief.html`) |
 | tool | `run.py` (in the repository root) | Runs the steps above in order. See below |
@@ -251,7 +251,7 @@ One download serves every FY2024–FY2026 analysis, and the long history (findin
 
 **Scoring the sealed forecasts.** [`docs/scoring-forecasts.md`](docs/scoring-forecasts.md) explains, for a person and not a programmer, how the daily job scores PIO-F2. No AI is needed or used.
 
-A GitHub Actions job (`.github/workflows/daily-refresh.yml`) runs steps 14, 15 and 13 and the dashboard build every morning and publishes the result. It checks the sealed PIO-F2 fingerprint on every run and never changes the forecast files. The SAM.gov notices pulled through SAM.gov's API are kept in a draft (non-public) release of this repository; the daily counts in `results/sam_new_notices.csv` are public.
+A GitHub Actions job (`.github/workflows/daily-refresh.yml`) runs steps 14, 31, 15, 32 and 13 and rebuilds the pages once a day, and publishes the result. It is started by the owner's computer the first time it is on that day, or by hand from the Actions tab. It checks the sealed PIO-F2 fingerprint on every run and never changes the forecast files. The SAM.gov notices pulled through SAM.gov's API are kept in a draft (non-public) release of this repository; the daily counts in `results/sam_new_notices.csv` are public.
 
 Details, definitions and data-quality notes are in [`docs/methodology.md`](docs/methodology.md).
 

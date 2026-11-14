@@ -1470,7 +1470,7 @@ def daily_text(guide, folder, method=True):
            f"How it works: [`docs/daily-forecasts.md`]({guide}).")
     if not led:
         return ("**Daily forecasts.** The daily series is built and tested; the first batch has not been sealed yet."
-                + (f" When it starts, a robot will forecast each morning {what} {how}" if method else ""))
+                + (f" When it starts, a robot will forecast each day {what} {how}" if method else ""))
     k = sum(x[1] for x in led)
     fresh = [x[2] for x in led if x[2] is not None]
     txt = ("**Daily forecasts.** " + (f"Each morning a robot forecasts {what} {how} " if method else "")

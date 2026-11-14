@@ -2,7 +2,9 @@
 
 This guide is for a person, not a programmer. No AI is used anywhere in these steps.
 
-## What happens each morning
+## What happens each day
+
+The robot runs once a day: the owner's computer starts it the first time it is on that day.
 
 1. The robot saves the notices SAM.gov posted the day before, through SAM.gov's official API (`scripts/14_sam_daily_snapshot.py`; it needs a free personal API key, see [`sam-api-key.md`](sam-api-key.md)).
 2. It picks the **new** open solicitations (`scripts/31_daily_forecast.py`). A solicitation is picked when:

@@ -1,16 +1,17 @@
-# Every morning: save the notices SAM.gov posted the day before (its official API, with the owner's key), forecast each NEW open solicitation's chance of getting only one
+# Once a day: save the notices SAM.gov posted the day before (its official API, with the owner's key), forecast each NEW open solicitation's chance of getting only one
 # offer and seal the day's forecasts (the forecasts stay private; their fingerprint is published), update the live single-offer
 # table for every civilian agency, score the earlier daily forecasts whose awards are now known (totals only), check how the
 # sealed threshold forecast (PIO-F2) is tracking, rebuild the pages, and publish.
 # After the resolution date (Feb 28, 2027) the same run produces F2's official score once.
-# The sealed forecast files are never changed. Run it by hand from the Actions tab ("Run workflow").
+# The sealed forecast files are never changed.
+# No fixed schedule: it is started by a scheduled task on the owner's computer the first time the computer is on each day
+# (once a day), or by hand from the Actions tab ("Run workflow").  In a fork, to have GitHub run it every day by itself,
+# add under "on:"   schedule:   - cron: "0 12 * * *"   (12:00 UTC).
 # The daily forecasts need the private model file (a draft release named model-v2). Without it, in a fork for example,
 # the forecast step says so and stops, and the rest of the run goes on.  See docs/daily-forecasts.md.
 name: Daily dashboard refresh
 
 on:
-  schedule:
-    - cron: "0 12 * * *"     # every day 12:00 UTC (7 AM Eastern in winter, 8 AM in summer); the day before is then over in every US time zone
   workflow_dispatch:
 
 permissions:
