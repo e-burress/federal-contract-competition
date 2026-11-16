@@ -1,38 +1,38 @@
 {
  "forecast_id": "PIO-F2-threshold-fy2027q1-20261024",
- "as_of": "2026-11-15",
+ "as_of": "2026-11-16",
  "data_from": "2026-10-01",
- "data_to": "2026-11-14",
+ "data_to": "2026-11-15",
  "period": {
   "start": "2026-10-01",
   "end": "2026-12-31"
  },
  "provisional": true,
- "n_base_actions": 32002,
- "n_values_used": 32002,
+ "n_base_actions": 32311,
+ "n_values_used": 32311,
  "quantities": [
   {
    "name": "bunching_ratio_350K",
    "threshold": 350000,
-   "so_far": 1.2979199681722569,
+   "so_far": 1.6629420187618524,
    "so_far_95ci": [
-    0.5651928752512063,
-    2.9687911240125957
+    0.853263765199784,
+    4.2831113120289235
    ],
    "forecast": 2.027,
    "interval80": [
     1.395,
     2.659
    ],
-   "inside_interval80_so_far": false
+   "inside_interval80_so_far": true
   },
   {
    "name": "bunching_ratio_250K",
    "threshold": 250000,
-   "so_far": 1.7302310893129633,
+   "so_far": 1.7669564002231306,
    "so_far_95ci": [
-    1.16831096942196,
-    2.84972708136608
+    1.2658617504113996,
+    2.814773245720102
    ],
    "forecast": 1.229,
    "interval80": [
@@ -44,10 +44,10 @@
   {
    "name": "po_share_10_15K",
    "threshold": 15000,
-   "so_far": 0.3592105263157895,
+   "so_far": 0.36086404066073696,
    "so_far_95ci": [
-    0.33026315789473687,
-    0.3914802631578947
+    0.33163913595933925,
+    0.3945679796696315
    ],
    "forecast": 0.3607,
    "interval80": [
@@ -60,16 +60,16 @@
  "download_verification": {
   "verified": true,
   "rule": "each file's CSV rows must be within max(5 rows, 0.05 percent) of USAspending's count (search/spending_by_transaction_count) for the same filters and dates",
-  "expected_rows": 45059,
-  "received_rows": 45054,
+  "expected_rows": 45864,
+  "received_rows": 45859,
   "windows": [
    {
     "window": "F2",
     "start": "2026-10-01",
-    "end": "2026-11-14",
+    "end": "2026-11-15",
     "file": "CIVILIAN__F2.zip",
-    "expected_rows": 45059,
-    "received_rows": 45054,
+    "expected_rows": 45864,
+    "received_rows": 45859,
     "verified": true
    }
   ]

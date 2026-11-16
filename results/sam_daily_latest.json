@@ -1,13 +1,13 @@
 {
  "schema": 2,
  "source": "SAM.gov Get Opportunities Public API v2 (api.sam.gov), with a personal API key",
- "built_utc": "2026-11-15T05:00:56Z",
- "through": "2026-11-14",
+ "built_utc": "2026-11-16T19:47:08Z",
+ "through": "2026-11-15",
  "window": {
-  "from": "2026-11-08",
-  "to": "2026-11-14",
+  "from": "2026-11-09",
+  "to": "2026-11-15",
   "days": 7,
-  "days_pulled": 3
+  "days_pulled": 4
  },
  "solicitation_types": [
   "Solicitation",
@@ -16,24 +16,24 @@
  "solicitation_notices_posted": {
   "definition": "notices of a solicitation type posted on the days of the window (new solicitations and amendments); distinct_sol_numbers counts each solicitation number once",
   "all": {
-   "notices": 1520,
-   "distinct_sol_numbers": 1499
+   "notices": 1909,
+   "distinct_sol_numbers": 1887
   },
   "civilian": {
-   "notices": 353,
-   "distinct_sol_numbers": 341
+   "notices": 356,
+   "distinct_sol_numbers": 344
   },
   "dod": {
-   "notices": 1167,
-   "distinct_sol_numbers": 1158
+   "notices": 1553,
+   "distinct_sol_numbers": 1543
   },
   "dod_department_label": "DEPT OF DEFENSE"
  },
  "top10_civilian_departments": [
   {
    "department": "VETERANS AFFAIRS, DEPARTMENT OF",
-   "distinct_sol_numbers": 70,
-   "notices": 74
+   "distinct_sol_numbers": 72,
+   "notices": 76
   },
   {
    "department": "JUSTICE, DEPARTMENT OF",
@@ -62,8 +62,8 @@
   },
   {
    "department": "STATE, DEPARTMENT OF",
-   "distinct_sol_numbers": 17,
-   "notices": 18
+   "distinct_sol_numbers": 18,
+   "notices": 19
   },
   {
    "department": "TRANSPORTATION, DEPARTMENT OF",
@@ -82,22 +82,21 @@
   }
  ],
  "newest_day": {
-  "date": "2026-11-14",
-  "notices_all_types": 16,
+  "date": "2026-11-15",
+  "notices_all_types": 394,
   "by_type": {
-   "Presolicitation": 5,
-   "Combined Synopsis/Solicitation": 5,
-   "Sources Sought": 2,
-   "Award Notice": 2,
-   "Justification": 1,
-   "Solicitation": 1
+   "Combined Synopsis/Solicitation": 382,
+   "Solicitation": 7,
+   "Special Notice": 3,
+   "Sources Sought": 1,
+   "Award Notice": 1
   }
  },
  "store": {
   "first_day": "2026-11-12",
-  "days_finished": 3,
+  "days_finished": 4,
   "days_short": [],
-  "notices": 2410
+  "notices": 2804
  },
  "requests": {
   "this_run": 1,
