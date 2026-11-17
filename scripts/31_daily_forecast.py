@@ -1,5 +1,5 @@
 """
-31_daily_forecast.py - every morning: forecast each NEW open solicitation's chance of getting only ONE offer, and SEAL the batch.
+31_daily_forecast.py - once a day: forecast each NEW open solicitation's chance of getting only ONE offer, and SEAL the batch.
 
 What it does
   1. Reads the newest daily snapshot of SAM.gov notices, written by 14_sam_daily_snapshot.py: since November 2026

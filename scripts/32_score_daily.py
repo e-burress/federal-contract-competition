@@ -13,7 +13,7 @@ What it does
      then 09_resolve_forecast.resolve is used as it is.  Why the date floor:
      offers were due at least a day after each daily forecast, so an earlier award under the same number
      cannot come from them.  Award transactions come from:
-       civilian  <DATA>/usaspending_live/*.zip, filled every morning by 15_civilian_fytd.py (this fiscal year so far; the files
+       civilian  <DATA>/usaspending_live/*.zip, filled once a day by 15_civilian_fytd.py (this fiscal year so far; the files
                  carry solicitation_identifier and modification_number).  Used only when 15's record of the download
                  (download_check.json) says every file matched USAspending's own count; otherwise nothing is scored (exit 4).
        Defense   only with --defense: Department of Defense transactions downloaded for the months since the oldest Defense

@@ -206,7 +206,7 @@ To verify a published forecast file:
 sha256sum forecasts/PIO-F2-threshold-fy2027q1-20261024.json
 ```
 
-<!-- auto:daily-forecasts -->**Daily forecasts.** The daily series is built and tested; the first batch has not been sealed yet. When it starts, a robot will forecast each day every new open solicitation on SAM.gov: the chance that its competed award gets only one offer, with forecast model version 2. A day's forecasts form one batch. The batch stays private, because it names solicitations and buying offices. Its SHA-256 fingerprint, a row of counts and short hashes of the solicitation numbers are made public in [`forecasts/daily/`](forecasts/daily/) the same morning, before any outcome exists. An award counts only if it is dated on or after the day offers were due. Scores are published as totals only. How it works: [`docs/daily-forecasts.md`](docs/daily-forecasts.md).<!-- /auto:daily-forecasts -->
+<!-- auto:daily-forecasts -->**Daily forecasts.** The daily series is built and tested; the first batch has not been sealed yet. When it starts, a robot will forecast each day every new open solicitation on SAM.gov: the chance that its competed award gets only one offer, with forecast model version 2. A day's forecasts form one batch. The batch stays private, because it names solicitations and buying offices. Its SHA-256 fingerprint, a row of counts and short hashes of the solicitation numbers are made public in [`forecasts/daily/`](forecasts/daily/) the same day, before any outcome exists. An award counts only if it is dated on or after the day offers were due. Scores are published as totals only. How it works: [`docs/daily-forecasts.md`](docs/daily-forecasts.md).<!-- /auto:daily-forecasts -->
 
 ---
 
@@ -273,7 +273,7 @@ With [uv](https://docs.astral.sh/uv/), one line installs the right Python and pa
 | `python run.py all` | Rebuilds everything from the government sources. Slow, mostly waiting on downloads |
 | `python run.py verify` | Compares your results with the published ones |
 | `python run.py test` | Runs the offline tests |
-| `python run.py daily` | The morning refresh: SAM.gov snapshot, this fiscal year so far, forecast tracking, dashboard |
+| `python run.py daily` | The daily refresh: SAM.gov snapshot, this fiscal year so far, forecast tracking, dashboard |
 | `python run.py history` | Downloads the yearly tables of the long history (FY2008 onward) and rebuilds findings 4 to 11. Then `python run.py report` writes their numbers into this README |
 | `python run.py reconcile` | Compares our yearly totals with USAspending's own totals (needs the history tables and the internet) |
 | `python run.py brief` | Rebuilds the one-page brief (`docs/brief.html`) |

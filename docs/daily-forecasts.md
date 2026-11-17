@@ -13,7 +13,7 @@ The robot runs once a day: the owner's computer starts it the first time it is o
    - its number has at least 8 letters and digits (shorter numbers cannot be matched to awards);
    - it has never been forecast before. Each solicitation gets one forecast, the first time it is seen.
 3. The forecast model (version 2, `scripts/forecast_lib.py`) gives each one the chance that its competed award gets only one offer. Three simple baselines are stored next to it: the sector's past rate, the agency's past rate, and the buying office's past rate.
-4. The day's forecasts are written to one private batch file, `PIO-D-<YYYYMMDD>.json`. Its SHA-256 fingerprint, a row of counts (including how many forecasts are "fresh", see below) and short hashes of the solicitation numbers go to the public folder [`forecasts/daily/`](../forecasts/daily/). The robot commits them the same morning. That is the seal.
+4. The day's forecasts are written to one private batch file, `PIO-D-<YYYYMMDD>.json`. Its SHA-256 fingerprint, a row of counts (including how many forecasts are "fresh", see below) and short hashes of the solicitation numbers go to the public folder [`forecasts/daily/`](../forecasts/daily/). The robot commits them the same day. That is the seal.
 5. The scoring step (`scripts/32_score_daily.py`) checks which forecasts have an award yet and updates `results/daily_forecast_scores.json`.
 
 The model refuses to forecast if its award history is more than 9 months old. Retrain it first (`python run.py model`).

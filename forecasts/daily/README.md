@@ -1,6 +1,6 @@
 # Daily sealed forecasts
 
-Every morning the robot forecasts each **new** open federal solicitation on SAM.gov: the chance that its competed award gets **only one offer**. Each day's forecasts form one batch, `PIO-D-<YYYYMMDD>.json`. The batch is sealed the same morning, before any outcome exists. The forecasts are scored in public once the awards appear on USAspending.
+Once a day, the robot forecasts each **new** open federal solicitation on SAM.gov: the chance that its competed award gets **only one offer**. Each day's forecasts form one batch, `PIO-D-<YYYYMMDD>.json`. The batch is sealed the same day, before any outcome exists. The forecasts are scored in public once the awards appear on USAspending.
 
 A high forecast is a risk indicator about the market for a purchase. It is not an accusation against anyone.
 

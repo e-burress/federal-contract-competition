@@ -1465,7 +1465,7 @@ def daily_text(guide, folder, method=True):
             "version 2.")
     how = (f"A day's forecasts form one batch. The batch "
            f"stays private, because it names solicitations and buying offices. Its SHA-256 fingerprint, a row of counts and short hashes "
-           f"of the solicitation numbers are made public in [`forecasts/daily/`]({folder}) the same morning, before any outcome exists. "
+           f"of the solicitation numbers are made public in [`forecasts/daily/`]({folder}) the same day, before any outcome exists. "
            f"An award counts only if it is dated on or after the day offers were due. Scores are published as totals only. "
            f"How it works: [`docs/daily-forecasts.md`]({guide}).")
     if not led:
@@ -1473,7 +1473,7 @@ def daily_text(guide, folder, method=True):
                 + (f" When it starts, a robot will forecast each day {what} {how}" if method else ""))
     k = sum(x[1] for x in led)
     fresh = [x[2] for x in led if x[2] is not None]
-    txt = ("**Daily forecasts.** " + (f"Each morning a robot forecasts {what} {how} " if method else "")
+    txt = ("**Daily forecasts.** " + (f"Once a day, a robot forecasts {what} {how} " if method else "")
            + f"So far: {n(len(led))} {'batch' if len(led) == 1 else 'batches'} holding {n(k)} "
            f"{'forecast' if k == 1 else 'forecasts'}, the first on {long_date(led[0][0])}"
            + (f"; {n(sum(fresh))} of them fresh (first posted at most 3 days before the forecast)" if len(fresh) == len(led) else "") + ".")

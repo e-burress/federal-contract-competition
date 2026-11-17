@@ -4,7 +4,7 @@ run.py - run the whole project with one command. Plain Python; no AI is involved
   python run.py check     check Python, the packages and the folders (add --online to test the data sources too)
   python run.py quick     download the published data snapshot, then rebuild every result, chart and the dashboard (minutes)
   python run.py all       rebuild everything from the government sources (about an hour, mostly waiting on downloads)
-  python run.py daily     the morning refresh: SAM.gov snapshot, this fiscal year so far, forecast tracking, dashboard
+  python run.py daily     the daily refresh: SAM.gov snapshot, this fiscal year so far, forecast tracking, dashboard
   python run.py history   download the yearly tables of the long history (FY2008 onward) and rebuild its results
   python run.py verify    compare your results with the published ones (after quick or all)
   python run.py test      run the automatic tests (offline, seconds)

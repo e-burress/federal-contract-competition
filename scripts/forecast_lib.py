@@ -4,7 +4,7 @@ forecast_lib.py - the shared core of forecast model version 2: the chance that a
 Nothing runs when this file is imported.  Training (scripts/30_model_v2.py) and daily scoring use the same functions, so a
 feature means the same thing in both.  Scoring needs only numpy, pandas and the saved model file.
 
-THE DAILY JOB (score this morning's new solicitations)
+THE DAILY JOB (score each day's new solicitations)
     import forecast_lib as fl
     model = fl.load_model(path)                               # <DATA>/models/model_v2.json (private: it holds office history)
     feats = fl.build_features(sols, model["history"], as_of="2026-11-10")

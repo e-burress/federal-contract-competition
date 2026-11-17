@@ -107,7 +107,7 @@ Type these after `python run.py` (or after `uv run run.py`).
 | `check` | Checks your Python, packages and folders. | Seconds |
 | `quick` | Downloads the published data snapshot from a public GitHub release and rebuilds every result, chart and the dashboard. | Minutes |
 | `all` | Full rebuild from the government sources. Mostly waiting on downloads. | About an hour |
-| `daily` | The morning refresh that the automatic copy runs. | Minutes |
+| `daily` | The daily refresh that the automatic copy runs. | Minutes |
 | `verify` | Compares your results with the published ones. | Seconds |
 | `test` | Offline tests. | Seconds |
 | `steps` | Lists all the steps. | Instant |

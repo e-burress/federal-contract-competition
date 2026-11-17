@@ -1,5 +1,5 @@
 """
-14_sam_daily_snapshot.py - every morning: save the SAM.gov notices posted on each new day, from SAM.gov's official API.
+14_sam_daily_snapshot.py - once a day: save the SAM.gov notices posted on each new day, from SAM.gov's official API.
 
 This script uses only SAM.gov's documented Get Opportunities Public API (version 2) with a free personal API key.  SAM.gov's
 Terms of Use (https://sam.gov/about/terms-of-use) name its APIs and the extracts on its Data Services page as the ways to get
