@@ -22,14 +22,22 @@ The key
 Daily budget
   A personal key of a non-federal user with no role in SAM.gov allows 10 requests a day (GSA's table on open.gsa.gov).  This
   script makes at most --max-requests (default 6) per run and leaves the rest for checks by hand.  SAM.gov posted 12 to 1,678
-  notices a day (all types) between October 20 and November 8, 2026, so one day costs 1 or 2 requests.  Run the step in ONE
-  place, the robot or your computer: both spend the same 10 requests.
+  notices a day (all types) between October 20 and November 8, 2026, so one day costs 1 or 2 requests, and a day pulled a
+  second time (step 2) costs the same again.  Run the step in ONE place, the robot or your computer: both spend the same 10
+  requests.
 
 What it does
   1. With --sync, merges in the store of notices pulled so far from the DRAFT (not public) GitHub release sam-api-store.
   2. Days to pull: every day not yet finished, from the first day in results/sam_api_pulls.csv (or --start, or yesterday when
      the log is empty) through yesterday, oldest first, at most --max-days, never more than 60 days back.  "Yesterday" is
      SAM.gov's calendar day, taken as UTC-5.  Today is never pulled: it is not over.
+     Pulled a second time: a complete day whose latest pull started less than 7 hours (SETTLE) after the day ended, that
+     is before 12:00 UTC the next day (7 a.m. Eastern in winter, 8 a.m. in summer), is pulled once more by the first run
+     after that time, in date order with the other days.  The robot can run right after midnight, and SAM.gov's API may
+     list a notice some time after it was posted: without the second pull such a notice would be missed for good, and a
+     later amendment of it would look like a new solicitation.  The second pull is merged with the first (a notice id in
+     both keeps the newer copy) and has its own row in the log.  It is a pull like any other: if it is cut short, the day
+     counts as unfinished until a later run pulls it in full (the notices already in the store stay).
   3. Each day: postedFrom = postedTo = the day, 1,000 notices per page.  A day is complete when the distinct notice ids
      received reach the API's totalRecords.  A day cut short by the request budget is pulled again in full next time.  A day
      that falls short for another reason twice (or that would need more requests than one run may make) is kept as "short",
@@ -88,6 +96,7 @@ MAX_BACK_DAYS = 60                 # never pull a day older than this
 VIEW_DAYS = 400                    # the forecast view holds notices posted in this many days
 KEEP_VIEWS = 2
 SAM_DAY_OFFSET = timedelta(hours=-5)    # SAM.gov's calendar day, taken as US Eastern standard time
+SETTLE = timedelta(hours=7)        # a day pulled sooner than this after it ended is pulled once more later (12:00 UTC)
 TIMEOUT = 120
 PAUSE = 1.0                        # seconds between requests
 
@@ -449,6 +458,31 @@ def days_to_pull(pulls, yesterday, start=None, max_days=30):
     return out[:max_days], gap
 
 
+def day_end_utc(day):
+    """the moment SAM.gov's calendar day `day` ends (midnight, taken as UTC-5), as a naive UTC datetime"""
+    return datetime.combine(day + timedelta(days=1), datetime.min.time()) - SAM_DAY_OFFSET
+
+
+def days_to_pull_again(pulls, now, yesterday):
+    """complete days whose latest pull started less than SETTLE after the day ended, once SETTLE has passed by `now` (a naive
+    UTC datetime); oldest first, at most MAX_BACK_DAYS back.  A pull that started later ends this, so each day is pulled a
+    second time once.  A pull time that cannot be read counts as late (no request is spent on a guess)."""
+    latest = {}
+    for d, t, s in zip(pulls["posted_day"], pulls["pulled_utc"], pulls["status"]):
+        latest[date.fromisoformat(d)] = (s, t)            # the log is in time order: the last row of a day is its latest pull
+    floor = yesterday - timedelta(days=MAX_BACK_DAYS)
+    out = []
+    for day, (s, t) in sorted(latest.items()):
+        try:
+            pulled = datetime.strptime(t, "%Y-%m-%dT%H:%M:%SZ")
+        except (TypeError, ValueError):
+            continue
+        settled = day_end_utc(day) + SETTLE
+        if s == "complete" and day >= floor and pulled < settled <= now:
+            out.append(day)
+    return out
+
+
 def update_new_csv(store, days):
     """replace the rows of `days` in results/sam_new_notices.csv"""
     keep = set(pd.Timestamp(d) for d in days)
@@ -653,6 +687,7 @@ def run(argv=None, now=None, get=None):
         return 0
     now = pd.Timestamp(now or datetime.now(timezone.utc))
     now = now.tz_localize("UTC") if now.tzinfo is None else now.tz_convert("UTC")
+    started = time.monotonic()                           # the log's pull times: `now` plus the time this run has taken
     yesterday = (now.tz_localize(None) + SAM_DAY_OFFSET).date() - timedelta(days=1)
 
     if a.check:
@@ -675,18 +710,28 @@ def run(argv=None, now=None, get=None):
     pulls = read_pulls()
     start = date.fromisoformat(a.start) if a.start else None
     days, gap = days_to_pull(pulls, yesterday, start, a.max_days)
+    again = days_to_pull_again(pulls, now.tz_localize(None).to_pydatetime(), yesterday)
+    days = sorted(set(days) | set(again))[:a.max_days]
     warnings = []
     if gap:
         warnings.append(f"days more than {MAX_BACK_DAYS} days before {yesterday} were never finished and are not pulled any more")
     if not days:
         say(f"Nothing to pull: every day through {yesterday} is done.")
+    for day in again:
+        if day in days:
+            say(f"{day} was pulled less than {SETTLE.total_seconds() / 3600:g} hours after it ended: it is due to be pulled once "
+                "more, for notices SAM.gov's API listed late.")
 
     budget, mode, st = Budget(a.max_requests), known_mode(pulls), day_status(pulls)
-    frames, log_rows, finished, stop = [], [], [], None
+    fell_short = {}                                      # earlier pulls of each day that did not end complete
+    for d, s in zip(pulls["posted_day"], pulls["status"]):
+        if s != "complete":
+            fell_short[date.fromisoformat(d)] = fell_short.get(date.fromisoformat(d), 0) + 1
+    frames, log_rows, finished, stop, known = [], [], [], None, None
     for day in days:
         attempt = st.get(day, (None, 0))[1] + 1
         before = budget.used
-        pulled_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        pulled_utc = (now + pd.Timedelta(seconds=time.monotonic() - started)).strftime("%Y-%m-%dT%H:%M:%SZ")
         recs, total, reason, err = {}, None, None, None
         try:
             recs, total, found, reason = pull_day(key, day, budget, mode, get)
@@ -707,8 +752,8 @@ def run(argv=None, now=None, get=None):
             status = "complete"
         elif err is None and reason == "too-big":
             status = "short"
-        elif err is None and reason in ("empty-page", "pages-exhausted") and attempt >= MAX_ATTEMPTS:
-            status = "short"
+        elif err is None and reason in ("empty-page", "pages-exhausted") and fell_short.get(day, 0) + 1 >= MAX_ATTEMPTS:
+            status = "short"                              # a complete first pull does not count: a second pull tries twice too
         else:
             status = "incomplete"
         if recs:
@@ -717,7 +762,12 @@ def run(argv=None, now=None, get=None):
                          "total_records": "" if total is None else str(total), "notices_received": str(len(recs)),
                          "status": status, "offset_mode": mode or ""})
         shortfall = "" if total is None or len(recs) >= total else f" ({total - len(recs):,} short)"
-        say(f"{day}: {len(recs):,} notices of {'?' if total is None else f'{total:,}'} in {used} request(s): {status}{shortfall}"
+        news = ""
+        if day in again and recs:
+            known = set(store["notice_id"].dropna()) if known is None else known      # the store as it was before this run
+            news = f"; {sum(1 for i in recs if i not in known):,} not in the store before"
+        say(f"{day}{' (pulled again)' if day in again else ''}: {len(recs):,} notices of "
+            f"{'?' if total is None else f'{total:,}'} in {used} request(s): {status}{shortfall}{news}"
             + (f" - {err}" if err else ""))
         if status in FINISHED:
             finished.append(day)

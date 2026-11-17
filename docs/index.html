@@ -69,7 +69,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
 <div class="tablewrap"><table class="sortable">
   <thead><tr><th>Civilian department</th><th>Solicitations</th></tr></thead>
   <tbody><tr><td>Veterans Affairs</td><td data-v='72'>72</td></tr><tr><td>Justice</td><td data-v='65'>65</td></tr><tr><td>Homeland Security</td><td data-v='42'>42</td></tr><tr><td>Interior</td><td data-v='35'>35</td></tr><tr><td>Agriculture</td><td data-v='19'>19</td></tr><tr><td>Energy</td><td data-v='18'>18</td></tr><tr><td>State</td><td data-v='18'>18</td></tr><tr><td>Transportation</td><td data-v='15'>15</td></tr><tr><td>National Aeronautics and Space Administration</td><td data-v='14'>14</td></tr><tr><td>General Services Administration</td><td data-v='11'>11</td></tr></tbody></table></div>
-<p class="note">Distinct solicitation numbers with a solicitation notice posted on these days, new or amended, from SAM.gov's official Get Opportunities API. Defense solicitations are public right away, even though Defense awards are published 90 days late.</p></div>
+<p class="note">Distinct solicitation numbers with a solicitation notice posted on these days, new or amended, from SAM.gov's official Get Opportunities API. A day collected less than 7 hours after it ended is collected once more by a later run, in case the API listed some of its notices late, so the newest days can still gain notices. Defense solicitations are public right away, even though Defense awards are published 90 days late.</p></div>
 
 <h2 class="num" id="threshold">1. When the threshold moved, the pile-up moved</h2>
 <div class="card">
@@ -135,7 +135,7 @@ footer { margin-top:40px; color:var(--muted); font-size:.88rem; }
   </tbody></table></div>
   <p class="note">Both forecasts were sealed on Oct 24, 2026, before any outcome existed. Fingerprints (SHA-256): PIO-F1 <code>a8d1bb3319bf2fc1439550ee99c971742408a99a4772db426b26dec15f0657d2</code> · PIO-F2 <code>5a7009ba0f17e953bd1fea32d2b7fe9241a849b85222266506c5312e4790c43b</code>. PIO-F2 is <a href="https://github.com/e-burress/federal-contract-competition/blob/main/forecasts/PIO-F2-threshold-fy2027q1-20261024.json">published in full</a>; PIO-F1 was withdrawn and will not be scored.</p>
 </div>
-<div class="card" style="margin-top:12px"><p class="note" style="margin:0"><b>Daily forecasts.</b> A daily series of sealed forecasts, one for each new open solicitation, is built and tested; the first batch has not been sealed yet (<a href="https://github.com/e-burress/federal-contract-competition/blob/main/docs/daily-forecasts.md">how it works</a>).</p></div>
+<div class="card" style="margin-top:12px"><p class="note" style="margin:0"><b>Daily forecasts.</b> A daily series of sealed forecasts, one for each new open solicitation, is built and tested; the first batch has not been sealed yet. It can be sealed from Dec 12, 2026, once the SAM.gov notices collected since Nov 12, 2026 cover 30 days (<a href="https://github.com/e-burress/federal-contract-competition/blob/main/docs/daily-forecasts.md">how it works</a>).</p></div>
 
 <h2 class="num" id="tracking">13. Forecast progress (updated daily)</h2>
 <div class="card"><div class="tablewrap"><table>

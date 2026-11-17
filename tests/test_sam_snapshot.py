@@ -1,6 +1,7 @@
 """Offline tests for scripts/14_sam_daily_snapshot.py (SAM.gov's Get Opportunities API).  No request leaves the computer: a fake
 API answers in-process, and a made-up key is used.  Checked: the field whitelist, the department / sub-tier / office split, the
-paging (page index or record offset), the request budget, the day log, the outputs, and that the key is never printed or saved."""
+paging (page index or record offset), the request budget, the day log, the outputs, the second pull of a day pulled right after
+it ended, and that the key is never printed or saved."""
 import contextlib
 import glob
 import importlib.util
@@ -11,7 +12,7 @@ import shutil
 import sys
 import tempfile
 import unittest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from unittest import mock
 
 import pandas as pd
@@ -25,6 +26,8 @@ _spec.loader.exec_module(sam)
 KEY = "TESTKEY0123456789abcdefSECRET"
 NOW = pd.Timestamp("2026-11-12 12:00", tz="UTC")           # SAM.gov's yesterday: 2026-11-11
 YESTERDAY = date(2026, 11, 11)
+MIDNIGHT = pd.Timestamp("2026-11-15 05:00:12", tz="UTC")   # 00:00:12 Eastern (standard time) on Nov 15, as robot run 43679152661
+NOV14, NOV15, NOV16 = date(2026, 11, 14), date(2026, 11, 15), date(2026, 11, 16)
 
 
 def record(i, day, typ="Solicitation", dept="VETERANS AFFAIRS, DEPARTMENT OF", path=None, codes=None, sol=None):
@@ -287,6 +290,125 @@ class RunTests(Paths):
             self.assertNotIn(secret, out)
         self.assertFalse(os.path.exists(os.path.join(self.tmp, "results")))
         self.assertFalse(os.path.exists(os.path.join(self.tmp, "data")))
+
+
+class PullAgainRule(unittest.TestCase):
+    """which days are pulled a second time: complete days whose latest pull started before 12:00 UTC the next day"""
+
+    def test_a_day_ends_at_05_utc_and_settles_at_12_utc(self):
+        self.assertEqual(sam.day_end_utc(NOV14), datetime(2026, 11, 15, 5, 0))
+        self.assertEqual(sam.day_end_utc(NOV14) + sam.SETTLE, datetime(2026, 11, 15, 12, 0))
+
+    def test_which_days_are_pulled_again(self):
+        def log(*rows):
+            return pd.DataFrame([[d, t, "1", "1", "5", "5", s, "page"] for d, t, s in rows], columns=sam.PULL_COLS)
+        pulls = log(("2026-09-01", "2026-09-02T05:00:00Z", "complete"),    # early, but more than 60 days back
+                    ("2026-11-10", "not a time", "complete"),               # an unreadable time is left alone
+                    ("2026-11-12", "2026-11-13T11:59:59Z", "complete"),     # one second before 12:00 UTC: early
+                    ("2026-11-13", "2026-11-14T12:00:00Z", "complete"),     # at 12:00 UTC: settled
+                    ("2026-11-14", "2026-11-15T05:00:53Z", "short"),        # short days are not pulled again
+                    ("2026-11-15", "2026-11-16T05:00:10Z", "complete"))     # early; settles at 12:00 UTC on Nov 16
+        self.assertEqual(sam.days_to_pull_again(pulls, datetime(2026, 11, 16, 11, 59), NOV15), [date(2026, 11, 12)])
+        self.assertEqual(sam.days_to_pull_again(pulls, datetime(2026, 11, 16, 12, 0), NOV15), [date(2026, 11, 12), NOV15])
+        later = pd.concat([pulls, log(("2026-11-12", "2026-11-16T12:00:05Z", "complete"))], ignore_index=True)
+        self.assertEqual(sam.days_to_pull_again(later, datetime(2026, 11, 16, 12, 0), NOV15), [NOV15])   # once only
+        cut = pd.concat([pulls, log(("2026-11-15", "2026-11-16T12:00:05Z", "incomplete"))], ignore_index=True)
+        self.assertEqual(sam.days_to_pull_again(cut, datetime(2026, 11, 16, 13, 0), NOV15), [date(2026, 11, 12)])
+        self.assertEqual(sam.days_to_pull_again(pd.DataFrame(columns=sam.PULL_COLS), datetime(2026, 11, 16), NOV15), [])
+
+
+class PullAgainRuns(Paths):
+    """A run right after midnight pulls the day that just ended; the first run from 12:00 UTC on pulls it once more, so a
+    notice that SAM.gov's API listed late still reaches the store (and the forecast step) with its own posting date."""
+
+    def test_a_day_pulled_right_after_midnight_is_pulled_once_more_and_merged(self):
+        fake = FakeApi({NOV14: 16})                                            # the 17th notice is not listed yet
+        code, out = self.run_script(fake, now=MIDNIGHT)
+        self.assertEqual((code, [c[0] for c in fake.calls]), (0, [NOV14]))
+        self.assertRegex(self.pulls()["pulled_utc"].iloc[0], r"^2026-11-15T05:00:1\dZ$")   # the run's clock
+        fake = FakeApi({NOV14: 17})
+        code, out = self.run_script(fake, now=MIDNIGHT + pd.Timedelta(hours=4))          # 04:00 Eastern: too soon
+        self.assertEqual((code, fake.calls), (0, []))
+        self.assertIn("Nothing to pull", out)
+        fake = FakeApi({NOV14: 17, NOV15: 5})
+        code, out = self.run_script(fake, now=MIDNIGHT + pd.Timedelta(days=1))           # the next midnight
+        self.assertEqual(code, 0)
+        self.assertEqual([c[0] for c in fake.calls], [NOV14, NOV15])                     # in date order
+        self.assertIn("2026-11-14 was pulled less than 7 hours after it ended: it is due to be pulled once more", out)
+        self.assertIn("2026-11-14 (pulled again): 17 notices of 17 in 1 request(s): complete; 1 not in the store before", out)
+        self.assertIn("2026-11-15: 5 notices of 5 in 1 request(s): complete\n", out)
+        self.assertNotIn(KEY, out)
+        p = self.pulls()
+        self.assertEqual(p[["posted_day", "attempt", "requests", "status", "notices_received"]].values.tolist(),
+                         [["2026-11-14", "1", "1", "complete", "16"], ["2026-11-14", "2", "1", "complete", "17"],
+                          ["2026-11-15", "1", "1", "complete", "5"]])
+        store = pd.read_parquet(sam.STORE)
+        self.assertEqual((int((store["posted_day"] == pd.Timestamp(NOV14)).sum()), len(store)), (17, 22))
+        self.assertEqual(store["notice_id"].nunique(), len(store))
+        new = pd.read_csv(sam.NEW_CSV, dtype=str)
+        self.assertEqual(new.groupby("posted_day")["n_notices"].apply(lambda s: s.astype(int).sum()).to_dict(),
+                         {"2026-11-14": 17, "2026-11-15": 5})
+        with open(sam.LATEST_JSON, encoding="utf-8") as fh:
+            latest = json.load(fh)
+        self.assertEqual((latest["through"], latest["requests"]["this_run"], latest["store"]["notices"]), ("2026-11-15", 2, 22))
+        view = pd.read_parquet(os.path.join(sam.SNAP_DIR, "sam_view_2026-11-16.parquet"))
+        late = view[view["notice_id"] == "N2026111400016"]                               # what the forecast step reads
+        self.assertEqual(late["posted_date"].tolist(), [pd.Timestamp("2026-11-14")])
+        # Nov 14 is never pulled a third time; Nov 15, pulled at midnight too, is pulled again from 12:00 UTC
+        fake = FakeApi({NOV14: 18, NOV15: 6, NOV16: 3})
+        code, out = self.run_script(fake, now=MIDNIGHT + pd.Timedelta(days=1, hours=8))
+        self.assertEqual((code, [c[0] for c in fake.calls]), (0, [NOV15]))
+        fake = FakeApi({NOV14: 18, NOV15: 6, NOV16: 3})
+        code, out = self.run_script(fake, now=MIDNIGHT + pd.Timedelta(days=2, hours=10))
+        self.assertEqual((code, [c[0] for c in fake.calls]), (0, [NOV16]))
+        self.assertEqual(self.pulls()["posted_day"].value_counts().to_dict(), {"2026-11-14": 2, "2026-11-15": 2, "2026-11-16": 1})
+
+    def test_a_day_pulled_from_12_utc_on_is_not_pulled_again(self):
+        self.run_script(FakeApi({NOV14: 16}), now=pd.Timestamp("2026-11-15 12:40", tz="UTC"))   # 07:40 Eastern
+        fake = FakeApi({NOV14: 17, NOV15: 5})
+        code, out = self.run_script(fake, now=MIDNIGHT + pd.Timedelta(days=1))
+        self.assertEqual((code, [c[0] for c in fake.calls]), (0, [NOV15]))
+        self.assertNotIn("pulled again", out)
+
+    def test_the_second_pull_takes_its_turn_in_date_order_within_the_budget(self):
+        self.run_script(FakeApi({NOV14: 16}), now=MIDNIGHT)
+        fake = FakeApi({NOV14: 17, NOV15: 5})
+        code, out = self.run_script(fake, "--max-requests", "1", now=MIDNIGHT + pd.Timedelta(days=1))
+        self.assertEqual((code, [c[0] for c in fake.calls]), (0, [NOV14]))               # Nov 15 waits for the next run
+        self.assertIn("budget ran out", out)
+        fake = FakeApi({NOV14: 18, NOV15: 5})
+        code, out = self.run_script(fake, now=MIDNIGHT + pd.Timedelta(days=1, hours=1))
+        self.assertEqual((code, [c[0] for c in fake.calls]), (0, [NOV15]))               # and Nov 14 is not pulled a third time
+
+    def test_a_second_pull_that_falls_short_once_is_tried_again_before_the_day_is_kept_short(self):
+        class Lying(FakeApi):                    # says one more than it sends, then an empty page
+            def __call__(self, key, day, offset):
+                d = super().__call__(key, day, offset)
+                return dict(d, totalRecords=d["totalRecords"] + 1, opportunitiesData=d["opportunitiesData"] if offset == 0 else [])
+        self.run_script(FakeApi({NOV14: 16}), now=MIDNIGHT)
+        code, out = self.run_script(Lying({NOV14: 16}), now=MIDNIGHT + pd.Timedelta(hours=8))
+        self.assertEqual((code, self.pulls()["status"].tolist()), (0, ["complete", "incomplete"]))   # once: not "short" yet
+        self.run_script(Lying({NOV14: 16}), now=MIDNIGHT + pd.Timedelta(hours=9))
+        p = self.pulls()
+        self.assertEqual((p["attempt"].tolist(), p["status"].tolist()), (["1", "2", "3"], ["complete", "incomplete", "short"]))
+        self.assertEqual(int((pd.read_parquet(sam.STORE)["posted_day"] == pd.Timestamp(NOV14)).sum()), 16)
+
+    def test_a_failed_second_pull_loses_nothing_and_the_day_is_pulled_again_in_full(self):
+        self.run_script(FakeApi({NOV14: 16}), now=MIDNIGHT)
+        code, out = self.run_script(FakeApi({NOV14: 17}, error=True), now=MIDNIGHT + pd.Timedelta(hours=8))
+        self.assertEqual(code, sam.EXIT_API)                                               # as for any day the API fails on
+        self.assertEqual(self.pulls()["status"].tolist(), ["complete", "incomplete"])
+        self.assertEqual(len(pd.read_parquet(sam.STORE)), 16)                             # the first pull's notices stay
+        fake = FakeApi({NOV14: 17, NOV15: 5})
+        code, out = self.run_script(fake, now=MIDNIGHT + pd.Timedelta(days=1, hours=8))
+        self.assertEqual((code, [c[0] for c in fake.calls]), (0, [NOV14, NOV15]))
+        p = self.pulls()
+        self.assertEqual((p["attempt"].tolist(), p["status"].tolist()),
+                         (["1", "2", "3", "1"], ["complete", "incomplete", "complete", "complete"]))
+        self.assertEqual(int((pd.read_parquet(sam.STORE)["posted_day"] == pd.Timestamp(NOV14)).sum()), 17)
+        fake = FakeApi({NOV14: 18, NOV15: 6, NOV16: 3})
+        self.run_script(fake, now=MIDNIGHT + pd.Timedelta(days=2, hours=8))
+        self.assertEqual([c[0] for c in fake.calls], [NOV16])
 
 
 class ViewForTheForecastStep(Paths):

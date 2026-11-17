@@ -18,7 +18,7 @@ import os
 import re
 import shutil
 import tomllib
-from datetime import date
+from datetime import date, timedelta
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, "results")
@@ -626,9 +626,16 @@ def daily_block(res, daily):
             led.append((d, int(k), num(r.get("n_fresh"))))
     guide = f'<a href="{REPO}/blob/main/docs/daily-forecasts.md">how it works</a>'
     if not led:
+        sd = load_json(res, "sam_daily_latest.json")
+        first = str(((sd.get("store") or {}).get("first_day") if isinstance(sd, dict) and sd.get("schema") == 2 else "") or "")[:10]
+        when = ""
+        if re.fullmatch(r"\d{4}-\d\d-\d\d", first):              # 31_daily_forecast.py seals nothing before 30 days (MIN_STORE_DAYS)
+            ready = (date.fromisoformat(first) + timedelta(days=30)).isoformat()
+            when = (f". It can be sealed from {nice(ready)}, once the SAM.gov notices collected since {nice(first)} cover "
+                    f"30 days")
         return (f'<div class="card" style="margin-top:12px"><p class="note" style="margin:0"><b>Daily forecasts.</b> A daily series of '
-                f"sealed forecasts, one for each new open solicitation, is built and tested; the first batch has not been sealed yet "
-                f"({guide}).</p></div>")
+                f"sealed forecasts, one for each new open solicitation, is built and tested; the first batch has not been sealed yet"
+                f"{when} ({guide}).</p></div>")
     led.sort()
     k = sum(x[1] for x in led)
     fresh = [x[2] for x in led if x[2] is not None]
@@ -649,9 +656,9 @@ def daily_block(res, daily):
         else:
             score = " Scores are published once enough forecasts have resolved."
     kp = "".join(f'<div class="card kpi"><b>{esc(b)}</b><span>{esc(t)}</span></div>' for b, t in tiles)
-    return (f'<div class="card" style="margin-top:12px"><p class="lead"><b>Daily forecasts.</b> Every morning each new open solicitation '
+    return (f'<div class="card" style="margin-top:12px"><p class="lead"><b>Daily forecasts.</b> Once a day, each new open solicitation '
             f"gets a forecast of its chance of only one offer. The day's batch stays private (it names buying offices); its fingerprint "
-            f'and counts are published the same morning in <a href="{REPO}/tree/main/forecasts/daily">forecasts/daily</a>.</p>'
+            f'and counts are published the same day in <a href="{REPO}/tree/main/forecasts/daily">forecasts/daily</a>.</p>'
             f'<div class="kpis" style="margin-top:0">{kp}</div>'
             f'<p class="note">An award counts only if it is dated on or after the day offers were due. Only totals are published.{score} '
             f"({guide})</p></div>")
@@ -846,7 +853,7 @@ def main():
 <div class="tablewrap"><table class="sortable">
   <thead><tr><th>Civilian department</th><th>Solicitations</th></tr></thead>
   <tbody>{srows}</tbody></table></div>
-<p class="note">Distinct solicitation numbers with a solicitation notice posted on these days, new or amended, from SAM.gov's official Get Opportunities API. Defense solicitations are public right away, even though Defense awards are published 90 days late.</p>""")
+<p class="note">Distinct solicitation numbers with a solicitation notice posted on these days, new or amended, from SAM.gov's official Get Opportunities API. A day collected less than 7 hours after it ended is collected once more by a later run, in case the API listed some of its notices late, so the newest days can still gain notices. Defense solicitations are public right away, even though Defense awards are published 90 days late.</p>""")
     elif os.path.exists(sam_path):
         op = sd["open_solicitations"]
         live_tiles.append(f'<div class="card kpi"><b>{op["civilian"]["distinct_sol_numbers"]:,}</b><span>civilian solicitations open today ({op["dod"]["distinct_sol_numbers"]:,} more at Defense); {op["deadline_next_7d_civilian"]["distinct_sol_numbers"]:,} civilian ones close within 7 days</span></div>')

@@ -59,6 +59,10 @@ returns up to 1,000 notices, and SAM.gov posts up to about 1,700 notices on a bu
 script makes at most 6 requests a run (`--max-requests` changes that) and leaves the rest for checks by hand. After a pause it
 catches up a few days per run, oldest first, at most 60 days back.
 
+The robot can run soon after midnight, and SAM.gov's API may list a notice some time after it was posted. So a day pulled less
+than 7 hours after it ended (before 12:00 UTC the next day: 7 a.m. Eastern in winter, 8 a.m. in summer) is pulled once more by
+the first run after that time, and the two pulls are merged. That costs another 1 or 2 requests, usually on the next day's run.
+
 Run the daily step in **one place**, either the robot or your computer. Both spend the same 10 requests, and each keeps its own
 copy of the notices.
 
