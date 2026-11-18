@@ -5,3 +5,5 @@ posted_day,pulled_utc,attempt,requests,total_records,notices_received,status,off
 2026-11-15,2026-11-16T19:47:03Z,1,1,394,394,complete,page
 2026-11-14,2026-11-17T07:42:02Z,2,1,14,14,complete,page
 2026-11-16,2026-11-17T07:42:04Z,1,2,1603,1603,complete,page
+2026-11-16,2026-11-18T05:01:00Z,2,2,1538,1538,complete,page
+2026-11-17,2026-11-18T05:01:07Z,1,2,1792,1792,complete,page
