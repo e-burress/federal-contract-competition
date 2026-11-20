@@ -1,11 +1,11 @@
 {
  "schema": 2,
  "source": "SAM.gov Get Opportunities Public API v2 (api.sam.gov), with a personal API key",
- "built_utc": "2026-11-19T09:26:24Z",
- "through": "2026-11-18",
+ "built_utc": "2026-11-20T10:27:57Z",
+ "through": "2026-11-19",
  "window": {
-  "from": "2026-11-12",
-  "to": "2026-11-18",
+  "from": "2026-11-13",
+  "to": "2026-11-19",
   "days": 7,
   "days_pulled": 7
  },
@@ -16,89 +16,90 @@
  "solicitation_notices_posted": {
   "definition": "notices of a solicitation type posted on the days of the window (new solicitations and amendments); distinct_sol_numbers counts each solicitation number once",
   "all": {
-   "notices": 4749,
-   "distinct_sol_numbers": 4469
+   "notices": 4613,
+   "distinct_sol_numbers": 4311
   },
   "civilian": {
-   "notices": 945,
-   "distinct_sol_numbers": 796
+   "notices": 990,
+   "distinct_sol_numbers": 830
   },
   "dod": {
-   "notices": 3804,
-   "distinct_sol_numbers": 3673
+   "notices": 3623,
+   "distinct_sol_numbers": 3481
   },
   "dod_department_label": "DEPT OF DEFENSE"
  },
  "top10_civilian_departments": [
   {
    "department": "VETERANS AFFAIRS, DEPARTMENT OF",
-   "distinct_sol_numbers": 184,
+   "distinct_sol_numbers": 180,
    "notices": 220
   },
   {
    "department": "JUSTICE, DEPARTMENT OF",
-   "distinct_sol_numbers": 132,
-   "notices": 146
+   "distinct_sol_numbers": 134,
+   "notices": 147
   },
   {
    "department": "HOMELAND SECURITY, DEPARTMENT OF",
-   "distinct_sol_numbers": 107,
-   "notices": 123
+   "distinct_sol_numbers": 120,
+   "notices": 140
   },
   {
    "department": "INTERIOR, DEPARTMENT OF THE",
-   "distinct_sol_numbers": 73,
-   "notices": 88
+   "distinct_sol_numbers": 75,
+   "notices": 87
   },
   {
    "department": "AGRICULTURE, DEPARTMENT OF",
-   "distinct_sol_numbers": 58,
-   "notices": 75
+   "distinct_sol_numbers": 66,
+   "notices": 90
   },
   {
    "department": "STATE, DEPARTMENT OF",
-   "distinct_sol_numbers": 45,
-   "notices": 48
+   "distinct_sol_numbers": 46,
+   "notices": 50
   },
   {
    "department": "ENERGY, DEPARTMENT OF",
-   "distinct_sol_numbers": 37,
-   "notices": 44
+   "distinct_sol_numbers": 45,
+   "notices": 51
   },
   {
    "department": "NATIONAL AERONAUTICS AND SPACE ADMINISTRATION",
    "distinct_sol_numbers": 31,
-   "notices": 43
+   "notices": 39
+  },
+  {
+   "department": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
+   "distinct_sol_numbers": 29,
+   "notices": 35
   },
   {
    "department": "GENERAL SERVICES ADMINISTRATION",
-   "distinct_sol_numbers": 28,
-   "notices": 28
-  },
-  {
-   "department": "TRANSPORTATION, DEPARTMENT OF",
-   "distinct_sol_numbers": 25,
-   "notices": 35
+   "distinct_sol_numbers": 26,
+   "notices": 26
   }
  ],
  "newest_day": {
-  "date": "2026-11-18",
-  "notices_all_types": 1277,
+  "date": "2026-11-19",
+  "notices_all_types": 1572,
   "by_type": {
-   "Award Notice": 396,
-   "Combined Synopsis/Solicitation": 306,
-   "Solicitation": 225,
-   "Sources Sought": 158,
+   "Combined Synopsis/Solicitation": 685,
+   "Solicitation": 299,
+   "Award Notice": 275,
+   "Sources Sought": 118,
    "Presolicitation": 104,
-   "Special Notice": 70,
-   "Justification": 18
+   "Special Notice": 77,
+   "Justification": 13,
+   "Consolidate/(Substantially) Bundle": 1
   }
  },
  "store": {
   "first_day": "2026-11-12",
-  "days_finished": 7,
+  "days_finished": 8,
   "days_short": [],
-  "notices": 7478
+  "notices": 9050
  },
  "requests": {
   "this_run": 4,
