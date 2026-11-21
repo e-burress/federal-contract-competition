@@ -381,6 +381,52 @@ class DailyForecasts(unittest.TestCase):
         self.assertIn("daily batches sealed", h)
         self.assertNotIn("resolved so far", h)
 
+    def test_before_the_first_batch_it_counts_the_days_collected(self):
+        latest = os.path.join(self.res, "sam_daily_latest.json")
+        write_json(latest, {"schema": 2, "through": "2026-11-20", "store": {"first_day": "2026-11-12"}})
+        h = bd.daily_block(self.res, self.daily)
+        check_html(self, h)
+        self.assertIn("It can be sealed from Dec 12, 2026, once the SAM.gov notices collected since Nov 12, 2026 cover 30 days; "
+                      "they cover 9 so far (", h)                     # as 31_daily_forecast.py counts: Nov 12 to Nov 21
+        write_json(latest, {"schema": 2, "through": "2026-12-11", "store": {"first_day": "2026-11-12"}})
+        self.assertNotIn("so far", bd.daily_block(self.res, self.daily))   # 30 days: nothing left to count
+
+
+class SecondLooks(unittest.TestCase):
+    """the tally under the SAM.gov table: days that had a second look, and the notices those looks added"""
+    PULLS = ("posted_day,pulled_utc,attempt,requests,total_records,notices_received,status,offset_mode\n"
+             "2026-11-13,2026-11-14T12:40:36Z,1,1,751,751,complete,page\n"
+             "2026-11-14,2026-11-15T05:00:53Z,1,1,16,16,complete,page\n"
+             "2026-11-14,2026-11-17T07:42:02Z,2,1,14,14,complete,page\n"        # the listing shrank: nothing added
+             "2026-11-17,2026-11-18T05:01:07Z,1,2,1792,1792,complete,page\n"
+             "2026-11-17,2026-11-19T09:26:10Z,2,2,1734,1734,complete,page\n"    # added 2 (1,794 kept)
+             "2026-11-18,2026-11-19T09:26:18Z,1,1,900,1000,incomplete,page\n"   # cut short: the full pull after it is no second look
+             "2026-11-18,2026-11-20T10:27:46Z,2,2,1214,1214,complete,page\n"
+             "2026-11-20,2026-11-21T05:47:51Z,1,2,1045,1045,complete,page\n")   # its second look is still due
+    NEW = ("posted_day,department,type,n_notices,n_sol_numbers\n"
+           "2026-11-13,A,Solicitation,751,700\n2026-11-14,A,Solicitation,16,16\n2026-11-17,A,Solicitation,1000,900\n"
+           "2026-11-17,DEPT OF DEFENSE,Solicitation,794,700\n2026-11-18,A,Solicitation,1214,1100\n2026-11-20,A,Solicitation,1045,1000\n")
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.res = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def write(self, name, text):
+        with open(os.path.join(self.res, name), "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+
+    def test_tally(self):
+        self.assertIsNone(bd.second_looks(self.res))                                     # no files
+        self.write("sam_api_pulls.csv", self.PULLS)
+        self.assertIsNone(bd.second_looks(self.res))                                     # no daily counts
+        self.write("sam_new_notices.csv", self.NEW)
+        self.assertEqual(bd.second_looks(self.res), (2, 2))                              # Nov 14 (0) and Nov 17 (2)
+        self.write("sam_api_pulls.csv", "".join(self.PULLS.splitlines(keepends=True)[:3]))
+        self.assertIsNone(bd.second_looks(self.res))                                     # no second look yet
+
 
 if __name__ == "__main__":
     unittest.main()

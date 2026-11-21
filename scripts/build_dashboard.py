@@ -123,6 +123,32 @@ def num(x):
     return v if math.isfinite(v) else None
 
 
+def second_looks(res):
+    """(days that had a second look, notices those looks added) from results/sam_api_pulls.csv and sam_new_notices.csv, or None.
+    A second look is any later pull of a day whose first pull was complete (14_sam_daily_snapshot.py, SETTLE).  What it added is
+    the day's notices in the store now (sam_new_notices.csv) minus what the first pull received: the store only ever adds."""
+    pulls, new = load_csv(res, "sam_api_pulls.csv"), load_csv(res, "sam_new_notices.csv")
+    if not pulls or not new:
+        return None
+    kept = {}
+    for r in new:
+        v = num(r.get("n_notices"))
+        if v is not None:
+            kept[r.get("posted_day")] = kept.get(r.get("posted_day"), 0) + int(v)
+    first, again = {}, set()
+    for r in pulls:                                      # the log is in time order
+        d = r.get("posted_day")
+        if d in first:
+            again.add(d)
+        else:
+            first[d] = r
+    days = [d for d in sorted(again) if d in kept and first[d].get("status") == "complete"
+            and num(first[d].get("notices_received")) is not None]
+    if not days:
+        return None
+    return len(days), sum(max(kept[d] - int(num(first[d]["notices_received"])), 0) for d in days)
+
+
 def sgn(x, d=2):
     """signed number with a real minus sign: +0.55, −0.37"""
     return f"{x:+.{d}f}".replace("-", "−")
@@ -627,12 +653,18 @@ def daily_block(res, daily):
     guide = f'<a href="{REPO}/blob/main/docs/daily-forecasts.md">how it works</a>'
     if not led:
         sd = load_json(res, "sam_daily_latest.json")
-        first = str(((sd.get("store") or {}).get("first_day") if isinstance(sd, dict) and sd.get("schema") == 2 else "") or "")[:10]
+        sd = sd if isinstance(sd, dict) and sd.get("schema") == 2 else {}
+        first = str((sd.get("store") or {}).get("first_day") or "")[:10]
+        through = str(sd.get("through") or "")[:10]
         when = ""
         if re.fullmatch(r"\d{4}-\d\d-\d\d", first):              # 31_daily_forecast.py seals nothing before 30 days (MIN_STORE_DAYS)
             ready = (date.fromisoformat(first) + timedelta(days=30)).isoformat()
             when = (f". It can be sealed from {nice(ready)}, once the SAM.gov notices collected since {nice(first)} cover "
                     f"30 days")
+            if re.fullmatch(r"\d{4}-\d\d-\d\d", through):        # counted as 31 does: from the first day to the day after `through`
+                k = (date.fromisoformat(through) - date.fromisoformat(first)).days + 1
+                if 0 < k < 30:
+                    when += f"; they cover {k} so far"
         return (f'<div class="card" style="margin-top:12px"><p class="note" style="margin:0"><b>Daily forecasts.</b> A daily series of '
                 f"sealed forecasts, one for each new open solicitation, is built and tested; the first batch has not been sealed yet"
                 f"{when} ({guide}).</p></div>")
@@ -849,11 +881,14 @@ def main():
                           f'posted or updated on SAM.gov, {span}{part} ({sp["dod"]["distinct_sol_numbers"]:,} more at Defense)</span></div>')
         srows = "".join(f"<tr><td>{esc(sam_name(d['department']))}</td><td data-v='{d['distinct_sol_numbers']}'>{d['distinct_sol_numbers']:,}</td></tr>"
                         for d in sd["top10_civilian_departments"])
+        slk = second_looks(RES)
+        slt = (f" Second looks so far: {slk[0]:,} {'day' if slk[0] == 1 else 'days'}, {slk[1]:,} "
+               f"{'notice' if slk[1] == 1 else 'notices'} found that the first look had missed.") if slk else ""
         live_parts.append(f"""<h3 style="margin:22px 0 8px;font-size:1.05rem">Solicitations posted or updated (SAM.gov, {span})</h3>
 <div class="tablewrap"><table class="sortable">
   <thead><tr><th>Civilian department</th><th>Solicitations</th></tr></thead>
   <tbody>{srows}</tbody></table></div>
-<p class="note">Distinct solicitation numbers with a solicitation notice posted on these days, new or amended, from SAM.gov's official Get Opportunities API. A day collected less than 7 hours after it ended is collected once more by a later run, in case the API listed some of its notices late, so the newest days can still gain notices. Defense solicitations are public right away, even though Defense awards are published 90 days late.</p>""")
+<p class="note">Distinct solicitation numbers with a solicitation notice posted on these days, new or amended, from SAM.gov's official Get Opportunities API. A day collected less than 7 hours after it ended is collected once more by a later run, in case the API listed some of its notices late, so the newest days can still gain notices.{slt} Defense solicitations are public right away, even though Defense awards are published 90 days late.</p>""")
     elif os.path.exists(sam_path):
         op = sd["open_solicitations"]
         live_tiles.append(f'<div class="card kpi"><b>{op["civilian"]["distinct_sol_numbers"]:,}</b><span>civilian solicitations open today ({op["dod"]["distinct_sol_numbers"]:,} more at Defense); {op["deadline_next_7d_civilian"]["distinct_sol_numbers"]:,} civilian ones close within 7 days</span></div>')
