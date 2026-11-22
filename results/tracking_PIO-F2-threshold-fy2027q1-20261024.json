@@ -1,23 +1,23 @@
 {
  "forecast_id": "PIO-F2-threshold-fy2027q1-20261024",
- "as_of": "2026-11-21",
+ "as_of": "2026-11-22",
  "data_from": "2026-10-01",
- "data_to": "2026-11-20",
+ "data_to": "2026-11-21",
  "period": {
   "start": "2026-10-01",
   "end": "2026-12-31"
  },
  "provisional": true,
- "n_base_actions": 36160,
- "n_values_used": 36160,
+ "n_base_actions": 36397,
+ "n_values_used": 36397,
  "quantities": [
   {
    "name": "bunching_ratio_350K",
    "threshold": 350000,
-   "so_far": 1.8464989613185243,
+   "so_far": 1.7948047932755498,
    "so_far_95ci": [
-    0.9573631153744513,
-    3.4695537209044898
+    0.9194487175673215,
+    4.328104656813725
    ],
    "forecast": 2.027,
    "interval80": [
@@ -29,10 +29,10 @@
   {
    "name": "bunching_ratio_250K",
    "threshold": 250000,
-   "so_far": 1.8020318464047935,
+   "so_far": 1.7225466003127046,
    "so_far_95ci": [
-    1.2402112563602776,
-    2.8026983913794874
+    1.1935541868764104,
+    2.569383694035219
    ],
    "forecast": 1.229,
    "interval80": [
@@ -44,10 +44,10 @@
   {
    "name": "po_share_10_15K",
    "threshold": 15000,
-   "so_far": 0.3661504424778761,
+   "so_far": 0.3651987110633727,
    "so_far_95ci": [
-    0.33849557522123896,
-    0.3965984513274336
+    0.3383458646616541,
+    0.39368958109559615
    ],
    "forecast": 0.3607,
    "interval80": [
@@ -60,16 +60,16 @@
  "download_verification": {
   "verified": true,
   "rule": "each file's CSV rows must be within max(5 rows, 0.05 percent) of USAspending's count (search/spending_by_transaction_count) for the same filters and dates",
-  "expected_rows": 51360,
-  "received_rows": 51355,
+  "expected_rows": 52200,
+  "received_rows": 52195,
   "windows": [
    {
     "window": "F2",
     "start": "2026-10-01",
-    "end": "2026-11-20",
+    "end": "2026-11-21",
     "file": "CIVILIAN__F2.zip",
-    "expected_rows": 51360,
-    "received_rows": 51355,
+    "expected_rows": 52200,
+    "received_rows": 52195,
     "verified": true
    }
   ]

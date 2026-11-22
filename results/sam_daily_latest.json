@@ -1,11 +1,11 @@
 {
  "schema": 2,
  "source": "SAM.gov Get Opportunities Public API v2 (api.sam.gov), with a personal API key",
- "built_utc": "2026-11-21T05:47:57Z",
- "through": "2026-11-20",
+ "built_utc": "2026-11-22T05:30:50Z",
+ "through": "2026-11-21",
  "window": {
-  "from": "2026-11-14",
-  "to": "2026-11-20",
+  "from": "2026-11-15",
+  "to": "2026-11-21",
   "days": 7,
   "days_pulled": 7
  },
@@ -17,23 +17,23 @@
   "definition": "notices of a solicitation type posted on the days of the window (new solicitations and amendments); distinct_sol_numbers counts each solicitation number once",
   "all": {
    "notices": 4911,
-   "distinct_sol_numbers": 4627
+   "distinct_sol_numbers": 4626
   },
   "civilian": {
-   "notices": 983,
+   "notices": 984,
    "distinct_sol_numbers": 834
   },
   "dod": {
-   "notices": 3928,
-   "distinct_sol_numbers": 3793
+   "notices": 3927,
+   "distinct_sol_numbers": 3792
   },
   "dod_department_label": "DEPT OF DEFENSE"
  },
  "top10_civilian_departments": [
   {
    "department": "VETERANS AFFAIRS, DEPARTMENT OF",
-   "distinct_sol_numbers": 194,
-   "notices": 237
+   "distinct_sol_numbers": 195,
+   "notices": 238
   },
   {
    "department": "HOMELAND SECURITY, DEPARTMENT OF",
@@ -53,7 +53,7 @@
   {
    "department": "AGRICULTURE, DEPARTMENT OF",
    "distinct_sol_numbers": 73,
-   "notices": 94
+   "notices": 95
   },
   {
    "department": "ENERGY, DEPARTMENT OF",
@@ -77,32 +77,29 @@
   },
   {
    "department": "TRANSPORTATION, DEPARTMENT OF",
-   "distinct_sol_numbers": 26,
-   "notices": 31
+   "distinct_sol_numbers": 25,
+   "notices": 30
   }
  ],
  "newest_day": {
-  "date": "2026-11-20",
-  "notices_all_types": 1045,
+  "date": "2026-11-21",
+  "notices_all_types": 69,
   "by_type": {
-   "Combined Synopsis/Solicitation": 396,
-   "Solicitation": 296,
-   "Award Notice": 121,
-   "Sources Sought": 99,
-   "Presolicitation": 63,
-   "Special Notice": 58,
-   "Justification": 11,
-   "Sale of Surplus Property": 1
+   "Award Notice": 37,
+   "Presolicitation": 23,
+   "Solicitation": 3,
+   "Combined Synopsis/Solicitation": 3,
+   "Sources Sought": 3
   }
  },
  "store": {
   "first_day": "2026-11-12",
-  "days_finished": 9,
+  "days_finished": 10,
   "days_short": [],
-  "notices": 10095
+  "notices": 10164
  },
  "requests": {
-  "this_run": 4,
+  "this_run": 3,
   "per_run_cap": 6,
   "daily_limit": 10
  },

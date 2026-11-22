@@ -13,3 +13,5 @@ posted_day,pulled_utc,attempt,requests,total_records,notices_received,status,off
 2026-11-19,2026-11-20T10:27:52Z,1,2,1572,1572,complete,page
 2026-11-19,2026-11-21T05:47:46Z,2,2,1531,1531,complete,page
 2026-11-20,2026-11-21T05:47:51Z,1,2,1045,1045,complete,page
+2026-11-20,2026-11-22T05:30:43Z,2,2,1035,1035,complete,page
+2026-11-21,2026-11-22T05:30:49Z,1,1,69,69,complete,page
