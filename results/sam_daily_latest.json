@@ -1,11 +1,11 @@
 {
  "schema": 2,
  "source": "SAM.gov Get Opportunities Public API v2 (api.sam.gov), with a personal API key",
- "built_utc": "2026-11-22T05:30:50Z",
- "through": "2026-11-21",
+ "built_utc": "2026-11-23T07:29:56Z",
+ "through": "2026-11-22",
  "window": {
-  "from": "2026-11-15",
-  "to": "2026-11-21",
+  "from": "2026-11-16",
+  "to": "2026-11-22",
   "days": 7,
   "days_pulled": 7
  },
@@ -16,24 +16,24 @@
  "solicitation_notices_posted": {
   "definition": "notices of a solicitation type posted on the days of the window (new solicitations and amendments); distinct_sol_numbers counts each solicitation number once",
   "all": {
-   "notices": 4911,
-   "distinct_sol_numbers": 4626
+   "notices": 4527,
+   "distinct_sol_numbers": 4241
   },
   "civilian": {
-   "notices": 984,
-   "distinct_sol_numbers": 834
+   "notices": 983,
+   "distinct_sol_numbers": 832
   },
   "dod": {
-   "notices": 3927,
-   "distinct_sol_numbers": 3792
+   "notices": 3544,
+   "distinct_sol_numbers": 3409
   },
   "dod_department_label": "DEPT OF DEFENSE"
  },
  "top10_civilian_departments": [
   {
    "department": "VETERANS AFFAIRS, DEPARTMENT OF",
-   "distinct_sol_numbers": 195,
-   "notices": 238
+   "distinct_sol_numbers": 193,
+   "notices": 236
   },
   {
    "department": "HOMELAND SECURITY, DEPARTMENT OF",
@@ -73,7 +73,7 @@
   {
    "department": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
    "distinct_sol_numbers": 28,
-   "notices": 34
+   "notices": 35
   },
   {
    "department": "TRANSPORTATION, DEPARTMENT OF",
@@ -82,24 +82,25 @@
   }
  ],
  "newest_day": {
-  "date": "2026-11-21",
-  "notices_all_types": 69,
+  "date": "2026-11-22",
+  "notices_all_types": 10,
   "by_type": {
-   "Award Notice": 37,
-   "Presolicitation": 23,
-   "Solicitation": 3,
-   "Combined Synopsis/Solicitation": 3,
-   "Sources Sought": 3
+   "Solicitation": 4,
+   "Presolicitation": 2,
+   "Special Notice": 1,
+   "Combined Synopsis/Solicitation": 1,
+   "Sources Sought": 1,
+   "Award Notice": 1
   }
  },
  "store": {
   "first_day": "2026-11-12",
-  "days_finished": 10,
+  "days_finished": 11,
   "days_short": [],
-  "notices": 10164
+  "notices": 10174
  },
  "requests": {
-  "this_run": 3,
+  "this_run": 2,
   "per_run_cap": 6,
   "daily_limit": 10
  },
