@@ -1,32 +1,32 @@
 {
  "fiscal_year": 2027,
- "as_of": "2026-11-25",
+ "as_of": "2026-11-26",
  "data_from": "2026-10-01",
- "data_to": "2026-11-24",
- "usaspending_last_updated": "2026-11-24",
+ "data_to": "2026-11-25",
+ "usaspending_last_updated": "2026-11-26",
  "n_agencies": 29,
- "n_base_awards": 38864,
- "k_single": 1108,
- "n_eval": 19522,
- "share": 0.056756479868865894,
+ "n_base_awards": 39362,
+ "k_single": 1178,
+ "n_eval": 19767,
+ "share": 0.05959427328375575,
  "ci": [
-  0.05359715119197413,
-  0.0600902134986724
+  0.05637887525573239,
+  0.06298081227885449
  ],
  "excluding_gsa": {
-  "k_single": 690,
-  "n_eval": 2585,
-  "share": 0.26692456479690524,
+  "k_single": 735,
+  "n_eval": 2790,
+  "share": 0.26344086021505375,
   "ci": [
-   0.2502271255120516,
-   0.28431370320717064
+   0.24742888312779865,
+   0.28010336254329826
   ]
  },
  "verified": true,
  "download_verification": {
   "rule": "each file's CSV rows must be within max(5 rows, 0.05 percent) of USAspending's count (search/spending_by_transaction_count) for the same filters and dates",
-  "expected_rows": 81295,
-  "received_rows": 81288,
+  "expected_rows": 90103,
+  "received_rows": 90096,
   "problems": []
  }
 }
