@@ -1,7 +1,7 @@
 {
  "schema": 2,
  "source": "SAM.gov Get Opportunities Public API v2 (api.sam.gov), with a personal API key",
- "built_utc": "2026-11-27T08:17:37Z",
+ "built_utc": "2026-11-28T06:29:52Z",
  "through": "2026-11-26",
  "window": {
   "from": "2026-11-20",
@@ -97,7 +97,7 @@
   "notices": 14080
  },
  "requests": {
-  "this_run": 1,
+  "this_run": 2,
   "per_run_cap": 6,
   "daily_limit": 10
  },
